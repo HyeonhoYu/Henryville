@@ -276,7 +276,7 @@ const PLACES = {
       <a class="btn solid" href="https://hyeonhoyu.github.io/frogbaby/" target="_blank" rel="noopener">Read the Frog Baby story</a>`
   },
   hall:{
-    name:"Administration Building", title:"About Henry", color:"#c9b48a",
+    name:"Administration Building", title:"About Dr. Henry Yu", color:"#c9b48a",
     lede:"A former elementary teacher who now prepares future teachers to teach well with AI and emerging technology.",
     html:()=>`
       <p>Henry Yu taught elementary school in Gwangju, South Korea for ten years before earning his Ph.D. in Curriculum and Instruction at Arizona State University. At Ball State University's Teachers College he teaches educational technology, studies how preservice teachers learn with generative AI, and builds the web tools you can find in the Maker's Market down the road.</p>
@@ -296,6 +296,16 @@ const PLACES = {
         item("M.Ed.","2016","Arizona State University"),
         item("M.Ed.","2013","Chonnam National University"),
         item("B.A.","2003","Gwangju National University of Education")
+      ])}
+      <h3>Office</h3>
+      <p>Department of Elementary Education<br>Teachers College, Ball State University<br>Muncie, Indiana</p>
+      <h3>Professional memberships</h3>
+      ${li([
+        item("Korean-American Educational Researchers Association","2026 to present"),
+        item("Society for Information Technology and Teacher Education (SITE)","2025 to present"),
+        item("International Organization for Health, Sports, and Kinesiology (IOHSK)","2020 to present"),
+        item("American Educational Research Association","2016 to present"),
+        item("SHAPE America","2014 to present")
       ])}`
   },
   library:{
@@ -448,22 +458,6 @@ const PLACES = {
         item("Data analysis, Science of Reading grant project","2024 to present")
       ])}`
   },
-  post:{
-    name:"Post Office", title:"Find Henry", color:"#6fa3b8",
-    lede:"Where to read more and where to find him.",
-    html:()=>`
-      <a class="btn solid" href="${SCHOLAR}" target="_blank" rel="noopener">Google Scholar profile</a>
-      <h3>Office</h3>
-      <p>Department of Elementary Education<br>Teachers College, Ball State University<br>Muncie, Indiana</p>
-      <h3>Professional memberships</h3>
-      ${li([
-        item("Korean-American Educational Researchers Association","2026 to present"),
-        item("Society for Information Technology and Teacher Education (SITE)","2025 to present"),
-        item("International Organization for Health, Sports, and Kinesiology (IOHSK)","2020 to present"),
-        item("American Educational Research Association","2016 to present"),
-        item("SHAPE America","2014 to present")
-      ])}`
-  },
   market:{
     name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
     lede:"Every stall in the market is a working site. Open one in a new tab, or tap a stall on the island.",
@@ -483,7 +477,7 @@ const PLACES = {
       <p>Children's AI Literacy Website, 2026.</p>`
   }
 };
-const ORDER = ["frog","hall","library","school","talks","awards","grants","service","post","market"];
+const ORDER = ["frog","hall","library","school","talks","awards","grants","service","market"];
 
 /* =========================================================
    UI: directory and panel
@@ -669,7 +663,6 @@ function start(){
     {key:'library', x:-9.5,z:-12,  from:WEST, depth:5.2},
     {key:'school',  x:3.5, z:-13,  from:MID,  depth:4.6},
     {key:'talks',   x:-11.5,z:9.5, from:WEST, depth:4.4},
-    {key:'post',    x:-21.5,z:8.5, from:WEST, depth:3.4},
     {key:'awards',  x:24.5,z:-2,   from:EAST, depth:2.8},
     {key:'grants',  x:15.5,z:-11,  from:EAST, depth:4.0},
     {key:'service', x:14.5,z:10.5, from:EAST, depth:4.4},
