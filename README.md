@@ -7,6 +7,7 @@ A 3D island village portfolio for Hyeonho (Henry) Yu, Ph.D. Each building opens 
 - `index.html` : the whole page (village, CV content, and site list)
 - `assets/frogbaby.jpg` : Frog Baby character sheet shown in the guide panel
 - `assets/frogbaby-poses.jpg` : extra pose sheet (not used yet)
+- `assets/favicon-32.png`, `icon-192.png`, `favicon.ico`, `apple-touch-icon.png` : browser tab and home screen icons made from Henry's photo
 - `assets/frogbaby.glb` : optional. Add a 3D model with this exact name and it replaces the built-in Frog Baby automatically.
 
 ## Publish on GitHub Pages
