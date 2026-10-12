@@ -3,12 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Henryville | Hyeonho (Henry) Yu, Ph.D.</title>
+<title>Henryville | Dr. Henry Yu</title>
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="assets/icon-192.png" sizes="192x192" type="image/png">
 <link rel="alternate icon" href="assets/favicon.ico">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="theme-color" content="#a9d3cf">
+<meta name="description" content="Henryville is the 3D island village portfolio of Dr. Henry Yu, Assistant Professor of Educational Technology at Ball State University. Explore his research, teaching, awards, and the websites he built.">
+<!-- Share preview. If the repository is not named henryville, change the two URLs below. -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Henryville | Dr. Henry Yu">
+<meta property="og:description" content="The working village of Dr. Henry Yu, Teachers College, Ball State University.">
+<meta property="og:url" content="https://hyeonhoyu.github.io/henryville/">
+<meta property="og:image" content="https://hyeonhoyu.github.io/henryville/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A low-poly island village with brick campus buildings, a bell tower, and a market">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
@@ -52,7 +63,7 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .sign p{margin:.55rem 0 0; font-size:.98rem; line-height:1.35; color:var(--ink); font-weight:600}
 .sign .role{font-weight:400; color:var(--muted); font-size:.9rem; margin-top:.2rem}
 .hint{
-  position:fixed; right:20px; top:calc(22px + env(safe-area-inset-top,0px)); z-index:5;
+  position:fixed; right:20px; top:calc(70px + env(safe-area-inset-top,0px)); z-index:5;
   font-size:.85rem; color:var(--muted); background:var(--chip); padding:.5rem .8rem; border-radius:999px;
   backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); transition:opacity .4s;
 }
@@ -135,6 +146,38 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .stats div{font-size:.85rem; color:var(--muted)}
 .stats b{display:block; font-size:1.6rem; color:var(--ink); line-height:1}
 
+.controls{
+  position:fixed; right:20px; top:calc(18px + env(safe-area-inset-top,0px)); z-index:6;
+  display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; transition:opacity .35s;
+}
+.controls .chip[aria-pressed="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.controls .chip.tour{border:1.5px solid var(--ink)}
+.bubble{
+  position:fixed; z-index:7; left:0; top:0; width:max-content; max-width:min(240px,70vw); pointer-events:none;
+  background:#fff; color:#26302c; border:2px solid #2e3a35; border-radius:16px; padding:10px 14px;
+  font:600 .95rem/1.35 var(--display); box-shadow:0 8px 20px rgba(0,0,0,.15);
+  transform:translate(-50%,-100%); opacity:0; transition:opacity .25s;
+}
+.bubble::after{content:""; position:absolute; left:50%; bottom:-9px; width:14px; height:14px; background:#fff;
+  border-right:2px solid #2e3a35; border-bottom:2px solid #2e3a35; transform:translateX(-50%) rotate(45deg)}
+.bubble.show{opacity:1}
+.tourbar{display:none; align-items:center; gap:8px; padding:12px 18px; border-top:1px solid var(--line); font-family:var(--display)}
+.tourbar.on{display:flex}
+.tourbar .step{font-size:.85rem; color:var(--muted); font-weight:600; margin-right:auto}
+.tourbar .btn{margin:0; padding:.55rem .9rem}
+.filters{display:flex; flex-wrap:wrap; gap:6px; margin:.6rem 0 .4rem}
+.tag{font:600 .8rem/1 var(--display); color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:999px; padding:.45rem .7rem; cursor:pointer}
+.tag:hover{border-color:var(--ink)}
+.tag.on{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+.stall{grid-template-columns:112px 1fr !important; gap:14px !important; padding:14px 0 !important}
+.stall[hidden]{display:none}
+.thumb{position:relative; display:block; width:112px; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:var(--sc);
+  box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.15)}
+.thumb span{position:absolute; inset:0; display:grid; place-items:center; font:800 1.6rem/1 var(--display); color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.25); background:repeating-linear-gradient(135deg, rgba(255,255,255,.14) 0 10px, transparent 10px 20px)}
+.thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top}
+.pills{display:flex; flex-wrap:wrap; gap:4px; margin:.35rem 0 .1rem}
+.pills em{font:600 .72rem/1 var(--display); font-style:normal; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.3rem .5rem}
 .loader{position:fixed; inset:0; display:grid; place-items:center; z-index:20; background:var(--sea); transition:opacity .6s}
 .loader span{font:600 1rem var(--display); color:var(--muted)}
 .loader.done{opacity:0; pointer-events:none}
@@ -153,6 +196,14 @@ body.panel-open .sign{opacity:0}
   }
   .panel h2{font-size:1.55rem}
 
+  .controls{right:12px; left:auto; top:auto; bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+  .hint{bottom:calc(114px + env(safe-area-inset-bottom,0px)) !important}
+  .stall{grid-template-columns:88px 1fr !important}
+  .thumb{width:88px}
+  #tourEnd{display:none}
+  .tourbar{padding:10px 14px}
+  .tourbar .step{white-space:nowrap}
+  body.panel-open .controls{opacity:0; pointer-events:none}
   body.panel-open .directory{transform:translateY(110%); opacity:0}
 }
 @media (prefers-reduced-motion: reduce){
@@ -169,6 +220,12 @@ body.panel-open .sign{opacity:0}
   <p>The working village of Hyeonho (Henry) Yu, Ph.D.</p>
   <p class="role">Assistant Professor of Educational Technology, Teachers College, Ball State University</p>
 </div>
+<div class="controls" id="controls">
+  <button class="chip tour" id="btnTour" type="button">Take the tour</button>
+  <button class="chip" id="btnNight" type="button" aria-pressed="false">Night</button>
+  <button class="chip" id="btnSound" type="button" aria-pressed="false">Sound off</button>
+</div>
+<div class="bubble" id="bubble" aria-live="polite"></div>
 <div class="hint" id="hint">Drag to look around. Tap a building and Frog Baby will walk you there.</div>
 
 <nav class="directory" id="directory" aria-label="Places in Henryville"></nav>
@@ -181,6 +238,12 @@ body.panel-open .sign{opacity:0}
     <button class="close" id="pclose" aria-label="Close and return to the island">&times;</button>
   </header>
   <div class="body" id="pbody"></div>
+  <div class="tourbar" id="tourbar">
+    <span class="step" id="tourstep"></span>
+    <button class="btn" type="button" id="tourPrev">Back</button>
+    <button class="btn solid" type="button" id="tourNext">Next stop</button>
+    <button class="btn" type="button" id="tourEnd">End tour</button>
+  </div>
 </aside>
 
 <div class="loader" id="loader"><span>Building the village</span></div>
@@ -196,28 +259,32 @@ body.panel-open .sign{opacity:0}
    ========================================================= */
 const SCHOLAR = "https://scholar.google.com/citations?user=-VpF4mUAAAAJ&hl=en&oi=ao";
 
+// Real 3D Frog Baby: export a GLB from Meshy or Tripo and save it at this path.
+// height is in village units (a door is about 1.5). turn rotates the model if it faces the wrong way (Math.PI turns it around).
+const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
+
 const SITES = [
-  { name:"Wonder Pond", url:"https://wonderpond.github.io", color:"#7fb8a4",
+  { name:"Wonder Pond", tags:["Games", "Elementary"], img:"assets/sites/wonder-pond.jpg", url:"https://wonderpond.github.io", color:"#7fb8a4",
     blurb:"Learning games for US elementary students across subjects, guided by Edie and her frog friends Hop and Skip." },
-  { name:"Daltokki", url:"https://hyeonhoyu.github.io/daltokki/", color:"#e9c46a",
+  { name:"Daltokki", tags:["Language learning", "Korean"], img:"assets/sites/daltokki.jpg", url:"https://hyeonhoyu.github.io/daltokki/", color:"#e9c46a",
     blurb:"A Korean learning site for second-generation Korean Americans and anyone who wants to learn Korean." },
-  { name:"Literacy Quest", url:"https://literacyquest.github.io/", color:"#c45f4f",
+  { name:"Literacy Quest", tags:["Literacy", "Elementary"], img:"assets/sites/literacy-quest.jpg", url:"https://literacyquest.github.io/", color:"#c45f4f",
     blurb:"A quest-style site for building early literacy skills." },
-  { name:"Phonogram Studio", url:"https://hyeonhoyu.github.io/Phonogram-Studio/", color:"#7f92c8",
+  { name:"Phonogram Studio", tags:["Literacy", "AI voices"], img:"assets/sites/phonogram-studio.jpg", url:"https://hyeonhoyu.github.io/Phonogram-Studio/", color:"#7f92c8",
     blurb:"Hear and practice English phonogram sounds with clear AI voice recordings." },
-  { name:"Frog Baby", url:"https://hyeonhoyu.github.io/frogbaby/", color:"#8fb07a",
+  { name:"Frog Baby", tags:["Ball State", "History"], img:"assets/sites/frog-baby.jpg", url:"https://hyeonhoyu.github.io/frogbaby/", color:"#8fb07a",
     blurb:"The history of Frog Baby, the beloved statue on the Ball State campus." },
-  { name:"Whistle", url:"https://hyeonhoyu.github.io/whistle-sports-rulebook/", color:"#e9a64b",
+  { name:"Whistle", tags:["Physical education", "Sports"], img:"assets/sites/whistle.jpg", url:"https://hyeonhoyu.github.io/whistle-sports-rulebook/", color:"#e9a64b",
     blurb:"A friendly sports rulebook for teachers and young players." },
-  { name:"Buen Camino", url:"https://hyeonhoyu.github.io/Buen-Camino/", color:"#b98a5e",
+  { name:"Buen Camino", tags:["Language learning", "Spanish"], img:"assets/sites/buen-camino.jpg", url:"https://hyeonhoyu.github.io/Buen-Camino/", color:"#b98a5e",
     blurb:"A site for learning Spanish." },
-  { name:"PIPS AI Lab", url:"https://pips-ai-lab.github.io/", color:"#6fa3b8",
+  { name:"PIPS AI Lab", tags:["AI literacy", "Elementary"], img:"assets/sites/pips-ai-lab.jpg", url:"https://pips-ai-lab.github.io/", color:"#6fa3b8",
     blurb:"AI literacy lessons for US elementary students." },
-  { name:"Pai Thiao", url:"https://iohsk.github.io/Pai-Thiao/", color:"#d98a9c",
+  { name:"Pai Thiao", tags:["Language learning", "Thai"], img:"assets/sites/pai-thiao.jpg", url:"https://iohsk.github.io/Pai-Thiao/", color:"#d98a9c",
     blurb:"A site for learning Thai." },
-  { name:"ASL for Teachers", url:"https://hyeonhoyu.github.io/ASL-for-Teachers/", color:"#9a86c2",
+  { name:"ASL for Teachers", tags:["Accessibility", "Teachers"], img:"assets/sites/asl-for-teachers.jpg", url:"https://hyeonhoyu.github.io/ASL-for-Teachers/", color:"#9a86c2",
     blurb:"Everyday American Sign Language for classroom teachers." },
-  { name:"IOHSK AI Hub", url:"https://iohsk.github.io/AI-hub/", color:"#5f9e8f",
+  { name:"IOHSK AI Hub", tags:["AI literacy", "IOHSK"], img:"assets/sites/iohsk-ai-hub.jpg", url:"https://iohsk.github.io/AI-hub/", color:"#5f9e8f",
     blurb:"AI resources gathered for members of the International Organization for Health, Sports, and Kinesiology." },
 ];
 
@@ -273,9 +340,10 @@ const PLACES = {
     lede:"Frog Baby and two frog friends show visitors around Henryville.",
     html:()=>`
       <img src="assets/frogbaby.jpg" alt="Frog Baby, a smiling child in red overalls with a star on the hair bun, holding a green frog and a teal frog" style="width:100%;height:auto;border-radius:14px;display:block;margin:.4rem 0 1rem">
+      <button class="btn solid" type="button" onclick="startTour()">Take the tour with Frog Baby</button>
       <p>Tap any building and Frog Baby will walk over and meet you at the door. Close the panel and Frog Baby heads back to the pond by the Quad.</p>
       <p>The real Frog Baby statue is one of Ball State's best loved landmarks. Its story has its own stall in the Maker's Market.</p>
-      <a class="btn solid" href="https://hyeonhoyu.github.io/frogbaby/" target="_blank" rel="noopener">Read the Frog Baby story</a>`
+      <a class="btn" href="https://hyeonhoyu.github.io/frogbaby/" target="_blank" rel="noopener">Read the Frog Baby story</a>`
   },
   hall:{
     name:"Administration Building", title:"About Dr. Henry Yu", color:"#c9b48a",
@@ -466,20 +534,29 @@ const PLACES = {
   market:{
     name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
     lede:"Every stall in the market is a working site. Open one in a new tab, or tap a stall on the island.",
-    html:(focus)=>`
+    html:()=>{
+      const all=[...new Set(SITES.flatMap(x=>x.tags))].sort();
+      return `<div class="filters" role="group" aria-label="Filter websites by topic">
+        <button class="tag on" data-tag="" aria-pressed="true">All</button>${all.map(t=>`<button class="tag" data-tag="${t}" aria-pressed="false">${t}</button>`).join('')}
+      </div>
       <div class="stalls">${SITES.map((s,i)=>`
-        <div class="stall" id="stall-${i}" style="--sc:${s.color}">
-          <span class="sw" aria-hidden="true"></span>
+        <div class="stall" id="stall-${i}" style="--sc:${s.color}" data-tags="${s.tags.join('|')}">
+          <a class="thumb" href="${s.url}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+            <span>${s.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</span>
+            <img src="${s.img}" alt="" loading="lazy" onerror="this.remove()">
+          </a>
           <div>
             <strong>${s.name}</strong>
             <span class="url">${s.url.replace(/^https:\/\//,'').replace(/\/$/,'')}</span>
+            <span class="pills">${s.tags.map(t=>`<em>${t}</em>`).join('')}</span>
             <p>${s.blurb}</p>
             <a class="btn" href="${s.url}" target="_blank" rel="noopener">Visit ${s.name}</a>
           </div>
         </div>`).join('')}
       </div>
       <h3>Also built</h3>
-      <p>Children's AI Literacy Website, 2026.</p>`
+      <p>Children's AI Literacy Website, 2026.</p>`;
+    }
   }
 };
 const ORDER = ["frog","hall","library","school","talks","awards","grants","service","market"];
@@ -517,7 +594,18 @@ function renderPanel(k, siteIdx){
     const el=document.getElementById('stall-'+siteIdx);
     if(el){ requestAnimationFrame(()=>{ el.scrollIntoView({block:'center', behavior: REDUCE?'auto':'smooth'}); el.classList.add('flash'); }); }
   }
+  if(k==='market') setupMarket();
   document.getElementById('ptitle').focus({preventScroll:true});
+}
+let marketTag='';
+function setupMarket(){
+  const body=document.getElementById('pbody');
+  body.querySelectorAll('.tag').forEach(b=>b.addEventListener('click',()=>{
+    marketTag=b.dataset.tag;
+    body.querySelectorAll('.tag').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); });
+    body.querySelectorAll('.stall').forEach(st=>{ st.hidden = !!marketTag && !st.dataset.tags.split('|').includes(marketTag); });
+    Sound.pop();
+  }));
 }
 document.getElementById('pclose').addEventListener('click',()=>closePanel());
 addEventListener('keydown',e=>{ if(e.key==='Escape' && openKey) closePanel(); });
@@ -527,11 +615,81 @@ const forced = document.documentElement.getAttribute('data-theme');
 const DARK = forced ? forced==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
 
 let focusPlace = ()=>{}, goHome = ()=>{};
-function openPlace(k, siteIdx){ openKey=k; renderPanel(k, siteIdx); focusPlace(k, siteIdx); hideHint(); }
+function openPlace(k, siteIdx, fromTour){
+  if(!fromTour) endTour(true);
+  if(k!=='market') marketTag='';
+  openKey=k; renderPanel(k, siteIdx); focusPlace(k, siteIdx); hideHint();
+  if(k==='awards') Sound.bell(); else Sound.pop();
+}
 function closePanel(){
+  endTour(true); marketTag='';
   openKey=null; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
   document.body.classList.remove('panel-open'); goHome();
 }
+/* ---------- Sound (made in the browser, off until turned on) ---------- */
+const Sound={
+  on:false, ctx:null,
+  ensure(){ if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+    if(this.ctx.state==='suspended') this.ctx.resume(); return this.ctx; },
+  tone(f0,f1,dur,vol,type='sine',delay=0){
+    const c=this.ensure(); if(!c) return; const t=c.currentTime+delay;
+    const o=c.createOscillator(), g=c.createGain(); o.type=type;
+    o.frequency.setValueAtTime(f0,t); if(f1) o.frequency.exponentialRampToValueAtTime(f1,t+dur*.9);
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.012); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+.05);
+  },
+  chirp(){ if(!this.on) return; const n=2+Math.floor(Math.random()*3);
+    for(let i=0;i<n;i++) this.tone(4200,2100,.13,.035,'sine',i*.17); },
+  bell(){ if(!this.on) return; [[392,.09],[784,.05],[1083,.035],[1568,.02]].forEach(([f,v])=>this.tone(f,0,2.6,v,'sine')); },
+  pop(){ if(!this.on) return; this.tone(620,900,.09,.05,'triangle'); },
+  walk(){ if(!this.on) return; [0,.22,.44].forEach(d=>this.tone(1400,0,.07,.02,'square',d)); },
+  ribbit(){ if(!this.on) return; this.tone(180,140,.12,.06,'sawtooth'); this.tone(200,150,.12,.05,'sawtooth',.16); }
+};
+const btnSound=document.getElementById('btnSound');
+function setSound(on){ Sound.on=on; btnSound.textContent=on?'Sound on':'Sound off'; btnSound.setAttribute('aria-pressed',on);
+  try{ localStorage.setItem('henryville-sound',on?'1':'0'); }catch(e){} }
+btnSound.addEventListener('click',()=>{ setSound(!Sound.on); if(Sound.on){ Sound.ensure(); Sound.chirp(); } });
+try{ if(localStorage.getItem('henryville-sound')==='1'){ Sound.on=true; setSound(true); } }catch(e){}
+
+/* ---------- Day and night ---------- */
+let NIGHT=DARK;
+try{ const v=localStorage.getItem('henryville-night'); if(v!==null) NIGHT=v==='1'; }catch(e){}
+const btnNight=document.getElementById('btnNight');
+function applyNightUI(){ document.documentElement.setAttribute('data-theme',NIGHT?'dark':'light');
+  btnNight.textContent=NIGHT?'Day':'Night'; btnNight.setAttribute('aria-label',NIGHT?'Switch to day':'Switch to night'); }
+applyNightUI();
+btnNight.addEventListener('click',()=>{ NIGHT=!NIGHT; applyNightUI(); try{ localStorage.setItem('henryville-night',NIGHT?'1':'0'); }catch(e){} Sound.pop(); });
+
+/* ---------- Frog Baby tour ---------- */
+const TOUR=[
+  {k:'hall',    say:"Hi, I'm Frog Baby! Come meet Dr. Henry Yu."},
+  {k:'library', say:"Every paper Henry has published lives in this library."},
+  {k:'school',  say:"Up in Teachers College, Henry teaches future teachers."},
+  {k:'talks',   say:"Talks and workshops for colleagues happen here."},
+  {k:'awards',  say:"Hear the bell? The tower keeps Henry's awards."},
+  {k:'grants',  say:"Grants keep this little workshop's gear turning."},
+  {k:'service', say:"Committees and community work meet in this hall."},
+  {k:'market',  say:"Last stop! Every stall is a website Henry built."}
+];
+let tourIdx=-1, bubbleText='';
+const tourbar=document.getElementById('tourbar'), bubble=document.getElementById('bubble');
+function goTour(){
+  const st=TOUR[tourIdx];
+  openPlace(st.k, null, true);
+  bubbleText=st.say; bubble.textContent=st.say;
+  tourbar.classList.add('on');
+  document.getElementById('tourstep').textContent=`Stop ${tourIdx+1} of ${TOUR.length}`;
+  document.getElementById('tourPrev').disabled=tourIdx===0;
+  document.getElementById('tourNext').textContent= tourIdx===TOUR.length-1 ? 'Finish' : 'Next stop';
+  Sound.ribbit();
+}
+function startTour(){ tourIdx=0; goTour(); }
+function endTour(silent){ if(tourIdx<0) return; tourIdx=-1; bubbleText=''; bubble.classList.remove('show'); tourbar.classList.remove('on'); }
+document.getElementById('btnTour').addEventListener('click',startTour);
+document.getElementById('tourNext').addEventListener('click',()=>{ if(tourIdx>=TOUR.length-1){ closePanel(); } else { tourIdx++; goTour(); } });
+document.getElementById('tourPrev').addEventListener('click',()=>{ if(tourIdx>0){ tourIdx--; goTour(); } });
+document.getElementById('tourEnd').addEventListener('click',()=>closePanel());
+
 const hint=document.getElementById('hint');
 let hintHidden=false;
 function hideHint(){ if(!hintHidden){ hintHidden=true; hint.style.opacity='0'; setTimeout(()=>hint.remove(),500);} }
@@ -541,13 +699,7 @@ function hideHint(){ if(!hintHidden){ hintHidden=true; hint.style.opacity='0'; s
    ========================================================= */
 function start(){
   if(!window.THREE || !THREE.OrbitControls){ throw new Error('three missing'); }
-  const C = DARK ? {
-    skyTop:'#132229', skyBot:'#1d3a43', sea:'#1d3a43', shallow:'#2a4d55', rim:'#5d6b62',
-    grass:'#58704b', grass2:'#647f55', quad:'#4f6c43', path:'#9c9070', pathEdge:'#80765a',
-    asphalt:'#3b3f44', stripe:'#b9b6ad', earth:'#5a4b3a', brick:'#7a3a32', mortar:'#7f7466',
-    lime:'#b6ab95', concrete:'#9e998d', win:'#ffd27f', glass:'#ffcf7a', door:'#4e3826', trunk:'#5e4a35', water:'#2b5566',
-    trees:['#4f6e45','#5b7c4e','#46653f','#9a3b24','#a8612a','#b08a35','#7f2e22'], hemi:0.35, sun:0.45, sunColor:'#b9cbe6', skin:'#d9b393'
-  } : {
+  const C = {
     skyTop:'#d9eee9', skyBot:'#9fcdc8', sea:'#94c6c1', shallow:'#bfe0da', rim:'#e4ead8',
     grass:'#cfdd96', grass2:'#dde7a8', quad:'#b4cf7e', path:'#f1e6c6', pathEdge:'#e0d0a2',
     asphalt:'#7a7f85', stripe:'#f7f5ee', earth:'#c7a779', brick:'#a9483c', mortar:'#dccab4',
@@ -565,9 +717,10 @@ function start(){
 
   const scene=new THREE.Scene();
   const labelScene=new THREE.Scene();
-  { const c=document.createElement('canvas'); c.width=4; c.height=256; const x=c.getContext('2d');
-    const gr=x.createLinearGradient(0,0,0,256); gr.addColorStop(0,C.skyTop); gr.addColorStop(1,C.skyBot);
-    x.fillStyle=gr; x.fillRect(0,0,4,256); scene.background=new THREE.CanvasTexture(c); }
+  const skyTex=(t,b)=>{ const c=document.createElement('canvas'); c.width=4; c.height=256; const x=c.getContext('2d');
+    const gr=x.createLinearGradient(0,0,0,256); gr.addColorStop(0,t); gr.addColorStop(1,b); x.fillStyle=gr; x.fillRect(0,0,4,256); return new THREE.CanvasTexture(c); };
+  const SKY_DAY=skyTex(C.skyTop,C.skyBot), SKY_NIGHT=skyTex('#0b1622','#1c3640');
+  scene.background=SKY_DAY;
   scene.fog=new THREE.Fog(C.skyBot, 95, 200);
 
   const camera=new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.5, 400);
@@ -577,14 +730,15 @@ function start(){
   controls.maxPolarAngle=1.22; controls.minPolarAngle=0.35;
   controls.enablePan=false; controls.rotateSpeed=0.6;
 
-  scene.add(new THREE.HemisphereLight('#ffffff', C.earth, C.hemi));
+  const hemi=new THREE.HemisphereLight('#ffffff', C.earth, C.hemi); scene.add(hemi);
   const sun=new THREE.DirectionalLight(C.sunColor, C.sun);
   sun.position.set(-30,52,25); sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048);
   Object.assign(sun.shadow.camera,{left:-42,right:42,top:34,bottom:-34,near:1,far:150});
   sun.shadow.bias=-0.0005; sun.shadow.normalBias=0.03;
   scene.add(sun);
-  scene.add(new THREE.AmbientLight('#ffffff', DARK?0.10:0.08));
+  const amb=new THREE.AmbientLight('#ffffff', 0.08); scene.add(amb);
+  const nightLights=[];
 
   let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; };
 
@@ -597,8 +751,9 @@ function start(){
   };
   const flat=c=>mat(c,{flatShading:true});
   const glow=(c,i)=>new THREE.MeshStandardMaterial({color:c, emissive:new THREE.Color(c), emissiveIntensity:i, roughness:.6});
-  const winMat = DARK ? glow(C.win,.9) : mat(C.win,{roughness:.35});
-  const glassMat = DARK ? glow(C.glass,.6) : mat(C.glass,{roughness:.25});
+  const winMat = new THREE.MeshStandardMaterial({color:C.win, roughness:.35, emissive:new THREE.Color('#ffc46b'), emissiveIntensity:0});
+  const glassMat = new THREE.MeshStandardMaterial({color:C.glass, roughness:.25, emissive:new THREE.Color('#ffcf7a'), emissiveIntensity:0});
+  const lampMat = new THREE.MeshStandardMaterial({color:'#fff6dc', roughness:.4, emissive:new THREE.Color('#ffd98a'), emissiveIntensity:0});
   const brickBase=(()=>{
     const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
     x.fillStyle=C.mortar; x.fillRect(0,0,256,256);
@@ -654,6 +809,15 @@ function start(){
   const rim=new THREE.Mesh(new THREE.CylinderGeometry(1.045,1.06,1,72), mat(C.rim));
   rim.scale.set(RX,.5,RZ); rim.position.y=-1.55; scene.add(rim);
   const shallow=new THREE.Mesh(new THREE.CircleGeometry(1,72), new THREE.MeshLambertMaterial({color:C.shallow}));
+  // a few warm point lights along the main street for night
+  [[-7,0],[3.5,0],[13,0],[4,12]].forEach(([x,z])=>{ const pl=new THREE.PointLight('#ffcf8a',0,14,2); pl.position.set(x,3,z); scene.add(pl); nightLights.push(pl); });
+  // stars
+  const stars=(()=>{ const n=500, pos=new Float32Array(n*3);
+    for(let i=0;i<n;i++){ const th=Math.random()*Math.PI*2, ph=Math.random()*Math.PI*.42; const r=170;
+      pos[i*3]=Math.cos(th)*Math.sin(ph)*r; pos[i*3+1]=Math.cos(ph)*r*.8+10; pos[i*3+2]=Math.sin(th)*Math.sin(ph)*r; }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const m=new THREE.PointsMaterial({color:'#ffffff', size:2, sizeAttenuation:false, transparent:true, opacity:0, fog:false, depthWrite:false});
+    const pts=new THREE.Points(g,m); scene.add(pts); return pts; })();
   shallow.rotation.x=-Math.PI/2; shallow.scale.set(RX*1.16,RZ*1.2,1); shallow.position.y=-1.62; scene.add(shallow);
   const sea=new THREE.Mesh(new THREE.CircleGeometry(260,48), new THREE.MeshLambertMaterial({color:C.sea}));
   sea.rotation.x=-Math.PI/2; sea.position.y=-1.66; scene.add(sea);
@@ -811,7 +975,7 @@ function start(){
       rbox(2.7,.32,2.7,C.lime,0,10,0,gp,.05);
       const cap=new THREE.Mesh(new THREE.ConeGeometry(1.75,1.9,4), flat('#8f3a30')); cap.rotation.y=Math.PI/4; cap.position.y=11.27; gp.add(cap);
       cyl(.04,.04,.9,6,'#3a3f44',0,12.2,0,gp);
-      if(DARK){ const pl=new THREE.PointLight('#ffd27f',1,22); pl.position.y=9; gp.add(pl); }
+      { const pl=new THREE.PointLight('#ffd27f',0,22); pl.position.y=9; gp.add(pl); nightLights.push(pl); }
       return {h:13.2, perches:[[1.15,10.33,1.15],[-1.15,10.33,-1.15],[1.15,10.33,-1.15]]};
     },
     grants(gp){ // workshop
@@ -899,7 +1063,7 @@ function start(){
   const lamp=(x,z,ry=0)=>{
     const lg=new THREE.Group(); lg.position.set(x,0,z); lg.rotation.y=ry; scene.add(lg);
     cyl(.06,.08,2.6,8,'#3a3f44',0,0,0,lg);
-    const head=sph(.17,DARK?glow('#ffe2a0',1.2):mat('#fff6dc',{roughness:.4}),0,2.72,0,lg); lampHeads.push(head);
+    const head=sph(.17,lampMat,0,2.72,0,lg); lampHeads.push(head);
     box(.03,.75,.42,RED,0,1.55,.24,lg); box(.035,.12,.42,'#ffffff',0,1.95,.24,lg);
     shade(lg);
   };
@@ -985,7 +1149,7 @@ function start(){
   const coats=[RED,'#ffffff','#7f92c8','#e9a64b','#5f9e8f','#9a86c2',RED,'#3f4a6b'];
   const pants=['#3f4a6b','#2e3a35','#6b5a48','#5b6f86','#3a3f44'];
   const hairs=['#2b211c','#4a3326','#7a5532','#c9a46a','#1c1c1c'];
-  const skins=DARK?['#c9a98a','#a8805f','#d9b99a','#7f5b40']:['#f3cfae','#d9a77f','#f6dcc3','#a8754f'];
+  const skins=['#f3cfae','#d9a77f','#f6dcc3','#a8754f'];
   const legGeo=new THREE.CylinderGeometry(.065,.06,.42,8), armGeo=new THREE.CylinderGeometry(.048,.042,.36,8),
         torsoGeo=new THREE.CylinderGeometry(.14,.16,.44,10), headGeo=new THREE.SphereGeometry(.13,14,10),
         hairGeo=new THREE.SphereGeometry(.138,14,8,0,Math.PI*2,0,1.55), handGeo=new THREE.SphereGeometry(.045,8,6),
@@ -1093,16 +1257,24 @@ function start(){
   const frogLabel=label('Frog Baby','#5fae5a',.8); frogLabel.userData.place='frog'; pickables.push(frogLabel);
   const fb={target:null, face:0, walking:false};
   frog.rotation.y=0;
-  // optional real model: drop assets/frogbaby.glb next to index.html
-  if(THREE.GLTFLoader){
-    new THREE.GLTFLoader().load('assets/frogbaby.glb', gl=>{
-      const m=gl.scene; const bb=new THREE.Box3().setFromObject(m); const hgt=bb.max.y-bb.min.y||1;
-      m.scale.setScalar(2.1/hgt); bb.setFromObject(m);
+  // optional real model: put a GLB at FROG_MODEL.url (see README)
+  let fbMixer=null, fbWalk=null, fbIdle=null;
+  if(THREE.GLTFLoader && FROG_MODEL.url){
+    new THREE.GLTFLoader().load(FROG_MODEL.url, gl=>{
+      const m=gl.scene; m.rotation.y=FROG_MODEL.turn||0;
+      const bb=new THREE.Box3().setFromObject(m); const hgt=bb.max.y-bb.min.y||1;
+      m.scale.setScalar((FROG_MODEL.height||2.1)/hgt); bb.setFromObject(m);
       m.position.set(-(bb.min.x+bb.max.x)/2, -bb.min.y, -(bb.min.z+bb.max.z)/2);
       shade(m); fbModel.visible=false; frog.add(m);
+      if(gl.animations && gl.animations.length){
+        fbMixer=new THREE.AnimationMixer(m);
+        const find=re=>gl.animations.find(a=>re.test(a.name));
+        const w=find(/walk|run/i), i=find(/idle|stand|breath/i) || (w?null:gl.animations[0]);
+        if(w) fbWalk=fbMixer.clipAction(w); if(i){ fbIdle=fbMixer.clipAction(i); fbIdle.play(); }
+      }
     }, undefined, ()=>{});
   }
-  function walkTo(x,z,face){ fb.target=new THREE.Vector3(x,0,z); fb.face=face; if(REDUCE){ frog.position.copy(fb.target); frog.rotation.y=face; fb.target=null; } }
+  function walkTo(x,z,face){ fb.speed=null; fb.target=new THREE.Vector3(x,0,z); fb.face=face; if(REDUCE){ frog.position.copy(fb.target); frog.rotation.y=face; fb.target=null; } }
 
   /* ---------- Camera moves ---------- */
   const narrow=()=>innerWidth<=720;
@@ -1125,7 +1297,7 @@ function start(){
       const st = siteIdx!=null ? stalls[siteIdx] : null;
       center=new THREE.Vector3(st?st.x:3.5,1,st?st.z:0);
       dist= st?18:30; dir=new THREE.Vector3(0,.75,1).normalize();
-      if(st) walkTo(st.x, st.z>0?1.2:-1.2, st.z>0?0:Math.PI); else walkTo(-3.4,0,Math.PI/2);
+      if(st) walkTo(st.x, st.z>0?1.2:-1.2, st.z>0?0:Math.PI); else walkTo(2.2,.4,0);
     } else {
       const g=groups[k], b=BUILD.find(x=>x.key===k);
       center=new THREE.Vector3(g.position.x,(g.userData.h||4)*.42,g.position.z); dist=k==='school'||k==='awards'?34:28;
@@ -1187,7 +1359,12 @@ function start(){
 
   /* ---------- Loop ---------- */
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  const MARKET=new THREE.Vector3(3.5,0,0), tmp=new THREE.Vector3();
+  let nightT=NIGHT?1:0, lastNight=-1;
+  const FOG_DAY=new THREE.Color(C.skyBot), FOG_NIGHT=new THREE.Color('#1c3640'), SUN_DAY=new THREE.Color(C.sunColor), SUN_NIGHT=new THREE.Color('#9fb6dd'),
+        SEA_DAY=new THREE.Color(C.sea), SEA_NIGHT=new THREE.Color('#1d3a43'), SH_DAY=new THREE.Color(C.shallow), SH_NIGHT=new THREE.Color('#2a4d55'),
+        WIN_DAY=new THREE.Color(C.win), WIN_NIGHT=new THREE.Color('#ffd27f');
+  let wasWalk=false;
+  const MARKET=new THREE.Vector3(3.5,0,0), PLAZA=new THREE.Vector3(WEST[0],0,0), tmp=new THREE.Vector3(), proj=new THREE.Vector3();
   let last=performance.now();
   function frame(now){
     const dt=Math.min(.05,(now-last)/1000); last=now; const T=now/1000;
@@ -1198,17 +1375,34 @@ function start(){
       if(t>=1){ tween=null; controls.enabled=true; }
     }
     controls.update();
+    // day and night blend
+    const nGoal=NIGHT?1:0; nightT = REDUCE ? nGoal : nightT+(nGoal-nightT)*Math.min(1,dt*2.2);
+    if(Math.abs(nightT-lastNight)>.002 || lastNight<0){ lastNight=nightT; const n=nightT;
+      scene.background = n>.5 ? SKY_NIGHT : SKY_DAY;
+      scene.fog.color.copy(FOG_DAY).lerp(FOG_NIGHT,n);
+      sun.intensity=.8+(.22-.8)*n; sun.color.copy(SUN_DAY).lerp(SUN_NIGHT,n);
+      hemi.intensity=.42+(.22-.42)*n; amb.intensity=.08+(.05-.08)*n;
+      sea.material.color.copy(SEA_DAY).lerp(SEA_NIGHT,n); shallow.material.color.copy(SH_DAY).lerp(SH_NIGHT,n);
+      winMat.emissiveIntensity=.95*n; winMat.color.copy(WIN_DAY).lerp(WIN_NIGHT,n);
+      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n;
+      nightLights.forEach(l=>l.intensity=1.1*n); stars.material.opacity=n;
+    }
     for(const k in groups){ const g=groups[k]; const goal=(hovered===k||openKey===k)?.3:0; g.position.y+=(goal-g.position.y)*Math.min(1,dt*10); }
-    stalls.forEach((st,i)=>{ const goal=(hovered==='site'+i)?.3:0; st.g.position.y+=(goal-st.g.position.y)*Math.min(1,dt*10); });
+    stalls.forEach((st,i)=>{ const goal=(hovered==='site'+i || (marketTag && SITES[i].tags.includes(marketTag)))?.45:0; st.g.position.y+=(goal-st.g.position.y)*Math.min(1,dt*10); });
     const showStalls = camera.position.distanceTo(MARKET)<40 || openKey==='market';
-    stalls.forEach((st,i)=>{ st.s.visible = showStalls || hovered==='site'+i; });
+    stalls.forEach((st,i)=>{ st.s.visible = showStalls || hovered==='site'+i || (marketTag && SITES[i].tags.includes(marketTag)); });
     LABELS.forEach(l=>{ const f=Math.min(1.15,Math.max(.32,camera.position.distanceTo(l.position)/60)); l.scale.set(l.userData.bs.x*f,l.userData.bs.y*f,1); });
 
     // Frog Baby
+    if(fbMixer){ fbMixer.update(dt);
+      const walking=!!fb.target;
+      if(walking!==fb.wasWalking){ fb.wasWalking=walking;
+        if(walking && fbWalk){ fbWalk.reset().fadeIn(.25).play(); if(fbIdle) fbIdle.fadeOut(.25); }
+        else if(!walking && fbIdle){ fbIdle.reset().fadeIn(.25).play(); if(fbWalk) fbWalk.fadeOut(.25); } } }
     if(fb.target){
       tmp.copy(fb.target).sub(frog.position); tmp.y=0; const d=tmp.length();
-      if(d<.06){ frog.position.x=fb.target.x; frog.position.z=fb.target.z; fb.target=null; }
-      else { const step=Math.min(d, dt*5.2); tmp.normalize(); frog.position.addScaledVector(tmp,step);
+      if(d<.06){ frog.position.x=fb.target.x; frog.position.z=fb.target.z; fb.target=null; fb.speed=null; }
+      else { if(fb.speed==null) fb.speed=Math.max(5.2,d/1.3); const step=Math.min(d, dt*fb.speed); tmp.normalize(); frog.position.addScaledVector(tmp,step);
         const want=Math.atan2(tmp.x,tmp.z); let dr=want-frog.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); frog.rotation.y+=dr*Math.min(1,dt*10);
         fbModel.position.y=Math.abs(Math.sin(T*11))*.16; }
     } else {
@@ -1218,9 +1412,20 @@ function start(){
     const fr=fbModel.userData.frogs;
     if(fr && !REDUCE){ fr[0].position.y=1.33+Math.max(0,Math.sin(T*3.1))*.12; fr[1].position.y=1.33+Math.max(0,Math.sin(T*3.1+1.6))*.12; }
     frogLabel.position.set(frog.position.x, 3.2, frog.position.z);
+    frogLabel.visible = !bubbleText;
+    if(bubbleText){
+      proj.set(frog.position.x, 3.0, frog.position.z).project(camera);
+      const vis = proj.z<1 && Math.abs(proj.x)<1.05 && Math.abs(proj.y)<1.05;
+      bubble.classList.toggle('show', vis);
+      if(vis){ const bw=bubble.offsetWidth, bh=bubble.offsetHeight, maxX=innerWidth-(openKey&&!narrow()?470:0);
+        const bx=Math.min(Math.max((proj.x+1)/2*innerWidth, bw/2+12), maxX-bw/2-12);
+        const by=Math.max((1-proj.y)/2*innerHeight, bh+16);
+        bubble.style.left=bx+'px'; bubble.style.top=by+'px'; }
+    }
 
     // scramble light cycle: 9s cars, 5s everyone walks
     const cyc=(T%14), walkPhase=cyc>9;
+    if(walkPhase && !wasWalk && camera.position.distanceTo(PLAZA)<40) Sound.walk(); wasWalk=walkPhase;
     signals.forEach(s=>{ s.red.emissiveIntensity=walkPhase?.05:.9; s.walk.emissiveIntensity=walkPhase?1.2:.05; });
     crossers.forEach((c,i)=>{
       const u = walkPhase ? Math.min(1,(cyc-9)/4.2) : 0;
@@ -1256,7 +1461,8 @@ function start(){
           if(b.next<0){ let k; let n=0; do{ k=Math.floor(Math.random()*perches.length); n++; }while((used.has(k))&&n<20);
             used.delete(b.perch); used.add(k);
             b.from=b.g.position.clone(); b.to=perches[k].clone(); b.perch=k; b.t=0;
-            b.dur=Math.max(1.6,b.from.distanceTo(b.to)/7); b.state='fly'; }
+            b.dur=Math.max(1.6,b.from.distanceTo(b.to)/7); b.state='fly';
+            if(camera.position.distanceTo(b.from)<45) Sound.chirp(); }
         } else {
           b.t+=dt/b.dur; const t=Math.min(1,b.t), e=ease(t);
           const p=b.from.clone().lerp(b.to,e); p.y+=Math.sin(Math.PI*t)*(3+b.from.distanceTo(b.to)*.15);
