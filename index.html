@@ -100,6 +100,8 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .body h3{font-family:var(--display); font-size:1.05rem; font-weight:800; margin:1.5rem 0 .5rem; letter-spacing:-.005em}
 .body h3:first-child{margin-top:.6rem}
 .body p{margin:.4rem 0 .8rem; max-width:62ch}
+.body .portrait{float:left; width:132px; height:auto; aspect-ratio:480/597; object-fit:cover; border-radius:14px; margin:.55rem 16px 8px 0; box-shadow:0 0 0 1.5px var(--ink)}
+@media (max-width:720px){.body .portrait{width:112px}}
 .body ul{list-style:none; padding:0; margin:0}
 .body li{padding:.55rem 0; border-bottom:1px solid var(--line)}
 .body li:last-child{border-bottom:0}
@@ -277,9 +279,13 @@ const PLACES = {
   },
   hall:{
     name:"Administration Building", title:"About Dr. Henry Yu", color:"#c9b48a",
-    lede:"A former elementary teacher who now prepares future teachers to teach well with AI and emerging technology.",
+    lede:"",
     html:()=>`
-      <p>Henry Yu taught elementary school in Gwangju, South Korea for ten years before earning his Ph.D. in Curriculum and Instruction at Arizona State University. At Ball State University's Teachers College he teaches educational technology, studies how preservice teachers learn with generative AI, and builds the web tools you can find in the Maker's Market down the road.</p>
+      <img class="portrait" src="assets/henry.jpg" alt="Portrait of Dr. Henry Yu" width="480" height="597">
+      <p>Dr. Henry Yu is an Assistant Professor of Educational Technology at Ball State University, specializing in innovative teaching methods through the integration of digital tools. His work emphasizes transdisciplinary approaches, encouraging educators to blend knowledge across subjects to create richer, more interconnected learning experiences. His research and teaching are rooted in the belief that technology, when used effectively, can transform education by enhancing creativity, critical thinking, and personalized learning.</p>
+      <p>In his courses, Dr. Yu prepares future teachers to thoughtfully incorporate technology into their classrooms, focusing on both the tools and the pedagogical strategies that make them effective. He advocates for intentional use of technology, ensuring it complements the human elements of teaching like creativity and empathy. His students engage in hands-on projects that explore digital tools, such as interactive apps and virtual reality, for use in elementary education.</p>
+      <p>Beyond the classroom, Dr. Yu collaborates with schools to implement technology-driven teaching methods and contributes to the broader educational technology community through research and conference presentations. His work is aimed at making education more equitable and accessible by promoting thoughtful integration of digital tools in both teaching and teacher preparation programs.</p>
+      <div style="clear:both"></div>
       <a class="btn solid" href="${SCHOLAR}" target="_blank" rel="noopener">Google Scholar profile</a>
       <h3>Work history</h3>
       ${li([
@@ -503,7 +509,7 @@ function renderPanel(k, siteIdx){
   document.getElementById('phead').style.setProperty('--c',p.color);
   document.getElementById('pplace').textContent=p.name;
   document.getElementById('ptitle').textContent=p.title;
-  document.getElementById('plede').textContent=p.lede;
+  const pl=document.getElementById('plede'); pl.textContent=p.lede; pl.style.display=p.lede?'':'none';
   const body=document.getElementById('pbody');
   body.innerHTML=p.html(); body.scrollTop=0;
   panel.classList.add('open'); panel.setAttribute('aria-hidden','false');
