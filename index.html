@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Henryville | Hyeonho (Henry) Yu, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sea:#a9d3cf; --ink:#26302c; --muted:#5b6862; --paper:#fdfefb; --line:#d9e2da;
+  --chip:#ffffffd9; --shadow:0 10px 30px rgba(38,48,44,.18);
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --sea:#1b2f38; --ink:#e7eee8; --muted:#a9b7af; --paper:#1f2c30; --line:#34464a;
+    --chip:#1f2c30e6; --shadow:0 10px 30px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --sea:#1b2f38; --ink:#e7eee8; --muted:#a9b7af; --paper:#1f2c30; --line:#34464a;
+  --chip:#1f2c30e6; --shadow:0 10px 30px rgba(0,0,0,.45);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%; scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--ink); font-family:var(--display);}
+#scene{position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; outline:none}
+#scene.hovering{cursor:pointer}
+
+/* Title sign */
+.sign{
+  transition:opacity .35s;
+  position:fixed; left:20px; top:calc(18px + env(safe-area-inset-top,0px)); z-index:5;
+  max-width:min(420px, calc(100% - 40px));
+  pointer-events:none;
+}
+.sign h1{
+  margin:0; font-weight:800; font-size:clamp(2.6rem, 6vw, 4.4rem); line-height:.92;
+  letter-spacing:-.035em; color:var(--ink);
+  font-variation-settings:"opsz" 96;
+}
+.sign p{margin:.55rem 0 0; font-size:.98rem; line-height:1.35; color:var(--ink); font-weight:600}
+.sign .role{font-weight:400; color:var(--muted); font-size:.9rem; margin-top:.2rem}
+.hint{
+  position:fixed; right:20px; top:calc(22px + env(safe-area-inset-top,0px)); z-index:5;
+  font-size:.85rem; color:var(--muted); background:var(--chip); padding:.5rem .8rem; border-radius:999px;
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); transition:opacity .4s;
+}
+
+/* Directory */
+.directory{
+  position:fixed; left:0; right:0; bottom:0; z-index:6;
+  padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+  transition:transform .35s ease, opacity .35s;
+}
+.directory::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto; display:inline-flex; align-items:center; gap:.5rem;
+  font:600 .9rem/1 var(--display); color:var(--ink);
+  background:var(--chip); border:1px solid var(--line); border-radius:999px; padding:.62rem .9rem;
+  cursor:pointer; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+.chip:hover{border-color:var(--ink)}
+.chip .dot{width:.7rem; height:.7rem; border-radius:3px; background:var(--c); box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.chip small{font-weight:400; color:var(--muted); font-size:.82rem}
+:focus-visible{outline:3px solid #f2b84b; outline-offset:2px}
+.panel h2:focus{outline:none}
+
+/* Panel */
+.panel{
+  position:fixed; z-index:8; background:var(--paper); color:var(--ink);
+  box-shadow:var(--shadow); display:flex; flex-direction:column;
+  top:calc(16px + env(safe-area-inset-top,0px)); right:16px; bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:min(440px, calc(100% - 32px)); border-radius:18px; overflow:hidden;
+  transform:translateX(calc(100% + 24px)); transition:transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.panel.open{transform:none}
+.panel header{position:relative; padding:20px 22px 16px; border-top:10px solid var(--c, #8fae8a)}
+.panel .place{font-size:.85rem; font-weight:600; color:var(--muted); margin:0}
+.panel h2{margin:.15rem 0 0; font-size:1.9rem; line-height:1.05; letter-spacing:-.02em; font-weight:800}
+.panel .lede{margin:.6rem 0 0; font-family:var(--serif); font-size:1rem; line-height:1.5; color:var(--muted)}
+.close{
+  position:absolute; right:14px; top:14px; width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--line); background:transparent; color:var(--ink); cursor:pointer;
+  font:600 1.3rem/1 var(--display);
+}
+.close:hover{border-color:var(--ink)}
+.body{overflow-y:auto; padding:4px 22px 28px; font-family:var(--serif); font-size:.98rem; line-height:1.6; -webkit-overflow-scrolling:touch}
+.body h3{font-family:var(--display); font-size:1.05rem; font-weight:800; margin:1.5rem 0 .5rem; letter-spacing:-.005em}
+.body h3:first-child{margin-top:.6rem}
+.body p{margin:.4rem 0 .8rem; max-width:62ch}
+.body ul{list-style:none; padding:0; margin:0}
+.body li{padding:.55rem 0; border-bottom:1px solid var(--line)}
+.body li:last-child{border-bottom:0}
+.body .when{font-family:var(--display); font-size:.82rem; color:var(--muted); font-weight:600; display:block}
+.body .where{color:var(--muted); font-style:italic}
+.body b.me{font-weight:600; color:var(--ink); background:linear-gradient(transparent 60%, color-mix(in srgb, var(--c, #8fae8a) 40%, transparent) 60%)}
+.body a{color:inherit; text-decoration-thickness:1px; text-underline-offset:3px}
+.btn{
+  display:inline-flex; align-items:center; gap:.4rem; margin:.4rem .4rem .4rem 0;
+  font:600 .92rem/1 var(--display); color:var(--ink); text-decoration:none;
+  border:1.5px solid var(--ink); border-radius:999px; padding:.65rem 1rem; background:transparent; cursor:pointer;
+}
+.btn.solid{background:var(--ink); color:var(--paper)}
+.year{font-family:var(--display); font-weight:800; font-size:.95rem; margin:1.2rem 0 .1rem; color:var(--muted)}
+.feature{
+  border:1.5px solid var(--ink); border-radius:14px; padding:14px 16px; margin:.8rem 0 1rem;
+}
+.feature strong{font-family:var(--display); display:block; font-size:1.05rem; line-height:1.25; margin-bottom:.25rem}
+.stalls{display:grid; gap:10px; margin-top:.6rem}
+.stall{
+  display:grid; grid-template-columns:14px 1fr; gap:12px; align-items:start;
+  padding:12px 12px 12px 0; border-bottom:1px solid var(--line);
+}
+.stall .sw{width:14px; height:100%; min-height:44px; border-radius:4px; background:var(--sc)}
+.stall strong{font-family:var(--display); font-size:1.02rem; display:block}
+.stall .url{font-family:var(--display); font-size:.8rem; color:var(--muted); word-break:break-all}
+.stall p{margin:.25rem 0 .35rem}
+.stall.flash{animation:flash 1.4s ease}
+@keyframes flash{0%,40%{background:color-mix(in srgb, var(--sc) 25%, transparent)}100%{background:transparent}}
+.stats{display:flex; gap:22px; flex-wrap:wrap; margin:.6rem 0 .4rem; font-family:var(--display)}
+.stats div{font-size:.85rem; color:var(--muted)}
+.stats b{display:block; font-size:1.6rem; color:var(--ink); line-height:1}
+
+.loader{position:fixed; inset:0; display:grid; place-items:center; z-index:20; background:var(--sea); transition:opacity .6s}
+.loader span{font:600 1rem var(--display); color:var(--muted)}
+.loader.done{opacity:0; pointer-events:none}
+.err{position:fixed; inset:auto 16px 90px 16px; z-index:30; background:var(--paper); padding:14px 16px; border-radius:12px; box-shadow:var(--shadow); display:none; font-size:.95rem}
+
+body.panel-open .sign{opacity:0}
+@media (max-width: 720px){
+  .sign h1{font-size:2.5rem}
+  .sign p{font-size:.88rem}
+  .sign .role{font-size:.8rem}
+  .hint{top:auto; right:16px; bottom:calc(70px + env(safe-area-inset-bottom,0px)); font-size:.78rem}
+  .panel{
+    left:0; right:0; width:100%; top:auto; bottom:0; height:64%;
+    border-radius:20px 20px 0 0; transform:translateY(105%);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .panel h2{font-size:1.55rem}
+
+  body.panel-open .directory{transform:translateY(110%); opacity:0}
+}
+@media (prefers-reduced-motion: reduce){
+  .panel, .directory, .loader, .hint{transition:none}
+  .stall.flash{animation:none}
+}
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="A 3D island village. Each building opens a section of Henry Yu's CV. Use the place buttons at the bottom of the screen for keyboard access." tabindex="-1"></canvas>
+
+<div class="sign">
+  <h1>Henryville</h1>
+  <p>The working village of Hyeonho (Henry) Yu, Ph.D.</p>
+  <p class="role">Assistant Professor of Educational Technology, Teachers College, Ball State University</p>
+</div>
+<div class="hint" id="hint">Drag to look around. Tap a building and Frog Baby will walk you there.</div>
+
+<nav class="directory" id="directory" aria-label="Places in Henryville"></nav>
+
+<aside class="panel" id="panel" aria-labelledby="ptitle" aria-hidden="true">
+  <header id="phead">
+    <p class="place" id="pplace"></p>
+    <h2 id="ptitle" tabindex="-1"></h2>
+    <p class="lede" id="plede"></p>
+    <button class="close" id="pclose" aria-label="Close and return to the island">&times;</button>
+  </header>
+  <div class="body" id="pbody"></div>
+</aside>
+
+<div class="loader" id="loader"><span>Building the village</span></div>
+<div class="err" id="err">The 3D village could not start in this browser. Use the place buttons below to read each section.</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/geometries/RoundedBoxGeometry.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/HorizontalTiltShiftShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/VerticalTiltShiftShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script>
+/* =========================================================
+   CONTENT: edit sites and CV sections here
+   ========================================================= */
+const SCHOLAR = "https://scholar.google.com/citations?user=-VpF4mUAAAAJ&hl=en&oi=ao";
+
+const SITES = [
+  { name:"Wonder Pond", url:"https://wonderpond.github.io", color:"#7fb8a4",
+    blurb:"Learning games for US elementary students across subjects, guided by Edie and her frog friends Hop and Skip." },
+  { name:"Daltokki", url:"https://hyeonhoyu.github.io/daltokki/", color:"#e9c46a",
+    blurb:"A Korean learning site for second-generation Korean Americans and anyone who wants to learn Korean." },
+  { name:"Literacy Quest", url:"https://literacyquest.github.io/", color:"#c45f4f",
+    blurb:"A quest-style site for building early literacy skills." },
+  { name:"Phonogram Studio", url:"https://hyeonhoyu.github.io/Phonogram-Studio/", color:"#7f92c8",
+    blurb:"Hear and practice English phonogram sounds with clear AI voice recordings." },
+  { name:"Frog Baby", url:"https://hyeonhoyu.github.io/frogbaby/", color:"#8fb07a",
+    blurb:"The history of Frog Baby, the beloved statue on the Ball State campus." },
+  { name:"Whistle", url:"https://hyeonhoyu.github.io/whistle-sports-rulebook/", color:"#e9a64b",
+    blurb:"A friendly sports rulebook for teachers and young players." },
+  { name:"Buen Camino", url:"https://hyeonhoyu.github.io/Buen-Camino/", color:"#b98a5e",
+    blurb:"A site for learning Spanish." },
+  { name:"PIPS AI Lab", url:"https://pips-ai-lab.github.io/", color:"#6fa3b8",
+    blurb:"AI literacy lessons for US elementary students." },
+  { name:"Pai Thiao", url:"https://iohsk.github.io/Pai-Thiao/", color:"#d98a9c",
+    blurb:"A site for learning Thai." },
+  { name:"ASL for Teachers", url:"https://hyeonhoyu.github.io/ASL-for-Teachers/", color:"#9a86c2",
+    blurb:"Everyday American Sign Language for classroom teachers." },
+  { name:"IOHSK AI Hub", url:"https://iohsk.github.io/AI-hub/", color:"#5f9e8f",
+    blurb:"AI resources gathered for members of the International Organization for Health, Sports, and Kinesiology." },
+];
+
+const PUBS = {
+  inPress:[
+    "Robertson, T., Yu, H., & Kulinna, P. H. (in press). PLT4M and Push for Progress: One teacher's struggle for technology integration in physical education. In K. A. Richards, K. Simonton, & E. Jones (Eds.), <i>Preservice and inservice teacher authored case studies: Exploring contemporary issues in physical education</i>. Human Kinetics.",
+    "Fox, K., Yu, H., Corbin, C., Moyon, L., & Davis, M. (in press). A life history of the Physical Self-Perception Profile (PSPP). <i>Kinesiology Review</i>."
+  ],
+  published:[
+    [2026,"Yu, H., Cho, M.-H., Lim, S., Park, E., & Kang, S. Preservice teachers' perceptions of AI for teaching preparation: A study built on the UNESCO AI Competency Framework. <i>Computers in the Schools</i>."],
+    [2026,"Yu, H., Mulhearn, S. C., & Kulinna, P. Sustaining movement in schools: Examining long-term trends in teacher-led physical activity integration. <i>Health Education Journal</i>.","https://doi.org/10.1177/00178969261447362"],
+    [2026,"Ha, T., Moon, J., Yu, H., Paulson, L., & Fan, X. Technology-integrated interventions in enhancing physical activity in K-12 physical education: A systematic review. <i>Journal of Teaching in Physical Education</i>."],
+    [2026,"Cho, M.-H., Park, E., Lim, S., & Yu, H. Learning with AI: Student intentions for academic use and broader perspective on AI. <i>Technology, Knowledge and Learning</i>."],
+    [2026,"Moon, J., Webster, C., Ha, T., Yu, H., Davis, L., & Parikh, V. S. Mapping movement integration in secondary schools: A scoping review of evidence. <i>Obesity Reviews</i>."],
+    [2025,"Ha, T., Moon, J., Yu, H., Paulson, L., & Fan, X. A systematic review of technology-infused physical activity interventions in K-12 school settings: Effectiveness, roles, and implementation strategies. <i>International Journal of Behavioral Nutrition and Physical Activity</i>.","https://doi.org/10.1186/s12966-025-01811-x"],
+    [2025,"Shannon, M. C., Yu, H., & Kulinna, P. H. Empowering students to practice leadership skills through physical activity breaks in the classroom. <i>Curriculum Studies in Health and Physical Education</i>, 1–18."],
+    [2024,"Kim, M., Baek, J., Yu, H., Ha, T., & Park, C. W. Kick it up a notch: Taekwondo lesson for students with disabilities. <i>Journal of Physical Education, Recreation & Dance, 95</i>(6), 34–44."],
+    [2024,"Yu, H., van der Mars, H., Kulinna, P. H., & Hastie, P. A. Physical education teacher and students' perceptions of using motion analysis app technology. <i>The Physical Educator, 81</i>(6), 701–719."],
+    [2024,"Ha, T., Yu, H., Lim, B., Jung, H., Brooks, C., Krause, J., & Dauenhauer, B. Using ChatGPT in the field of kinesiology: Opportunities and considerations. <i>Journal of Physical Education and Sport, 24</i>(1), 3–12."],
+    [2023,"Mulhearn, S., Kulinna, P., McLeod, C., & Yu, H. Equipping high school classroom teachers to support physical activity. <i>Teaching and Teacher Education, 129</i>, 104165."],
+    [2023,"Lorenz, K., Stylianou, M., Kulinna, P. H., & Yu, H. School and home contributions to dietary behaviors of rural youth. <i>American Journal of Health Promotion, 37</i>(4), 478–487."],
+    [2023,"Yu, H. Understanding of John Dewey's four impulses of learning in physical education. <i>Journal of Physical Education, Recreation & Dance, 94</i>(7), 45–46."],
+    [2022,"Nam, K., Kulinna, P. H., Mulhearn, S., Yu, H., Griffo, J., & Mason, A. Ecological considerations in sustaining CSPAP: A follow-up. <i>Journal of Teaching in Physical Education, 42</i>(1), 144–154."],
+    [2022,"Yu, H., & Ha, T. Effective pedagogical practices in synchronous online physical education. <i>Journal of Physical Education, Recreation & Dance, 92</i>(9), 63–68."],
+    [2022,"Mulhearn, S., Yu, H., van der Mars, H., Griffo, J., & Kulinna, P. Mercury and motion: The influence of seasonality on off-school hours high school facility use. <i>Journal of Physical Activity & Health</i>."],
+    [2022,"Ha, T., Yu, H., & Dauenhauer, B. Punch, kick and block! Teaching Taekwondo aligned with standards-based physical education. <i>Journal of Physical Education, Recreation & Dance</i>."],
+    [2022,"Corbin, C., Yu, H., & Gill, D. L. The role of textbooks in kinesiology. <i>Kinesiology Review, 11</i>(3), 261–269."],
+    [2021,"Yu, H., van der Mars, H., Kulinna, P. H., & Hastie, P. Incorporating a motion analysis app in a middle school badminton unit. <i>Journal of Teaching in Physical Education, 41</i>(4), 729–737."],
+    [2021,"Kim, M., Santiago, J., Yu, H., & Baek, J. Middle school students' intrinsic motivation and expectancy value after participating in team sports units. <i>The Journal of Kinesiology and Wellness, 10</i>(1), 3–12."],
+    [2021,"Kim, M., Yu, H., Park, C., Ha, T., & Baek, J. Physical education teachers' online teaching experiences and perceptions during the COVID-19 pandemic. <i>Journal of Physical Education and Sport, 21</i>(S3), 2049–2056."],
+    [2021,"Yu, H., Kulinna, P., & Mulhearn, S. The effectiveness of equipment provisions on rural middle school students' physical activity during lunch recess. <i>Journal of Physical Activity and Health, 18</i>(3), 287–295."],
+    [2021,"Yu, H., So, H., Kim, M., & Ha, T. The effects of app-based feedback on students' sport knowledge in sport education. <i>Journal of Health, Sports, and Kinesiology, 2</i>(2), 43–46."],
+    [2021,"Yu, H., & Ha, T. The 'APPropriate' use of technology for assessment in physical education. <i>Journal of Physical Education, Recreation & Dance, 92</i>(5), 58–61."],
+    [2020,"Corbin, C., Kulinna, P., & Yu, H. Conceptual physical education: A secondary innovation. <i>Quest, 72</i>(1), 33–56."],
+    [2020,"Yu, H., Mulhearn, S., van der Mars, H., Griffo, J., & Kulinna, P. Off-hours physical activity facility use in public high schools: Potential vs. reality. <i>Research Quarterly for Exercise and Sport, 93</i>(2), 341–351."],
+    [2018,"Yu, H., Kulinna, P., & Lorenz, K. An integration of mobile applications into physical education programs. <i>Strategies, 31</i>(3), 13–19."],
+    [2018,"Kulinna, P., Corbin, C., & Yu, H. Effectiveness of secondary school conceptual physical education: A 20-year longitudinal study. <i>Journal of Physical Activity and Health, 15</i>(12), 927–932."]
+  ],
+  review:[
+    ["Revised and resubmitted","Yun, S., Yu, H., & Hong, Y. A collective self-study of teacher educators on preparing early and elementary educators for reflective AI-integrated pedagogy."],
+    ["Submitted","Yun, S., Yu, H., & Lim, S. Thinking together with AI: Early childhood teachers' collaborative use of GenAI in read-aloud question design."],
+    ["In progress","Ileleji, R. H., Kang, S., & Yu, H. How do junior faculty across different disciplines negotiate the pedagogical, ethical, and identity tensions created by integrating AI into their classrooms? <i>Teaching in Higher Education</i>."]
+  ]
+};
+
+const me = s => s.replace(/Yu, H\./g, '<b class="me">Yu, H.</b>');
+const li = arr => '<ul>' + arr.map(x => '<li>' + x + '</li>').join('') + '</ul>';
+const item = (title, when, where) => `${when?`<span class="when">${when}</span>`:''}${title}${where?` <span class="where">${where}</span>`:''}`;
+
+const PLACES = {
+  frog:{
+    name:"Your guide", title:"Frog Baby", color:"#5fae5a",
+    lede:"Frog Baby and two frog friends show visitors around Henryville.",
+    html:()=>`
+      <img src="assets/frogbaby.jpg" alt="Frog Baby, a smiling child in red overalls with a star on the hair bun, holding a green frog and a teal frog" style="width:100%;height:auto;border-radius:14px;display:block;margin:.4rem 0 1rem">
+      <p>Tap any building and Frog Baby will walk over and meet you at the door. Close the panel and Frog Baby heads back to the pond by the Quad.</p>
+      <p>The real Frog Baby statue is one of Ball State's best loved landmarks. Its story has its own stall in the Maker's Market.</p>
+      <a class="btn solid" href="https://hyeonhoyu.github.io/frogbaby/" target="_blank" rel="noopener">Read the Frog Baby story</a>`
+  },
+  hall:{
+    name:"Administration Building", title:"About Henry", color:"#c9b48a",
+    lede:"A former elementary teacher who now prepares future teachers to teach well with AI and emerging technology.",
+    html:()=>`
+      <p>Henry Yu taught elementary school in Gwangju, South Korea for ten years before earning his Ph.D. in Curriculum and Instruction at Arizona State University. At Ball State University's Teachers College he teaches educational technology, studies how preservice teachers learn with generative AI, and builds the web tools you can find in the Maker's Market down the road.</p>
+      <a class="btn solid" href="${SCHOLAR}" target="_blank" rel="noopener">Google Scholar profile</a>
+      <h3>Work history</h3>
+      ${li([
+        item("Assistant Professor of Educational Technology, Ball State University","2024 to present"),
+        item("Assistant Professor, Denver, Colorado","2022 to 2024"),
+        item("Instructor","2019 to 2022"),
+        item("Research and Teaching Assistant, Arizona State University","2016 to 2020"),
+        item("Research Assistant","2013 to 2016"),
+        item("Elementary School Teacher, South Korea","2003 to 2013")
+      ])}
+      <h3>Education</h3>
+      ${li([
+        item("Ph.D., Curriculum and Instruction","2020","Arizona State University"),
+        item("M.Ed.","2016","Arizona State University"),
+        item("M.Ed.","2013","Chonnam National University"),
+        item("B.A.","2003","Gwangju National University of Education")
+      ])}`
+  },
+  library:{
+    name:"Library", title:"Publications", color:"#8e9bb5",
+    lede:"Peer-reviewed work on AI in teacher preparation, technology in physical education, and school physical activity.",
+    html:()=>{
+      let out = `<div class="stats"><div><b>${PUBS.published.length}</b>published articles</div><div><b>${PUBS.inPress.length}</b>in press</div><div><b>${PUBS.review.length}</b>under review or in progress</div></div>
+      <a class="btn" href="${SCHOLAR}" target="_blank" rel="noopener">Citations on Google Scholar</a>
+      <h3>In press</h3>${li(PUBS.inPress.map(me))}
+      <h3>Published</h3>`;
+      let y = null, buf=[];
+      const flush=()=>{ if(buf.length){ out += `<p class="year">${y}</p>` + li(buf); buf=[]; } };
+      PUBS.published.forEach(([yr, txt, doi])=>{
+        if(yr!==y){ flush(); y=yr; }
+        buf.push(me(txt) + (doi?` <a href="${doi}" target="_blank" rel="noopener">DOI</a>`:''));
+      });
+      flush();
+      out += `<h3>Under review and in progress</h3>` + li(PUBS.review.map(([s,t])=>item(me(t), s)));
+      return out;
+    }
+  },
+  school:{
+    name:"Teachers College", title:"Teaching", color:"#c45f4f",
+    lede:"Undergraduate and graduate courses in educational technology, elementary education, and research.",
+    html:()=>`
+      <h3>Graduate courses at Ball State</h3>
+      ${li([
+        item("EDTE 650 Curricular Integration of Learning Technology"),
+        item("EDTE 670 Technology Policy and Pedagogy"),
+        item("EDTE 685 Information Systems for Instruction and Assessment"),
+        item("EDEL 660 The Effective Use of Technology in the Elementary School"),
+        item("EDEL 663 Understanding Data to Inform Teaching and Learning in Elementary Schools"),
+        item("EDEL 676 Research in Elementary Education"),
+        item("EDRD 624 Integrating Technology in the Literacy Program"),
+        item("EDTE 699 Independent Study in Educational Technology")
+      ])}
+      <h3>Undergraduate courses at Ball State</h3>
+      ${li([
+        item("EDTE 250 Curricular Integration of Technology"),
+        item("EDTE 255 Learning and Teaching with Emerging Technologies"),
+        item("EDTE 370 Technology Policy and Ethics"),
+        item("EDEL 102 Reading and Writing in Transdisciplinary Curriculum and Instruction"),
+        item("EDEL 350 Teaching in the Elementary Education Classroom"),
+        item("EDMU 205 Introduction to Multicultural Education"),
+        item("EDSE 150 Basic Concepts of Secondary Education")
+      ])}
+      <h3>Mentoring</h3>
+      ${li([
+        item("Doctoral committee member for C. Harter, K. Heyerly, and J. Jang","2026 to present"),
+        item("Independent study advisor, Educational Studies","2025 to present"),
+        item("Teacher-Scholar Program advisor","2024 to present"),
+        item("Guest lecture, Designing Apps in Education, TEDU 102","2024")
+      ])}
+      <h3>Professional learning</h3>
+      ${li([
+        item("LETRS Certificate of Completion and Mastery, Units 1 to 8","2026"),
+        item("AI Frontiers; Teaching Digital Literacy and Well-Being; Faculty Externship Program","2026"),
+        item("ISTE AI for Tomorrow's Teachers, Faculty; AI for Pre-Service Teacher Faculty (Early Adopters)","2025"),
+        item("Google Introduction to Generative AI","2025")
+      ])}`
+  },
+  talks:{
+    name:"Conference Center", title:"Presentations", color:"#7f92c8",
+    lede:"Recent talks at national and international meetings, plus workshops led for colleagues across Ball State.",
+    html:()=>`
+      <h3>Recent conference presentations</h3>
+      ${li([
+        item(me("Yun, S., Yu, H., & Hong, Y. A collective self-study of teacher educators on preparing early and elementary educators for reflective AI-integrated pedagogy."),"2026","American Educational Research Association"),
+        item(me("Cho, M., Park, E., Lim, S., & Yu, H. Factors predicting college student AI use for academic tasks."),"2026","American Educational Research Association"),
+        item(me("Yu, H. Human centered AI in physical education: Coaching, assessment, inclusion, and ethical practice."),"July 2026"),
+        item(me("Ha, T., Moon, J., Yu, H., Paulson, L., & Fan, X. Technology-infused physical activity interventions in K-12 physical education."),"2026","AIESEP World Congress"),
+        item(me("Clausen, J. M., Craig, P. S., & Yu, H. C4P at BSU: Faculty development and building a community of practice."),"June 2026","ISTELive, invited"),
+        item(me("Yu, H., & Kim, B. Application of AI-empowered video on teaching and learning."),"2026","Teaching and Technology Summit"),
+        item(me("Yu, H., Cho, M.-H., Lim, S., Park, E., & Kang, S. Integrating AI into teacher preparation: Examining perceptions through creative and reflective practice."),"October 2025","AECT International Convention, Las Vegas"),
+        item(me("Yu, H., Cho, M.-H., Lim, S., Park, E., & Kang, S. Preparing future educators for an AI-enhanced classroom: Pre-service teachers' perspectives."),"November 2025","Purdue AI Conference"),
+        item(me("Yu, H. Integrating AI into the sport education model. Plenary speaker."),"2025","8th IOHSK Conference, San Francisco"),
+        item(me("Yu, H. The effect of AI-generated short film videos on elementary education majors' technological pedagogical content knowledge."),"2025","SITE Conference"),
+        item(me("Yu, H., Shively, K. L., & Heyerly, K. Quick wins for equity: Digital and physical accessibility in makerspaces and classrooms."),"2025","Teaching and Technology Summit")
+      ])}
+      <p>Since 2016 Henry has also presented regularly at SHAPE America, AERA, AIESEP, NAKHE, ISPAH, and IOHSK on school physical activity, CSPAP, and app-based learning in physical education.</p>
+      <h3>Workshops for colleagues</h3>
+      ${li([
+        item("From Prompts to Practice: Human-Centered AI Use in Higher Education","February 2026","Ball State AI Symposium"),
+        item("AI Faculty Associate series: Getting Started with AI in the Classroom; AI for Lesson Design and Media Creation; Responsible and Equitable Use of AI; Building Assignments and Policies for AI-Empowered Learning; Understanding Students' Perspective in the AI Era; AI-Assisted Assessment and Feedback","2025 to 2026"),
+        item("Embedding a Syllabus Chatbot into Canvas","February 2026","Teachers College"),
+        item("Balancing Tech and Values: Safe and Useful AI Pedagogy","January 2026","EDEL Lunch and Learn"),
+        item("Ethical Use of AI in Graduate Education","November 2025","Graduate School"),
+        item("From Critical Technology Studies to Generative AI in Teacher Education","February 2026","Doctoral seminar")
+      ])}`
+  },
+  awards:{
+    name:"Bell Tower", title:"Awards", color:"#e9a64b",
+    lede:"Recognition for teacher preparation, research, and service, starting from the classroom in Gwangju.",
+    html:()=>`
+      <div class="feature">
+        <strong>ISTE Distinguished Educator Preparation Program Award</strong>
+        International Society for Technology in Education, June 2026.
+        <br><a href="https://iste-ascd.org/distinguished-epp-award" target="_blank" rel="noopener">About the award</a>
+      </div>
+      ${li([
+        item("President Volunteer Service Award","2022","IOHSK"),
+        item("International Research Fellowship, 2021 to 2022","2021","IOHSK"),
+        item("Distinguished Service Award","2021","IOHSK"),
+        item("Great Achievement Award","2020","IOHSK"),
+        item("Graduate Student Poster Contest recognition","2019","Institute of Social Science Research"),
+        item("Teacher of the Year, ranked first, research on creativity and personality education","2011","Superintendent of Education, Gwangju"),
+        item("Creative Teaching Process and Achievement Award, ranked second","2010","Superintendent of Education, Gwangju"),
+        item("Teacher of the Year, ranked first, practice in personality education","2009","Superintendent of Education, Gwangju")
+      ])}`
+  },
+  grants:{
+    name:"Workshop", title:"Grants", color:"#d9a441",
+    lede:"Funding that turns ideas about AI and teacher education into working projects.",
+    html:()=>`
+      ${li([
+        item("Bridging the AI Literacy Divide: A collaborative faculty professional development and inclusive toolkit initiative for elementary education. Inclusiveness Committee Departmental Award, $2,000.","May to December 2026","Ball State University"),
+        item("Teachers College Resource Request, with B. Kim. $3,000.","2026","Teachers College"),
+        item("Preparing pre-service teachers through online classroom simulations: A pilot study for pre-student teaching training. SPARK Grant, $2,000.","2026","Teachers College"),
+        item("AERA Annual Meeting travel support, $500.","2026","Provost Domestic Travel"),
+        item("The effect of AI-generated short film videos on education major students' technological pedagogical content knowledge. $5,000.","2025, funded","Ball State University")
+      ])}`
+  },
+  service:{
+    name:"Community Hall", title:"Service", color:"#86ad86",
+    lede:"Committee work at Ball State and long-running leadership in an international professional organization.",
+    html:()=>`
+      <h3>Ball State University</h3>
+      ${li([
+        item("AI Literacy Framework Committee","2026 to present"),
+        item("iTDS co-director","2025 to present"),
+        item("Artificial Intelligence Faculty Associate","2025 to 2026"),
+        item("Graduate Studies Committee, secretary","2024 to present"),
+        item("Search and Screen Committee; TN Salary Committee","2025 to present"),
+        item("Dissertation committees, Educational Studies","2025 to present"),
+        item("iTDS Advisory Committee","2024 to present"),
+        item("Judge, CHIRPS Week oral presentations; open house and preview day volunteer","2025 to present")
+      ])}
+      <h3>International Organization for Health, Sports, and Kinesiology</h3>
+      ${li([
+        item("Vice President","2022 to present"),
+        item("Board of Directors","2020 to present"),
+        item("Conference Co-Chair, 7th IOHSK Conference","","Manila, Philippines"),
+        item("Conference Co-Chair, 6th IOHSK Conference","","Bangkok, Thailand")
+      ])}
+      <h3>Reviewing and consulting</h3>
+      ${li([
+        item("Journal reviewer, Sport, Education and Society","2024 to present"),
+        item("Conference reviewer, SHAPE America","2021 to present"),
+        item("Journal reviewer, Physical Education and Sport Pedagogy; Biomedical Human Kinetics","2018 to 2021"),
+        item("Data analysis, Science of Reading grant project","2024 to present")
+      ])}`
+  },
+  post:{
+    name:"Post Office", title:"Find Henry", color:"#6fa3b8",
+    lede:"Where to read more and where to find him.",
+    html:()=>`
+      <a class="btn solid" href="${SCHOLAR}" target="_blank" rel="noopener">Google Scholar profile</a>
+      <h3>Office</h3>
+      <p>Department of Elementary Education<br>Teachers College, Ball State University<br>Muncie, Indiana</p>
+      <h3>Professional memberships</h3>
+      ${li([
+        item("Korean-American Educational Researchers Association","2026 to present"),
+        item("Society for Information Technology and Teacher Education (SITE)","2025 to present"),
+        item("International Organization for Health, Sports, and Kinesiology (IOHSK)","2020 to present"),
+        item("American Educational Research Association","2016 to present"),
+        item("SHAPE America","2014 to present")
+      ])}`
+  },
+  market:{
+    name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
+    lede:"Every stall in the market is a working site. Open one in a new tab, or tap a stall on the island.",
+    html:(focus)=>`
+      <div class="stalls">${SITES.map((s,i)=>`
+        <div class="stall" id="stall-${i}" style="--sc:${s.color}">
+          <span class="sw" aria-hidden="true"></span>
+          <div>
+            <strong>${s.name}</strong>
+            <span class="url">${s.url.replace(/^https:\/\//,'').replace(/\/$/,'')}</span>
+            <p>${s.blurb}</p>
+            <a class="btn" href="${s.url}" target="_blank" rel="noopener">Visit ${s.name}</a>
+          </div>
+        </div>`).join('')}
+      </div>
+      <h3>Also built</h3>
+      <p>Children's AI Literacy Website, 2026.</p>`
+  }
+};
+const ORDER = ["frog","hall","library","school","talks","awards","grants","service","post","market"];
+
+/* =========================================================
+   UI: directory and panel
+   ========================================================= */
+const dir = document.getElementById('directory');
+const homeBtn = document.createElement('button');
+homeBtn.className='chip'; homeBtn.innerHTML='Whole island';
+homeBtn.addEventListener('click',()=>{ closePanel(); });
+dir.appendChild(homeBtn);
+ORDER.forEach(k=>{
+  const p=PLACES[k]; const b=document.createElement('button');
+  b.className='chip'; b.style.setProperty('--c',p.color);
+  b.innerHTML=`<span class="dot" aria-hidden="true"></span>${p.title} <small>${p.name}</small>`;
+  b.addEventListener('click',()=>openPlace(k));
+  dir.appendChild(b);
+});
+
+const panel=document.getElementById('panel');
+let openKey=null;
+function renderPanel(k, siteIdx){
+  const p=PLACES[k];
+  panel.style.setProperty('--c',p.color);
+  document.getElementById('phead').style.setProperty('--c',p.color);
+  document.getElementById('pplace').textContent=p.name;
+  document.getElementById('ptitle').textContent=p.title;
+  document.getElementById('plede').textContent=p.lede;
+  const body=document.getElementById('pbody');
+  body.innerHTML=p.html(); body.scrollTop=0;
+  panel.classList.add('open'); panel.setAttribute('aria-hidden','false');
+  document.body.classList.add('panel-open');
+  if(siteIdx!=null){
+    const el=document.getElementById('stall-'+siteIdx);
+    if(el){ requestAnimationFrame(()=>{ el.scrollIntoView({block:'center', behavior: REDUCE?'auto':'smooth'}); el.classList.add('flash'); }); }
+  }
+  document.getElementById('ptitle').focus({preventScroll:true});
+}
+document.getElementById('pclose').addEventListener('click',()=>closePanel());
+addEventListener('keydown',e=>{ if(e.key==='Escape' && openKey) closePanel(); });
+
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const forced = document.documentElement.getAttribute('data-theme');
+const DARK = forced ? forced==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+
+let focusPlace = ()=>{}, goHome = ()=>{};
+function openPlace(k, siteIdx){ openKey=k; renderPanel(k, siteIdx); focusPlace(k, siteIdx); hideHint(); }
+function closePanel(){
+  openKey=null; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
+  document.body.classList.remove('panel-open'); goHome();
+}
+const hint=document.getElementById('hint');
+let hintHidden=false;
+function hideHint(){ if(!hintHidden){ hintHidden=true; hint.style.opacity='0'; setTimeout(()=>hint.remove(),500);} }
+
+/* =========================================================
+   3D VILLAGE
+   ========================================================= */
+function start(){
+  if(!window.THREE || !THREE.OrbitControls){ throw new Error('three missing'); }
+  const C = DARK ? {
+    skyTop:'#132229', skyBot:'#1d3a43', sea:'#1d3a43', shallow:'#2a4d55', rim:'#5d6b62',
+    grass:'#58704b', grass2:'#647f55', quad:'#4f6c43', path:'#9c9070', pathEdge:'#80765a',
+    asphalt:'#3b3f44', stripe:'#b9b6ad', earth:'#5a4b3a', brick:'#7a3a32', mortar:'#7f7466',
+    lime:'#b6ab95', concrete:'#9e998d', win:'#ffd27f', glass:'#ffcf7a', door:'#4e3826', trunk:'#5e4a35', water:'#2b5566',
+    trees:['#4f6e45','#5b7c4e','#46653f','#9a3b24','#a8612a','#b08a35','#7f2e22'], hemi:0.35, sun:0.45, sunColor:'#b9cbe6', skin:'#d9b393'
+  } : {
+    skyTop:'#d9eee9', skyBot:'#9fcdc8', sea:'#94c6c1', shallow:'#bfe0da', rim:'#e4ead8',
+    grass:'#cfdd96', grass2:'#dde7a8', quad:'#b4cf7e', path:'#f1e6c6', pathEdge:'#e0d0a2',
+    asphalt:'#7a7f85', stripe:'#f7f5ee', earth:'#c7a779', brick:'#a9483c', mortar:'#dccab4',
+    lime:'#ece1c8', concrete:'#d8d3c6', win:'#5d7189', glass:'#8fb3c9', door:'#6d4c33', trunk:'#8a6a48', water:'#7fbfd0',
+    trees:['#8fb07a','#7fa36c','#a3bf83','#d9542c','#e8892f','#f2c14e','#b5432f'], hemi:0.42, sun:0.8, sunColor:'#fff4dc', skin:'#f3cfae'
+  };
+  const RED='#b5192b';
+
+  const canvas=document.getElementById('scene');
+  const renderer=new THREE.WebGLRenderer({canvas, antialias:true});
+  const DPR=Math.min(devicePixelRatio, innerWidth<=720?1.5:2);
+  renderer.setPixelRatio(DPR);
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+  const scene=new THREE.Scene();
+  const labelScene=new THREE.Scene();
+  { const c=document.createElement('canvas'); c.width=4; c.height=256; const x=c.getContext('2d');
+    const gr=x.createLinearGradient(0,0,0,256); gr.addColorStop(0,C.skyTop); gr.addColorStop(1,C.skyBot);
+    x.fillStyle=gr; x.fillRect(0,0,4,256); scene.background=new THREE.CanvasTexture(c); }
+  scene.fog=new THREE.Fog(C.skyBot, 95, 200);
+
+  const camera=new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.5, 400);
+  const controls=new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping=true; controls.dampingFactor=0.08;
+  controls.minDistance=8; controls.maxDistance=120;
+  controls.maxPolarAngle=1.22; controls.minPolarAngle=0.35;
+  controls.enablePan=false; controls.rotateSpeed=0.6;
+
+  scene.add(new THREE.HemisphereLight('#ffffff', C.earth, C.hemi));
+  const sun=new THREE.DirectionalLight(C.sunColor, C.sun);
+  sun.position.set(-30,52,25); sun.castShadow=true;
+  sun.shadow.mapSize.set(2048,2048);
+  Object.assign(sun.shadow.camera,{left:-42,right:42,top:34,bottom:-34,near:1,far:150});
+  sun.shadow.bias=-0.0005; sun.shadow.normalBias=0.03;
+  scene.add(sun);
+  scene.add(new THREE.AmbientLight('#ffffff', DARK?0.10:0.08));
+
+  let seed=11; const rnd=()=>{ seed=(seed*16807)%2147483647; return (seed-1)/2147483646; };
+
+  /* ---------- Materials ---------- */
+  const mats={};
+  const mat=(c,opts={})=>{
+    const key=c+JSON.stringify(opts);
+    if(!mats[key]) mats[key]=new THREE.MeshStandardMaterial(Object.assign({color:c, roughness:.9, metalness:0},opts));
+    return mats[key];
+  };
+  const flat=c=>mat(c,{flatShading:true});
+  const glow=(c,i)=>new THREE.MeshStandardMaterial({color:c, emissive:new THREE.Color(c), emissiveIntensity:i, roughness:.6});
+  const winMat = DARK ? glow(C.win,.9) : mat(C.win,{roughness:.35});
+  const glassMat = DARK ? glow(C.glass,.6) : mat(C.glass,{roughness:.25});
+  const brickBase=(()=>{
+    const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
+    x.fillStyle=C.mortar; x.fillRect(0,0,256,256);
+    const rows=16, bh=256/rows, bw=256/8, base=new THREE.Color(C.brick);
+    for(let r=0;r<rows;r++){ const off=(r%2)*bw/2;
+      for(let i=-1;i<9;i++){ const col=base.clone().offsetHSL(0,(rnd()-.5)*.08,(rnd()-.5)*.09);
+        x.fillStyle='#'+col.getHexString(); x.fillRect(i*bw+off+1.5, r*bh+1.5, bw-3, bh-3); } }
+    const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
+  })();
+  function brick(w,h){ const t=brickBase.clone(); t.needsUpdate=true; t.repeat.set(Math.max(1,w/2.6), Math.max(1,h/1.7));
+    return new THREE.MeshStandardMaterial({map:t, roughness:.95}); }
+  const shade=o=>{o.traverse(m=>{ if(m.isMesh){ m.castShadow=true; m.receiveShadow=true; } }); return o;};
+  const M=m=>typeof m==='string'?mat(m):m;
+  function rbox(w,h,d,m,x=0,y=0,z=0,parent,r=.12){
+    const rr=Math.min(r, w/2-.01, h/2-.01, d/2-.01);
+    const g = THREE.RoundedBoxGeometry ? new THREE.RoundedBoxGeometry(w,h,d,2,Math.max(.005,rr)) : new THREE.BoxGeometry(w,h,d);
+    const o=new THREE.Mesh(g,M(m)); o.position.set(x,y+h/2,z); if(parent) parent.add(o); return o;
+  }
+  function box(w,h,d,m,x=0,y=0,z=0,parent){
+    const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(m)); o.position.set(x,y+h/2,z); if(parent) parent.add(o); return o;
+  }
+  function cyl(rt,rb,h,seg,m,x=0,y=0,z=0,parent){
+    const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),M(m)); o.position.set(x,y+h/2,z); if(parent) parent.add(o); return o;
+  }
+  function sph(r,m,x,y,z,parent,sx=1,sy=1,sz=1,ws=16,hs=12){
+    const o=new THREE.Mesh(new THREE.SphereGeometry(r,ws,hs),M(m)); o.position.set(x,y,z); o.scale.set(sx,sy,sz); if(parent) parent.add(o); return o;
+  }
+  function gable(w,d,rh,color,y,parent,z=0){
+    const s=new THREE.Shape(); const W=w/2+.3;
+    s.moveTo(-W,0); s.lineTo(W,0); s.lineTo(0,rh); s.lineTo(-W,0);
+    const g=new THREE.ExtrudeGeometry(s,{depth:d+.5, bevelEnabled:true, bevelThickness:.04, bevelSize:.04, bevelSegments:1});
+    g.translate(0,0,-(d+.5)/2);
+    const o=new THREE.Mesh(g, M(color)); o.position.set(0,y,z); parent.add(o); return o;
+  }
+  // windows with limestone frames on front and both sides
+  function windows(parent,w,d,rows,cols,y0,gap,ww=.5,wh=.7,sides=true,back=false){
+    const put=(x,y,z,ry)=>{
+      const f=box(ww+.16,wh+.16,.06,C.lime,0,0,0,parent); f.position.set(x,y,z); f.rotation.y=ry;
+      const g=box(ww,wh,.06,winMat,0,0,0,parent); g.position.set(x+Math.sin(ry)*.03,y,z+Math.cos(ry)*.03); g.rotation.y=ry;
+    };
+    for(let r=0;r<rows;r++){ const y=y0+r*gap+wh/2;
+      for(let c=0;c<cols;c++){ const x=-w/2+(w/(cols+1))*(c+1); put(x,y,d/2+.02,0); if(back) put(x,y,-d/2-.02,Math.PI); }
+      if(sides){ const sc=Math.max(1,Math.round(d/1.6));
+        for(let c=0;c<sc;c++){ const z=-d/2+(d/(sc+1))*(c+1); put(w/2+.02,y,z,Math.PI/2); put(-w/2-.02,y,z,-Math.PI/2); } }
+    }
+  }
+  function door(parent,d,w=.9,h=1.5,x=0){ box(w+.2,h+.12,.06,C.lime,x,0,d/2+.02,parent); box(w,h,.1,C.door,x,0,d/2+.04,parent); }
+
+  /* ---------- Island ---------- */
+  const RX=31, RZ=21.5;
+  const island=new THREE.Mesh(new THREE.CylinderGeometry(1,.94,1,72),[flat(C.earth),mat(C.grass),flat(C.earth)]);
+  island.scale.set(RX,1.8,RZ); island.position.y=-.9; island.receiveShadow=true; scene.add(island);
+  const rim=new THREE.Mesh(new THREE.CylinderGeometry(1.045,1.06,1,72), mat(C.rim));
+  rim.scale.set(RX,.5,RZ); rim.position.y=-1.55; scene.add(rim);
+  const shallow=new THREE.Mesh(new THREE.CircleGeometry(1,72), new THREE.MeshLambertMaterial({color:C.shallow}));
+  shallow.rotation.x=-Math.PI/2; shallow.scale.set(RX*1.16,RZ*1.2,1); shallow.position.y=-1.62; scene.add(shallow);
+  const sea=new THREE.Mesh(new THREE.CircleGeometry(260,48), new THREE.MeshLambertMaterial({color:C.sea}));
+  sea.rotation.x=-Math.PI/2; sea.position.y=-1.66; scene.add(sea);
+
+  /* ---------- Layout ---------- */
+  const WEST=[-7,0], MID=[3.5,0], EAST=[14,0];
+  const QUAD={x:4, z:13, w:8, d:5};
+  const POND={x:-3.6, z:14, rx:2.9, rz:2};
+  const FB_HOME=[0.6,11.6];
+  const BUILD=[
+    {key:'hall',    x:-20, z:-3,   from:WEST, depth:4.4},
+    {key:'library', x:-9.5,z:-12,  from:WEST, depth:5.2},
+    {key:'school',  x:3.5, z:-13,  from:MID,  depth:4.6},
+    {key:'talks',   x:-11.5,z:9.5, from:WEST, depth:4.4},
+    {key:'post',    x:-21.5,z:8.5, from:WEST, depth:3.4},
+    {key:'awards',  x:24.5,z:-2,   from:EAST, depth:2.8},
+    {key:'grants',  x:15.5,z:-11,  from:EAST, depth:4.0},
+    {key:'service', x:14.5,z:10.5, from:EAST, depth:4.4},
+  ];
+  const segments=[[WEST,EAST],[MID,[QUAD.x,QUAD.z-QUAD.d/2]]];
+  BUILD.forEach(b=>{
+    const dx=b.from[0]-b.x, dz=b.from[1]-b.z, L=Math.hypot(dx,dz);
+    b.rot=Math.atan2(dx,dz);
+    b.front=[b.x+dx/L*(b.depth/2+.6), b.z+dz/L*(b.depth/2+.6)];
+    b.stand=[b.x+dx/L*(b.depth/2+1.5), b.z+dz/L*(b.depth/2+1.5)];
+    segments.push([b.from, b.front]);
+  });
+
+  /* ---------- Ground texture ---------- */
+  const TW=2048, TH=Math.round(TW*RZ/RX);
+  const gc=document.createElement('canvas'); gc.width=TW; gc.height=TH;
+  const g=gc.getContext('2d');
+  const px=x=>(x/RX+1)/2*TW, pz=z=>(z/RZ+1)/2*TH, ppu=TW/(2*RX);
+  g.fillStyle=C.grass; g.fillRect(0,0,TW,TH);
+  g.globalAlpha=.35; g.fillStyle=C.grass2;
+  for(let i=0;i<70;i++){ g.beginPath(); g.ellipse(rnd()*TW,rnd()*TH,40+rnd()*160,30+rnd()*110,rnd()*3,0,Math.PI*2); g.fill(); }
+  g.globalAlpha=1; g.lineCap='round'; g.lineJoin='round';
+  const line=(a,b,col,wid)=>{ g.strokeStyle=col; g.lineWidth=wid*ppu; g.beginPath(); g.moveTo(px(a[0]),pz(a[1])); g.lineTo(px(b[0]),pz(b[1])); g.stroke(); };
+  // the quad
+  const qx0=QUAD.x-QUAD.w/2, qz0=QUAD.z-QUAD.d/2;
+  g.fillStyle=C.pathEdge; g.fillRect(px(qx0-.75),pz(qz0-.75),(QUAD.w+1.5)*ppu,(QUAD.d+1.5)*ppu);
+  g.fillStyle=C.path; g.fillRect(px(qx0-.6),pz(qz0-.6),(QUAD.w+1.2)*ppu,(QUAD.d+1.2)*ppu);
+  g.fillStyle=C.quad; g.fillRect(px(qx0),pz(qz0),QUAD.w*ppu,QUAD.d*ppu);
+  line([qx0,qz0],[qx0+QUAD.w,qz0+QUAD.d],C.path,.8); line([qx0+QUAD.w,qz0],[qx0,qz0+QUAD.d],C.path,.8);
+  [[C.pathEdge,1.75],[C.path,1.4]].forEach(([c,w])=>segments.forEach(([a,b])=>line(a,b,c,w)));
+  line([-5,0],[12.5,0],C.pathEdge,4.4); line([-5,0],[12.5,0],C.path,4);
+  line([FB_HOME[0],FB_HOME[1]],[QUAD.x-QUAD.w/2-.6,QUAD.z],C.path,1.2);
+  // scramble intersection
+  const S=7.6, sx0=WEST[0]-S/2, sz0=-S/2;
+  g.fillStyle=C.asphalt; g.fillRect(px(sx0),pz(sz0),S*ppu,S*ppu);
+  [[-1,0],[1,0],[0,-1],[0,1]].forEach(([ax,az])=>{
+    g.fillStyle=C.asphalt;
+    if(ax) g.fillRect(px(ax<0?sx0-2.4:sx0+S),pz(-1.8),2.4*ppu,3.6*ppu); else g.fillRect(px(WEST[0]-1.8),pz(az<0?sz0-2.4:sz0+S),3.6*ppu,2.4*ppu);
+  });
+  g.fillStyle=C.stripe;
+  for(let i=0;i<7;i++){ const o=-2.7+i*.9;
+    g.fillRect(px(WEST[0]+o-.2),pz(sz0+.3),.4*ppu,1*ppu); g.fillRect(px(WEST[0]+o-.2),pz(sz0+S-1.3),.4*ppu,1*ppu);
+    g.fillRect(px(sx0+.3),pz(o-.2),1*ppu,.4*ppu); g.fillRect(px(sx0+S-1.3),pz(o-.2),1*ppu,.4*ppu); }
+  g.save(); g.translate(px(WEST[0]),pz(0)); g.strokeStyle=C.stripe; g.lineWidth=.5*ppu; g.setLineDash([.45*ppu,.45*ppu]);
+  [[-1,-1,1,1],[1,-1,-1,1]].forEach(([a,b,c,d])=>{ g.beginPath(); g.moveTo(a*2.2*ppu,b*2.2*ppu); g.lineTo(c*2.2*ppu,d*2.2*ppu); g.stroke(); });
+  g.restore();
+  const gtex=new THREE.CanvasTexture(gc); gtex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  const top=new THREE.Mesh(new THREE.CircleGeometry(1,96), new THREE.MeshStandardMaterial({map:gtex, roughness:1}));
+  top.rotation.x=-Math.PI/2; top.scale.set(RX,RZ,1); top.position.y=.012; top.receiveShadow=true; scene.add(top);
+
+  /* ---------- Labels ---------- */
+  const LABELS=[];
+  function label(text,color,h=1.25){
+    const fs=64, pad=30, tab=16;
+    const c=document.createElement('canvas'); const x=c.getContext('2d');
+    x.font=`800 ${fs}px "Bricolage Grotesque", system-ui, sans-serif`;
+    const tw=x.measureText(text).width;
+    c.width=Math.ceil(tw+pad*2+tab+12); c.height=Math.ceil(fs+pad*1.3);
+    const W=c.width,H=c.height,r=18;
+    x.beginPath(); x.moveTo(r+3,3); x.arcTo(W-3,3,W-3,H-3,r); x.arcTo(W-3,H-3,3,H-3,r); x.arcTo(3,H-3,3,3,r); x.arcTo(3,3,W-3,3,r); x.closePath();
+    x.fillStyle='#ffffff'; x.fill(); x.lineWidth=5; x.strokeStyle='#2e3a35'; x.stroke();
+    x.fillStyle=color; x.fillRect(pad*.6, H*.28, tab, H*.44);
+    x.font=`800 ${fs}px "Bricolage Grotesque", system-ui, sans-serif`;
+    x.fillStyle='#2e3a35'; x.textBaseline='middle'; x.fillText(text, pad*.6+tab+18, H/2+3);
+    const t=new THREE.CanvasTexture(c); t.anisotropy=4;
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t, depthTest:false, transparent:true}));
+    s.scale.set(h*W/H,h,1); s.userData.bs=s.scale.clone(); s.renderOrder=10; LABELS.push(s); labelScene.add(s); return s;
+  }
+
+  /* ---------- Buildings ---------- */
+  const MAKERS={
+    hall(gp){ // administration building
+      const w=7.4,d=4.4,h=4.6;
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.08);
+      box(w+.12,.5,d+.12,C.lime,0,0,0,gp);
+      box(w+.4,.3,d+.4,C.lime,0,h,0,gp);
+      rbox(w-.3,.55,d-.3,'#6f8f86',0,h+.3,0,gp,.1);
+      windows(gp,w,d,3,6,.9,1.25,.5,.75,true,true);
+      for(let i=0;i<4;i++) cyl(.17,.19,3,12,C.lime,-1.5+i*1,0,d/2+1,gp);
+      box(4.2,.3,1.6,C.lime,0,3,d/2+.8,gp);
+      gable(4,1.2,.9,C.lime,3.3,gp,d/2+.85);
+      box(4.4,.25,2,C.lime,0,0,d/2+.9,gp);
+      door(gp,d,1.1,1.8);
+      rbox(1.5,1,1.5,C.lime,0,h+.85,0,gp,.06);
+      const dome=sph(.85,'#7fa89a',0,h+1.85,0,gp,1,.9,1); dome.geometry=new THREE.SphereGeometry(.85,20,10,0,Math.PI*2,0,Math.PI/2);
+      cyl(.04,.04,.8,6,'#3a3f44',0,h+2.6,0,gp);
+      return {h:h+3.4, perches:[[0,h+2.62,0],[-3,h+.86,1],[3.2,h+.86,-1]]};
+    },
+    library(gp){ // brutalist library
+      const w=6.4,d=5.2;
+      rbox(w-.8,1.3,d-.8,C.concrete,0,0,0,gp,.06);
+      box(w-1.4,1,.05,glassMat,0,.1,(d-.8)/2+.01,gp);
+      rbox(w+.4,2.5,d,C.concrete,0,1.3,0,gp,.08);
+      box(w+.2,1.9,.05,winMat,0,1.6,d/2+.01,gp);
+      box(.05,1.9,d-.4,winMat,(w+.4)/2+.01,1.6,0,gp); box(.05,1.9,d-.4,winMat,-(w+.4)/2-.01,1.6,0,gp);
+      for(let i=0;i<11;i++){ const x=-w/2+i*(w/10); box(.2,2.5,.4,'#c9c3b4',x,1.3,d/2+.1,gp); }
+      for(let i=0;i<7;i++){ const z=-d/2+.3+i*((d-.6)/6); box(.4,2.5,.2,'#c9c3b4',(w+.4)/2+.1,1.3,z,gp); box(.4,2.5,.2,'#c9c3b4',-(w+.4)/2-.1,1.3,z,gp); }
+      rbox(w+.9,.35,d+.5,C.concrete,0,3.8,0,gp,.06);
+      rbox(2.2,.7,1.6,C.concrete,1.2,4.15,-.8,gp,.06);
+      box(3,.2,1.2,C.lime,0,0,d/2+.4,gp);
+      return {h:5, perches:[[-3,4.17,2],[2.9,4.17,-2],[1.2,4.87,-.8]]};
+    },
+    school(gp){ // Teachers College tower
+      const pw=6.4,pd=4.6, tw=4.2, td=3.6, th=9.6;
+      rbox(pw,1.7,pd,brick(pw,1.7),0,0,0,gp,.06);
+      box(pw-1.2,1.1,.05,glassMat,0,.2,pd/2+.01,gp);
+      box(pw+.2,.25,pd+.2,C.lime,0,1.7,0,gp);
+      rbox(tw,th,td,C.concrete,0,1.95,0,gp,.06);
+      for(let f=0;f<9;f++){ const y=2.3+f*1.02;
+        box(tw-.3,.55,.05,winMat,0,y,td/2+.01,gp); box(tw-.3,.55,.05,winMat,0,y,-td/2-.01,gp);
+        box(.05,.55,td-.3,winMat,tw/2+.01,y,0,gp); box(.05,.55,td-.3,winMat,-tw/2-.01,y,0,gp); }
+      for(let i=0;i<6;i++){ const x=-tw/2+.2+i*((tw-.4)/5); box(.12,th-.4,.12,C.lime,x,2.1,td/2+.05,gp); }
+      box(tw+.2,.3,td+.2,C.lime,0,1.95+th,0,gp);
+      rbox(1.6,.8,1.2,'#bdb7a8',.6,2.25+th,-.4,gp,.06);
+      door(gp,pd,1.2,1.3);
+      return {h:13, perches:[[-1.7,2.27+th,1.4],[1.8,2.27+th,-1.4],[.6,3.07+th,-.4]]};
+    },
+    talks(gp){ // conference center
+      const w=7.2,d=4.4,h=3;
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.08);
+      box(w+.3,.35,d+.3,C.lime,0,h,0,gp);
+      windows(gp,w,d,1,6,1,1,.5,.9,true,false);
+      rbox(3.2,2.8,1.2,glassMat,0,0,d/2+.5,gp,.05);
+      box(3.4,.25,1.4,C.lime,0,2.8,d/2+.5,gp);
+      rbox(w-1.2,.5,d-1,'#8c8f93',0,h+.35,-.2,gp,.08);
+      [-2.6,2.6].forEach(x=>{ cyl(.05,.05,3.4,6,'#3a3f44',x,0,d/2+1.6,gp); box(.04,.6,.9,RED,x,2.6,d/2+2.05,gp); });
+      return {h:4.4, perches:[[-2.8,h+.86,0],[2.5,h+.86,.6]]};
+    },
+    awards(gp){ // bell tower
+      rbox(3,.6,3,C.lime,0,0,0,gp,.06);
+      rbox(2.2,7.6,2.2,brick(2.2,7.6),0,.6,0,gp,.04);
+      [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>box(.22,7.6,.22,C.lime,a*1.05,.6,b*1.05,gp));
+      for(let i=0;i<3;i++) [0,Math.PI/2,Math.PI,-Math.PI/2].forEach(r=>{ const m=box(.22,.9,.06,winMat,0,1.6+i*1.6,0,gp); m.position.x=Math.sin(r)*1.12; m.position.z=Math.cos(r)*1.12; m.rotation.y=r; });
+      [0,Math.PI/2,Math.PI,-Math.PI/2].forEach(r=>{
+        const face=new THREE.Mesh(new THREE.CircleGeometry(.5,24), mat('#f5efe0')); face.position.set(Math.sin(r)*1.115,6.7,Math.cos(r)*1.115); face.rotation.y=r; gp.add(face);
+        const hand=box(.05,.38,.02,'#2e3a35',0,0,0,gp); hand.position.set(Math.sin(r)*1.13,6.8,Math.cos(r)*1.13); hand.rotation.y=r;
+      });
+      box(2.5,.3,2.5,C.lime,0,8.2,0,gp);
+      [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>box(.36,1.5,.36,C.lime,a*1.02,8.5,b*1.02,gp));
+      sph(.42,mat('#c9a14a',{metalness:.5,roughness:.4}),0,9.1,0,gp,1,1.1,1);
+      rbox(2.7,.32,2.7,C.lime,0,10,0,gp,.05);
+      const cap=new THREE.Mesh(new THREE.ConeGeometry(1.75,1.9,4), flat('#8f3a30')); cap.rotation.y=Math.PI/4; cap.position.y=11.27; gp.add(cap);
+      cyl(.04,.04,.9,6,'#3a3f44',0,12.2,0,gp);
+      if(DARK){ const pl=new THREE.PointLight('#ffd27f',1,22); pl.position.y=9; gp.add(pl); }
+      return {h:13.2, perches:[[1.15,10.33,1.15],[-1.15,10.33,-1.15],[1.15,10.33,-1.15]]};
+    },
+    grants(gp){ // workshop
+      const w=4.6,d=4,h=3;
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
+      gable(w,d,1.8,'#e9a64b',h,gp);
+      windows(gp,w,d,1,2,1,1,.7,.8);
+      box(1.3,1.7,.06,C.lime,0,0,d/2+.02,gp); box(1.2,1.6,.1,C.door,0,0,d/2+.04,gp);
+      rbox(.6,1.4,.6,brick(.6,1.4),1.3,3.8,-.8,gp,.04);
+      const gear=new THREE.Group(); gear.position.set(0,3.8,d/2+.55); gp.add(gear);
+      const hub=new THREE.Mesh(new THREE.CylinderGeometry(.75,.75,.3,20), mat('#d9a441',{metalness:.3,roughness:.5})); hub.rotation.x=Math.PI/2; gear.add(hub);
+      for(let i=0;i<10;i++){ const t=new THREE.Mesh(new THREE.BoxGeometry(.28,.36,.3), mat('#d9a441',{metalness:.3,roughness:.5})); const a=i/10*Math.PI*2; t.position.set(Math.cos(a)*.9,Math.sin(a)*.9,0); t.rotation.z=a; gear.add(t); }
+      const hole=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,.34,12), mat('#2e3a35')); hole.rotation.x=Math.PI/2; gear.add(hole);
+      gp.userData.gear=gear;
+      return {h:6.1, perches:[[0,4.82,-1.5],[1.3,5.22,-.8]]};
+    },
+    service(gp){ // community hall
+      const w=6,d=4.4,h=3;
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
+      gable(w,d,2,'#86ad86',h,gp);
+      windows(gp,w,d,1,4,1,1,.55,.85);
+      door(gp,d,1.1,1.7);
+      box(3.2,.2,1.5,C.lime,0,0,d/2+.75,gp);
+      box(3.4,.2,1.7,'#86ad86',0,2.4,d/2+.85,gp);
+      cyl(.09,.09,2.4,8,C.lime,-1.45,0,d/2+1.45,gp); cyl(.09,.09,2.4,8,C.lime,1.45,0,d/2+1.45,gp);
+      return {h:5.6, perches:[[0,5.02,0],[0,5.02,-1.6]]};
+    },
+    post(gp){ // post office
+      const w=4,d=3.4,h=2.6;
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
+      gable(w,d,1.5,'#6fa3b8',h,gp);
+      windows(gp,w,d,1,2,.9,1,.6,.7,false);
+      door(gp,d);
+      rbox(.55,.75,.45,'#6fa3b8',1.7,.45,d/2+1,gp,.08);
+      cyl(.06,.06,.45,6,'#2e3a35',1.7,0,d/2+1,gp);
+      return {h:4.7, perches:[[0,4.12,0]]};
+    }
+  };
+
+  const pickables=[]; const groups={}; const perches=[];
+  BUILD.forEach(b=>{
+    const gp=new THREE.Group(); gp.position.set(b.x,0,b.z); gp.rotation.y=b.rot;
+    const info=MAKERS[b.key](gp); shade(gp);
+    gp.userData.place=b.key; gp.userData.h=info.h;
+    scene.add(gp); groups[b.key]=gp;
+    gp.updateMatrixWorld(true);
+    info.perches.forEach(p=>perches.push(gp.localToWorld(new THREE.Vector3(...p))));
+    const s=label(PLACES[b.key].title, PLACES[b.key].color);
+    s.position.set(b.x, info.h+1.2, b.z); s.userData.place=b.key;
+    pickables.push(gp,s);
+  });
+
+  /* ---------- Maker's Market ---------- */
+  const stallX=[[-3.4,-1,1.4,5.6,8,10.4],[-3.4,-1,1.4,5.6,8]];
+  const stalls=[]; let si=0;
+  stallX.forEach((row,ri)=>{
+    row.forEach(x=>{
+      if(si>=SITES.length) return;
+      const site=SITES[si];
+      const sg=new THREE.Group(); const z=ri===0?-3.1:3.1;
+      sg.position.set(x,0,z); sg.rotation.y= ri===0?0:Math.PI;
+      rbox(1.9,.9,1,'#b98a5e',0,0,0,sg,.06);
+      box(1.95,.1,1.05,C.lime,0,.9,0,sg);
+      [[-.85,-.45,2],[.85,-.45,2],[-.85,.45,1.7],[.85,.45,1.7]].forEach(([a,b,hh])=>cyl(.05,.05,hh,6,'#8a6a48',a,0,b,sg));
+      const aw=new THREE.Mesh(new THREE.BoxGeometry(2.2,.1,1.5), mat(site.color)); aw.position.set(0,1.95,.05); aw.rotation.x=.28; sg.add(aw);
+      for(let k=0;k<5;k++){ const st=new THREE.Mesh(new THREE.BoxGeometry(.22,.11,1.52), mat('#ffffff')); st.position.set(-.88+k*.44,1.955,.05); st.rotation.x=.28; sg.add(st); }
+      const flap=new THREE.Mesh(new THREE.BoxGeometry(2.2,.3,.06), mat(site.color)); flap.position.set(0,1.62,.79); sg.add(flap);
+      for(let k=0;k<3;k++) rbox(.32,.26,.32,[site.color,'#f2b84b','#ffffff'][k],-.55+k*.55,1.0,.1,sg,.05);
+      shade(sg); sg.userData.place='site'; sg.userData.site=si; scene.add(sg);
+      const s=label(site.name, site.color, .72); s.position.set(x,3.05,z); s.userData.place='site'; s.userData.site=si; s.visible=false;
+      stalls.push({g:sg,s,x,z}); pickables.push(sg,s); si++;
+    });
+  });
+  const gate=new THREE.Group(); gate.position.set(-4.9,0,0); scene.add(gate);
+  [-2.4,2.4].forEach(z=>{ rbox(.7,3.6,.7,brick(.7,3.6),0,0,z,gate,.05); rbox(.85,.3,.85,C.lime,0,3.6,z,gate,.05); });
+  box(.3,.3,5.4,'#3a3f44',0,3.3,0,gate);
+  rbox(.2,.9,3.2,'#ffffff',0,2.25,0,gate,.05);
+  box(.22,.18,3.2,RED,0,3.0,0,gate);
+  shade(gate); gate.userData.place='market'; pickables.push(gate);
+  const gateLabel=label("Maker's Market", PLACES.market.color, 1.2); gateLabel.position.set(-4.9,5,0); gateLabel.userData.place='market'; pickables.push(gateLabel);
+  groups.market=gate;
+
+  /* ---------- Lamp posts with cardinal banners ---------- */
+  const lampHeads=[];
+  const lamp=(x,z,ry=0)=>{
+    const lg=new THREE.Group(); lg.position.set(x,0,z); lg.rotation.y=ry; scene.add(lg);
+    cyl(.06,.08,2.6,8,'#3a3f44',0,0,0,lg);
+    const head=sph(.17,DARK?glow('#ffe2a0',1.2):mat('#fff6dc',{roughness:.4}),0,2.72,0,lg); lampHeads.push(head);
+    box(.03,.75,.42,RED,0,1.55,.24,lg); box(.035,.12,.42,'#ffffff',0,1.95,.24,lg);
+    shade(lg);
+  };
+  [-2.6,3.5,12.4].forEach(x=>{ lamp(x,2.05); lamp(x,-2.05,Math.PI); });
+  BUILD.forEach(b=>{ const [a,c]=[b.from,b.front]; const mx=(a[0]+c[0])/2, mz=(a[1]+c[1])/2; const L=Math.hypot(c[0]-a[0],c[1]-a[1]);
+    lamp(mx-(c[1]-a[1])/L*1.15, mz+(c[0]-a[0])/L*1.15, Math.atan2(c[0]-a[0],c[1]-a[1])+Math.PI/2); });
+
+  /* ---------- Scramble intersection ---------- */
+  const signals=[];
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{
+    const sg=new THREE.Group(); sg.position.set(WEST[0]+a*4.1,0,b*4.1); scene.add(sg);
+    cyl(.06,.07,2.4,8,'#3a3f44',0,0,0,sg);
+    rbox(.32,.6,.28,'#2e3a35',0,2.15,0,sg,.05);
+    const red=new THREE.MeshStandardMaterial({color:'#ff5a4a',emissive:new THREE.Color('#ff3b2e'),emissiveIntensity:.9});
+    const walk=new THREE.MeshStandardMaterial({color:'#e9fff1',emissive:new THREE.Color('#bfffd6'),emissiveIntensity:.1});
+    const r1=new THREE.Mesh(new THREE.SphereGeometry(.08,10,8),red); r1.position.set(-a*.0,2.6,.15); sg.add(r1);
+    const w1=new THREE.Mesh(new THREE.SphereGeometry(.08,10,8),walk); w1.position.set(0,2.35,.15); sg.add(w1);
+    sg.lookAt(WEST[0],0,0);
+    shade(sg); signals.push({red,walk});
+  });
+  // parked cars waiting at the stop lines
+  const car=(x,z,ry,col)=>{ const cg=new THREE.Group(); cg.position.set(x,0,z); cg.rotation.y=ry; scene.add(cg);
+    rbox(1.1,.5,2,col,0,.18,0,cg,.15); rbox(.95,.42,1.1,'#dfe9ee',0,.66,-.1,cg,.12); rbox(1,.1,1.15,col,0,1.06,-.1,cg,.05);
+    [[-.5,-.65],[.5,-.65],[-.5,.65],[.5,.65]].forEach(([a,b])=>{ const w=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.16,12),mat('#2e3a35')); w.rotation.z=Math.PI/2; w.position.set(a,.2,b); cg.add(w); });
+    shade(cg); };
+  car(WEST[0]-1,-5.3,0,'#f2f2f2'); car(WEST[0]+1,5.4,Math.PI,RED);
+
+  /* ---------- The Quad and the pond ---------- */
+  rbox(.9,.5,.9,C.lime,QUAD.x,0,QUAD.z,scene,.08);
+  cyl(.05,.05,4.2,8,'#cfd3d6',QUAD.x,.5,QUAD.z,scene);
+  const flag=box(.04,.8,1.3,RED,QUAD.x,3.85,QUAD.z+.65,scene); box(.045,.16,1.3,'#ffffff',QUAD.x,4.17,QUAD.z+.65,scene);
+  const pond=new THREE.Mesh(new THREE.CircleGeometry(1,40), new THREE.MeshStandardMaterial({color:C.water, roughness:.2, metalness:.1}));
+  pond.rotation.x=-Math.PI/2; pond.scale.set(POND.rx,POND.rz,1); pond.position.set(POND.x,.03,POND.z); scene.add(pond);
+  const pondRim=new THREE.Mesh(new THREE.RingGeometry(1,1.12,40), mat('#cfc7b4')); pondRim.rotation.x=-Math.PI/2; pondRim.scale.set(POND.rx,POND.rz,1); pondRim.position.set(POND.x,.035,POND.z); scene.add(pondRim);
+  for(let i=0;i<6;i++){ const lp=new THREE.Mesh(new THREE.CylinderGeometry(.35+rnd()*.2,.35,.03,16,1,false,.4,Math.PI*2-.6), mat('#5f9a52'));
+    lp.position.set(POND.x+(rnd()-.5)*POND.rx*1.3,.05,POND.z+(rnd()-.5)*POND.rz*1.2); lp.rotation.y=rnd()*6; scene.add(lp); }
+
+  /* ---------- Trees with autumn color ---------- */
+  const keepOut=BUILD.map(b=>[b.x,b.z, b.key==='hall'?5.8:b.key==='library'?5:4.5]);
+  const segDist=(p,a,b)=>{ const vx=b[0]-a[0], vz=b[1]-a[1]; const t=Math.max(0,Math.min(1,((p[0]-a[0])*vx+(p[1]-a[1])*vz)/(vx*vx+vz*vz))); return Math.hypot(p[0]-a[0]-vx*t, p[1]-a[1]-vz*t); };
+  const trunkGeo=new THREE.CylinderGeometry(.12,.17,.9,6);
+  const leafGeos=[new THREE.IcosahedronGeometry(.85,0), new THREE.ConeGeometry(.85,1.9,7), new THREE.DodecahedronGeometry(.8,0)];
+  const treeTops=[];
+  const addTree=(x,z,s)=>{
+    const t=new THREE.Group();
+    const trunk=new THREE.Mesh(trunkGeo, flat(C.trunk)); trunk.position.y=.45; t.add(trunk);
+    const kind=Math.floor(rnd()*3); const col=C.trees[Math.floor(rnd()*C.trees.length)];
+    const leaf=new THREE.Mesh(leafGeos[kind===1 && C.trees.indexOf(col)>2 ? 0 : kind], flat(col));
+    leaf.position.y= kind===1?1.75:1.5; leaf.rotation.y=rnd()*3; t.add(leaf);
+    t.position.set(x,0,z); t.scale.setScalar(s); shade(t); scene.add(t);
+    if(C.trees.indexOf(col)>2) treeTops.push({x,z,y:1.6*s,col});
+  };
+  const inQuad=(x,z,m=0)=>Math.abs(x-QUAD.x)<QUAD.w/2+1+m && Math.abs(z-QUAD.z)<QUAD.d/2+1+m;
+  for(let i=0;i<5;i++){ addTree(QUAD.x-3.2+i*1.6, QUAD.z-QUAD.d/2-1.7, .7); }
+  let placed=0;
+  for(let tries=0; tries<5000 && placed<150; tries++){
+    const x=(rnd()*2-1)*RX, z=(rnd()*2-1)*RZ;
+    if((x*x)/((RX-1.5)**2)+(z*z)/((RZ-1.5)**2)>1) continue;
+    if(keepOut.some(([kx,kz,r])=>Math.hypot(x-kx,z-kz)<r)) continue;
+    if(segments.some(([a,b])=>segDist([x,z],a,b)<1.6)) continue;
+    if(x>-8 && x<13.5 && Math.abs(z)<5) continue;
+    if(Math.abs(x-WEST[0])<7 && Math.abs(z)<7) continue;
+    if(inQuad(x,z,.6)) continue;
+    if(((x-POND.x)/(POND.rx+1.4))**2+((z-POND.z)/(POND.rz+1.4))**2<1) continue;
+    if(Math.hypot(x-FB_HOME[0],z-FB_HOME[1])<2.2) continue;
+    if(z>13 && rnd()<.45) continue;
+    addTree(x,z,.75+rnd()*.7); placed++;
+  }
+
+  /* ---------- Falling leaves ---------- */
+  const leaves=[];
+  if(!REDUCE && treeTops.length){
+    const lg=new THREE.PlaneGeometry(.16,.12);
+    for(let i=0;i<36;i++){
+      const tt=treeTops[Math.floor(rnd()*treeTops.length)];
+      const m=new THREE.Mesh(lg, new THREE.MeshStandardMaterial({color:tt.col, side:THREE.DoubleSide}));
+      scene.add(m); leaves.push({m, t:tt, y:rnd()*tt.y, ph:rnd()*6, sp:.25+rnd()*.25});
+    }
+  }
+
+  /* ---------- Villagers ---------- */
+  const people=[];
+  const bodyGeo=new THREE.CylinderGeometry(.17,.21,.62,8), headGeo=new THREE.SphereGeometry(.17,12,8);
+  const coats=[RED,'#ffffff','#7f92c8','#e9a64b','#5f9e8f','#9a86c2',RED,'#3f4a6b'];
+  const makePerson=(i)=>{ const p=new THREE.Group();
+    const b=new THREE.Mesh(bodyGeo, mat(coats[i%coats.length])); b.position.y=.31; p.add(b);
+    const h=new THREE.Mesh(headGeo, mat(C.skin)); h.position.y=.8; p.add(h);
+    shade(p); scene.add(p); return p; };
+  for(let i=0;i<16;i++){
+    const seg=segments[Math.floor(rnd()*segments.length)];
+    people.push({g:makePerson(i), a:seg[0], b:seg[1], t:rnd(), dir:rnd()>.5?1:-1, speed:.025+rnd()*.03, off:(rnd()-.5)*.7});
+  }
+  const crossers=[];
+  [[-1,-1],[1,1],[1,-1],[-1,1],[-1,-1],[1,1]].forEach(([a,b],i)=>{
+    const o=(i>=4?.5:0);
+    crossers.push({g:makePerson(i+3), a:[WEST[0]+a*(3.4-o),b*(3.4)], b:[WEST[0]-a*(3.4-o),-b*3.4], t:0});
+  });
+
+  /* ---------- Cardinals ---------- */
+  const birds=[];
+  function makeCardinal(){
+    const bg=new THREE.Group(), body=new THREE.Group(); bg.add(body);
+    const red=mat('#c8102e',{roughness:.7}), dark=mat('#7c0c1d',{roughness:.7});
+    sph(.2,red,0,.22,0,body,.9,.85,1.35);
+    sph(.15,red,0,.38,.2,body);
+    const crest=new THREE.Mesh(new THREE.ConeGeometry(.07,.2,8),red); crest.position.set(0,.55,.15); crest.rotation.x=-.6; body.add(crest);
+    const beak=new THREE.Mesh(new THREE.ConeGeometry(.055,.13,8),mat('#f0a33a')); beak.rotation.x=Math.PI/2; beak.position.set(0,.36,.37); body.add(beak);
+    sph(.09,mat('#1c1c1c'),0,.36,.31,body,1,.8,.5);
+    sph(.025,mat('#111'),.08,.41,.31,body); sph(.025,mat('#111'),-.08,.41,.31,body);
+    const tail=box(.14,.04,.36,dark,0,0,0,body); tail.position.set(0,.22,-.4); tail.rotation.x=.35;
+    const wl=new THREE.Group(), wr=new THREE.Group(); wl.position.set(.16,.27,0); wr.position.set(-.16,.27,0);
+    const w1=box(.34,.04,.28,dark,0,0,0,wl); w1.position.set(.17,0,-.02);
+    const w2=box(.34,.04,.28,dark,0,0,0,wr); w2.position.set(-.17,0,-.02);
+    body.add(wl,wr); wl.rotation.z=1.25; wr.rotation.z=-1.25;
+    bg.scale.setScalar(1.25); shade(bg); scene.add(bg);
+    return {g:bg, body, wl, wr};
+  }
+  const used=new Set();
+  for(let i=0;i<Math.min(9,perches.length);i++){
+    let k; do{ k=Math.floor(rnd()*perches.length);}while(used.has(k)); used.add(k);
+    const c=makeCardinal(); c.perch=k; c.g.position.copy(perches[k]); c.g.rotation.y=rnd()*6;
+    c.state='sit'; c.next=2+rnd()*8; birds.push(c);
+  }
+
+  /* ---------- Frog Baby ---------- */
+  const frog=new THREE.Group(); frog.position.set(FB_HOME[0],0,FB_HOME[1]); scene.add(frog);
+  const fbModel=new THREE.Group(); frog.add(fbModel);
+  (function buildFrogBaby(p){
+    const skin=mat(C.skin,{roughness:.8}), red=mat('#b8263a',{roughness:.75}), shoe=mat('#7e1e2b',{roughness:.6}),
+          white=mat('#fbfbf8',{roughness:.8}), hair=mat('#6e4630',{roughness:.85}), gold=new THREE.MeshStandardMaterial({color:'#f6c64b', emissive:new THREE.Color('#f2b632'), emissiveIntensity:.55, roughness:.35, metalness:.2}),
+          ink=mat('#4a2b22',{roughness:.6}), blush=mat('#f2a5a0',{roughness:.9});
+    const pad=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.05,24,1,false,.35,Math.PI*2-.5), mat('#5f9a52')); pad.position.y=.03; p.add(pad);
+    sph(.13,shoe,-.15,.14,.04,p,1,.75,1.35); sph(.13,shoe,.15,.14,.04,p,1,.75,1.35);
+    cyl(.07,.07,.18,10,skin,-.15,.18,0,p); cyl(.07,.07,.18,10,skin,.15,.18,0,p);
+    sph(.34,red,0,.62,0,p,1,1.12,.9);
+    box(.38,.26,.06,red,0,.8,.27,p);
+    box(.18,.12,.02,mat('#a52034'),0,.56,.31,p);
+    [-.13,.13].forEach(x=>{ box(.06,.28,.04,red,x,.92,.2,p); sph(.028,gold,x,1.08,.24,p); });
+    sph(.24,white,0,1.06,0,p,1.15,.6,.9);
+    [-1,1].forEach(s=>{
+      sph(.1,white,s*.28,1.08,0,p,1,.9,1);
+      const arm=cyl(.055,.06,.38,10,skin,0,0,0,p); arm.position.set(s*.45,1.17,.02); arm.rotation.z=-s*1.0;
+      sph(.075,skin,s*.6,1.3,.04,p);
+    });
+    const hy=1.62;
+    sph(.5,skin,0,hy,0,p,1.04,.98,.98,24,18);
+    sph(.1,skin,-.5,hy-.02,0,p,.6,1,.8); sph(.1,skin,.5,hy-.02,0,p,.6,1,.8);
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(.53,24,16,0,Math.PI*2,0,1.25), hair); cap.position.set(0,hy+.03,-.04); cap.rotation.x=-.32; p.add(cap);
+    sph(.15,hair,0,hy+.54,-.06,p);
+    const star=new THREE.Shape(); for(let i=0;i<10;i++){ const r=i%2?.07:.16, a=i/10*Math.PI*2+Math.PI/2; const x=Math.cos(a)*r, y=Math.sin(a)*r; i?star.lineTo(x,y):star.moveTo(x,y); }
+    const sm=new THREE.Mesh(new THREE.ExtrudeGeometry(star,{depth:.06,bevelEnabled:true,bevelThickness:.02,bevelSize:.02,bevelSegments:2}), gold);
+    sm.position.set(0,hy+.78,-.09); p.add(sm);
+    const fz=Math.sqrt(.5*.5-.08*.08)*.98;
+    [-.17,.17].forEach(x=>{ const e=new THREE.Mesh(new THREE.TorusGeometry(.06,.014,6,14,Math.PI), ink); e.position.set(x,hy+.06,fz-.03); p.add(e);
+      sph(.07,blush,x*1.45,hy-.1,fz-.08,p,1,.6,.4); });
+    const mouth=new THREE.Mesh(new THREE.TorusGeometry(.11,.016,6,16,Math.PI), mat('#8a3b33')); mouth.rotation.z=Math.PI; mouth.position.set(0,hy-.1,fz-.02); p.add(mouth);
+    sph(.04,mat('#f0b897'),0,hy-.02,fz+.01,p);
+    // the two frogs
+    const littleFrog=(col,belly,x,y,z)=>{
+      const f=new THREE.Group(); f.position.set(x,y,z); p.add(f);
+      sph(.19,mat(col,{roughness:.7}),0,.15,0,f,1.1,.85,.95);
+      sph(.12,mat(belly,{roughness:.8}),0,.12,.09,f,1.1,.7,.6);
+      [-.09,.09].forEach(ex=>{ sph(.07,mat(col,{roughness:.7}),ex,.3,.03,f); sph(.05,mat('#ffffff'),ex,.32,.08,f); sph(.028,mat('#1f2a2a'),ex,.32,.12,f); });
+      const sm=new THREE.Mesh(new THREE.TorusGeometry(.06,.011,6,12,Math.PI), mat('#1f3b33')); sm.rotation.z=Math.PI; sm.position.set(0,.17,.175); f.add(sm);
+      sph(.05,mat(col),-.12,.02,.06,f,1,.5,1); sph(.05,mat(col),.12,.02,.06,f,1,.5,1);
+      return f;
+    };
+    fbModel.userData.frogs=[littleFrog('#5fae5a','#a9d68e',-.62,1.33,.05), littleFrog('#4f9e98','#a3d3cb',.62,1.33,.05)];
+  })(fbModel);
+  fbModel.scale.setScalar(1.05);
+  shade(frog);
+  frog.userData.place='frog'; pickables.push(frog);
+  const frogLabel=label('Frog Baby','#5fae5a',.8); frogLabel.userData.place='frog'; pickables.push(frogLabel);
+  const fb={target:null, face:0, walking:false};
+  frog.rotation.y=0;
+  // optional real model: drop assets/frogbaby.glb next to index.html
+  if(THREE.GLTFLoader){
+    new THREE.GLTFLoader().load('assets/frogbaby.glb', gl=>{
+      const m=gl.scene; const bb=new THREE.Box3().setFromObject(m); const hgt=bb.max.y-bb.min.y||1;
+      m.scale.setScalar(2.1/hgt); bb.setFromObject(m);
+      m.position.set(-(bb.min.x+bb.max.x)/2, -bb.min.y, -(bb.min.z+bb.max.z)/2);
+      shade(m); fbModel.visible=false; frog.add(m);
+    }, undefined, ()=>{});
+  }
+  function walkTo(x,z,face){ fb.target=new THREE.Vector3(x,0,z); fb.face=face; if(REDUCE){ frog.position.copy(fb.target); frog.rotation.y=face; fb.target=null; } }
+
+  /* ---------- Camera moves ---------- */
+  const narrow=()=>innerWidth<=720;
+  function homeView(){
+    const a=innerWidth/innerHeight; const k = a<0.8 ? 2.45 : a<1.2 ? 1.45 : 1;
+    return {pos:new THREE.Vector3(2, 40*k, 58*k), tgt:new THREE.Vector3(1,0,1.5)};
+  }
+  let tween=null;
+  function moveTo(pos,tgt,dur=1200){
+    if(REDUCE) dur=0;
+    tween={p0:camera.position.clone(), t0:controls.target.clone(), p1:pos, t1:tgt, start:performance.now(), dur};
+    controls.enabled=false;
+  }
+  focusPlace=(k, siteIdx)=>{
+    let center, dir, dist;
+    if(k==='frog'){
+      center=new THREE.Vector3(frog.position.x,1,frog.position.z); dist=9;
+      dir=camera.position.clone().sub(controls.target).setY(0).normalize(); dir.y=.6; dir.normalize();
+    } else if(k==='market'||siteIdx!=null){
+      const st = siteIdx!=null ? stalls[siteIdx] : null;
+      center=new THREE.Vector3(st?st.x:3.5,1,st?st.z:0);
+      dist= st?18:30; dir=new THREE.Vector3(0,.75,1).normalize();
+      if(st) walkTo(st.x, st.z>0?1.2:-1.2, st.z>0?0:Math.PI); else walkTo(-3.4,0,Math.PI/2);
+    } else {
+      const g=groups[k], b=BUILD.find(x=>x.key===k);
+      center=new THREE.Vector3(g.position.x,(g.userData.h||4)*.42,g.position.z); dist=k==='school'||k==='awards'?34:28;
+      dir=new THREE.Vector3(Math.sin(b.rot),0,Math.cos(b.rot));
+      const cam=camera.position.clone().sub(controls.target).setY(0).normalize();
+      dir.x=dir.x*.6+cam.x*.4; dir.z=dir.z*.6+cam.z*.4; dir.setY(0).normalize(); dir.y=.75; dir.normalize();
+      const L=Math.hypot(b.stand[0]-b.x,b.stand[1]-b.z);
+      const side=[ (b.stand[1]-b.z)/L*1.3, -(b.stand[0]-b.x)/L*1.3 ];
+      walkTo(b.stand[0]+side[0], b.stand[1]+side[1], b.rot);
+    }
+    if(narrow()) dist*=1.35;
+    const tgt=center.clone();
+    const pos=center.clone().add(dir.clone().multiplyScalar(dist));
+    if(narrow()){ tgt.y-=dist*.22; pos.y-=dist*.22; }
+    else {
+      const right=new THREE.Vector3().crossVectors(dir.clone().negate(), new THREE.Vector3(0,1,0)).normalize();
+      const sh=dist*.24; tgt.addScaledVector(right,sh); pos.addScaledVector(right,sh);
+    }
+    moveTo(pos,tgt);
+  };
+  goHome=()=>{ const h=homeView(); moveTo(h.pos,h.tgt); walkTo(FB_HOME[0],FB_HOME[1],0); };
+
+  const h0=homeView();
+  if(REDUCE){ camera.position.copy(h0.pos); controls.target.copy(h0.tgt); }
+  else { camera.position.set(-48,70,96); controls.target.set(0,0,0); moveTo(h0.pos,h0.tgt,2200); }
+
+  /* ---------- Post processing: miniature tilt shift ---------- */
+  let composer=null, hPass=null, vPass=null;
+  try{
+    if(THREE.EffectComposer && THREE.HorizontalTiltShiftShader){
+      const rt = (renderer.capabilities.isWebGL2 && THREE.WebGLMultisampleRenderTarget)
+        ? new THREE.WebGLMultisampleRenderTarget(innerWidth*DPR, innerHeight*DPR, {format:THREE.RGBAFormat}) : undefined;
+      composer=new THREE.EffectComposer(renderer, rt);
+      composer.addPass(new THREE.RenderPass(scene,camera));
+      hPass=new THREE.ShaderPass(THREE.HorizontalTiltShiftShader);
+      vPass=new THREE.ShaderPass(THREE.VerticalTiltShiftShader);
+      composer.addPass(hPass); composer.addPass(vPass);
+      const setTS=()=>{ hPass.uniforms.h.value=2.6/innerWidth; vPass.uniforms.v.value=2.6/innerHeight; hPass.uniforms.r.value=vPass.uniforms.r.value=.48; };
+      setTS(); composer.setPixelRatio(DPR); composer.setSize(innerWidth,innerHeight);
+      composer.userData={setTS};
+    }
+  }catch(e){ console.warn(e); composer=null; }
+
+  /* ---------- Picking ---------- */
+  const ray=new THREE.Raycaster(); const mouse=new THREE.Vector2();
+  function pick(cx,cy){
+    const r=canvas.getBoundingClientRect();
+    mouse.set(((cx-r.left)/r.width)*2-1, -((cy-r.top)/r.height)*2+1);
+    ray.setFromCamera(mouse,camera);
+    const hits=ray.intersectObjects(pickables.filter(o=>o.visible),true);
+    for(const hit of hits){ let o=hit.object; while(o && !o.userData.place) o=o.parent; if(o) return o.userData; }
+    return null;
+  }
+  let down=null, hovered=null;
+  canvas.addEventListener('pointerdown',e=>{ down={x:e.clientX,y:e.clientY}; hideHint(); });
+  canvas.addEventListener('pointerup',e=>{
+    if(!down) return; const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y); down=null;
+    if(moved>7) return;
+    const u=pick(e.clientX,e.clientY); if(!u) return;
+    if(u.place==='site') openPlace('market', u.site); else openPlace(u.place);
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='mouse') return;
+    const u=pick(e.clientX,e.clientY);
+    hovered=u? (u.place==='site'?'site'+u.site:u.place) : null;
+    canvas.classList.toggle('hovering', !!u);
+  });
+  canvas.addEventListener('pointerleave',()=>{ hovered=null; canvas.classList.remove('hovering'); });
+
+  addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight,false);
+    if(composer){ composer.setSize(innerWidth,innerHeight); composer.userData.setTS(); }
+  });
+
+  /* ---------- Loop ---------- */
+  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const MARKET=new THREE.Vector3(3.5,0,0), tmp=new THREE.Vector3();
+  let last=performance.now();
+  function frame(now){
+    const dt=Math.min(.05,(now-last)/1000); last=now; const T=now/1000;
+    if(tween){
+      const t=tween.dur?Math.min(1,(now-tween.start)/tween.dur):1, e=ease(t);
+      camera.position.lerpVectors(tween.p0,tween.p1,e);
+      controls.target.lerpVectors(tween.t0,tween.t1,e);
+      if(t>=1){ tween=null; controls.enabled=true; }
+    }
+    controls.update();
+    for(const k in groups){ const g=groups[k]; const goal=(hovered===k||openKey===k)?.3:0; g.position.y+=(goal-g.position.y)*Math.min(1,dt*10); }
+    stalls.forEach((st,i)=>{ const goal=(hovered==='site'+i)?.3:0; st.g.position.y+=(goal-st.g.position.y)*Math.min(1,dt*10); });
+    const showStalls = camera.position.distanceTo(MARKET)<40 || openKey==='market';
+    stalls.forEach((st,i)=>{ st.s.visible = showStalls || hovered==='site'+i; });
+    LABELS.forEach(l=>{ const f=Math.min(1.15,Math.max(.32,camera.position.distanceTo(l.position)/60)); l.scale.set(l.userData.bs.x*f,l.userData.bs.y*f,1); });
+
+    // Frog Baby
+    if(fb.target){
+      tmp.copy(fb.target).sub(frog.position); tmp.y=0; const d=tmp.length();
+      if(d<.06){ frog.position.x=fb.target.x; frog.position.z=fb.target.z; fb.target=null; }
+      else { const step=Math.min(d, dt*5.2); tmp.normalize(); frog.position.addScaledVector(tmp,step);
+        const want=Math.atan2(tmp.x,tmp.z); let dr=want-frog.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); frog.rotation.y+=dr*Math.min(1,dt*10);
+        fbModel.position.y=Math.abs(Math.sin(T*11))*.16; }
+    } else {
+      let dr=fb.face-frog.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); frog.rotation.y+=dr*Math.min(1,dt*5);
+      fbModel.position.y+=( (REDUCE?0:Math.sin(T*2.2)*.03) - fbModel.position.y)*Math.min(1,dt*8);
+    }
+    const fr=fbModel.userData.frogs;
+    if(fr && !REDUCE){ fr[0].position.y=1.33+Math.max(0,Math.sin(T*3.1))*.12; fr[1].position.y=1.33+Math.max(0,Math.sin(T*3.1+1.6))*.12; }
+    frogLabel.position.set(frog.position.x, 3.2, frog.position.z);
+
+    // scramble light cycle: 9s cars, 5s everyone walks
+    const cyc=(T%14), walkPhase=cyc>9;
+    signals.forEach(s=>{ s.red.emissiveIntensity=walkPhase?.05:.9; s.walk.emissiveIntensity=walkPhase?1.2:.05; });
+    crossers.forEach((c,i)=>{
+      const u = walkPhase ? Math.min(1,(cyc-9)/4.2) : 0;
+      const flip = Math.floor(T/14)%2===1;
+      const a=flip?c.b:c.a, b=flip?c.a:c.b;
+      const t=REDUCE?0:ease(u);
+      c.g.position.set(a[0]+(b[0]-a[0])*t, walkPhase&&!REDUCE?Math.abs(Math.sin(T*12+i))*.06:0, a[1]+(b[1]-a[1])*t);
+      c.g.rotation.y=Math.atan2(b[0]-a[0],b[1]-a[1]);
+    });
+
+    if(!REDUCE){
+      people.forEach(p=>{
+        const L=Math.hypot(p.b[0]-p.a[0],p.b[1]-p.a[1])||1;
+        p.t+=p.dir*p.speed*dt*12/L; if(p.t>1){p.t=1;p.dir=-1;} if(p.t<0){p.t=0;p.dir=1;}
+        const vx=(p.b[0]-p.a[0])/L, vz=(p.b[1]-p.a[1])/L;
+        p.g.position.set(p.a[0]+(p.b[0]-p.a[0])*p.t - vz*p.off, Math.abs(Math.sin(now*.012+p.off*9))*.06, p.a[1]+(p.b[1]-p.a[1])*p.t + vx*p.off);
+      });
+      if(groups.grants.userData.gear) groups.grants.userData.gear.rotation.z += dt*.6;
+      flag.rotation.y=Math.sin(T*1.7)*.12;
+      leaves.forEach(l=>{
+        l.y-=dt*l.sp; if(l.y<0.02){ l.y=l.t.y; }
+        l.m.position.set(l.t.x+Math.sin(T*1.3+l.ph)*.6*(1-l.y/l.t.y+.2), l.y, l.t.z+Math.cos(T*1.1+l.ph)*.4);
+        l.m.rotation.set(T*2+l.ph, T*1.4+l.ph, 0);
+      });
+      // cardinals hop between perches
+      birds.forEach(b=>{
+        if(b.state==='sit'){
+          b.next-=dt; b.body.rotation.x=Math.sin(T*3+b.perch)*.05;
+          if(b.next<0){ let k; let n=0; do{ k=Math.floor(Math.random()*perches.length); n++; }while((used.has(k))&&n<20);
+            used.delete(b.perch); used.add(k);
+            b.from=b.g.position.clone(); b.to=perches[k].clone(); b.perch=k; b.t=0;
+            b.dur=Math.max(1.6,b.from.distanceTo(b.to)/7); b.state='fly'; }
+        } else {
+          b.t+=dt/b.dur; const t=Math.min(1,b.t), e=ease(t);
+          const p=b.from.clone().lerp(b.to,e); p.y+=Math.sin(Math.PI*t)*(3+b.from.distanceTo(b.to)*.15);
+          tmp.copy(p).sub(b.g.position); if(tmp.lengthSq()>1e-6) b.g.rotation.y=Math.atan2(tmp.x,tmp.z);
+          b.g.position.copy(p);
+          const f=Math.sin(T*28)*.9; b.wl.rotation.z=.2+f; b.wr.rotation.z=-.2-f;
+          if(t>=1){ b.state='sit'; b.next=4+Math.random()*9; b.wl.rotation.z=1.25; b.wr.rotation.z=-1.25; }
+        }
+      });
+    }
+
+    if(composer){ composer.render(dt); } else { renderer.render(scene,camera); }
+    renderer.autoClear=false; renderer.clearDepth(); renderer.render(labelScene,camera); renderer.autoClear=true;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  document.getElementById('loader').classList.add('done');
+}
+
+(document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,2500))]) : Promise.resolve())
+  .then(()=>{
+    try{ start(); }
+    catch(e){
+      console.error(e);
+      document.getElementById('loader').classList.add('done');
+      document.getElementById('err').style.display='block';
+    }
+  });
+</script>
+</body>
+</html>
