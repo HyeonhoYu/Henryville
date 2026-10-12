@@ -318,8 +318,7 @@ const PLACES = {
     name:"Library", title:"Publications", color:"#8e9bb5",
     lede:"Peer-reviewed work on AI in teacher preparation, technology in physical education, and school physical activity.",
     html:()=>{
-      let out = `<div class="stats"><div><b>${PUBS.published.length}</b>published articles</div><div><b>${PUBS.inPress.length}</b>in press</div><div><b>${PUBS.review.length}</b>under review or in progress</div></div>
-      <a class="btn" href="${SCHOLAR}" target="_blank" rel="noopener">Citations on Google Scholar</a>
+      let out = `<a class="btn" href="${SCHOLAR}" target="_blank" rel="noopener">Citations on Google Scholar</a>
       <h3>Published</h3>`;
       let y = null, buf=[];
       const flush=()=>{ if(buf.length){ out += `<p class="year">${y}</p>` + li(buf); buf=[]; } };
@@ -983,12 +982,30 @@ function start(){
 
   /* ---------- Villagers ---------- */
   const people=[];
-  const bodyGeo=new THREE.CylinderGeometry(.17,.21,.62,8), headGeo=new THREE.SphereGeometry(.17,12,8);
   const coats=[RED,'#ffffff','#7f92c8','#e9a64b','#5f9e8f','#9a86c2',RED,'#3f4a6b'];
-  const makePerson=(i)=>{ const p=new THREE.Group();
-    const b=new THREE.Mesh(bodyGeo, mat(coats[i%coats.length])); b.position.y=.31; p.add(b);
-    const h=new THREE.Mesh(headGeo, mat(C.skin)); h.position.y=.8; p.add(h);
+  const pants=['#3f4a6b','#2e3a35','#6b5a48','#5b6f86','#3a3f44'];
+  const hairs=['#2b211c','#4a3326','#7a5532','#c9a46a','#1c1c1c'];
+  const skins=DARK?['#c9a98a','#a8805f','#d9b99a','#7f5b40']:['#f3cfae','#d9a77f','#f6dcc3','#a8754f'];
+  const legGeo=new THREE.CylinderGeometry(.065,.06,.42,8), armGeo=new THREE.CylinderGeometry(.048,.042,.36,8),
+        torsoGeo=new THREE.CylinderGeometry(.14,.16,.44,10), headGeo=new THREE.SphereGeometry(.13,14,10),
+        hairGeo=new THREE.SphereGeometry(.138,14,8,0,Math.PI*2,0,1.55), handGeo=new THREE.SphereGeometry(.045,8,6),
+        shoeGeo=new THREE.BoxGeometry(.11,.06,.18);
+  const makePerson=(i)=>{
+    const p=new THREE.Group(), coat=mat(coats[i%coats.length]), pant=mat(pants[i%pants.length]), skin=mat(skins[i%skins.length]);
+    const limb=(geo,m,x,y,len,extra)=>{ const g=new THREE.Group(); g.position.set(x,y,0); const o=new THREE.Mesh(geo,m); o.position.y=-len/2; g.add(o); if(extra) extra(g); p.add(g); return g; };
+    const ll=limb(legGeo,pant,-.075,.48,.42,g=>{ const sh=new THREE.Mesh(shoeGeo,mat('#2e2a28')); sh.position.set(0,-.44,.03); g.add(sh); });
+    const lr=limb(legGeo,pant,.075,.48,.42,g=>{ const sh=new THREE.Mesh(shoeGeo,mat('#2e2a28')); sh.position.set(0,-.44,.03); g.add(sh); });
+    const torso=new THREE.Mesh(torsoGeo,coat); torso.position.y=.7; p.add(torso);
+    const al=limb(armGeo,coat,-.19,.88,.36,g=>{ const h=new THREE.Mesh(handGeo,skin); h.position.y=-.38; g.add(h); });
+    const ar=limb(armGeo,coat,.19,.88,.36,g=>{ const h=new THREE.Mesh(handGeo,skin); h.position.y=-.38; g.add(h); });
+    al.rotation.z=-.08; ar.rotation.z=.08;
+    const neck=new THREE.Mesh(new THREE.CylinderGeometry(.045,.05,.08,8),skin); neck.position.y=.95; p.add(neck);
+    const head=new THREE.Mesh(headGeo,skin); head.position.y=1.08; p.add(head);
+    const hair=new THREE.Mesh(hairGeo,mat(hairs[i%hairs.length])); hair.position.set(0,1.1,-.015); hair.rotation.x=-.35; p.add(hair);
+    if(i%3===0){ const pack=new THREE.Mesh(new THREE.BoxGeometry(.24,.28,.12),mat([RED,'#5b6f86','#e9a64b'][i%3===0?(i/3)%3:0])); pack.position.set(0,.74,-.17); p.add(pack); }
+    p.userData.limbs={ll,lr,al,ar};
     shade(p); scene.add(p); return p; };
+  const swing=(p,ph,amp)=>{ const L=p.userData.limbs, s=Math.sin(ph)*amp; L.ll.rotation.x=s; L.lr.rotation.x=-s; L.al.rotation.x=-s*.8; L.ar.rotation.x=s*.8; };
   for(let i=0;i<16;i++){
     const seg=segments[Math.floor(rnd()*segments.length)];
     people.push({g:makePerson(i), a:seg[0], b:seg[1], t:rnd(), dir:rnd()>.5?1:-1, speed:.025+rnd()*.03, off:(rnd()-.5)*.7});
@@ -1019,7 +1036,7 @@ function start(){
     return {g:bg, body, wl, wr};
   }
   const used=new Set();
-  for(let i=0;i<Math.min(9,perches.length);i++){
+  for(let i=0;i<Math.min(5,perches.length);i++){
     let k; do{ k=Math.floor(rnd()*perches.length);}while(used.has(k)); used.add(k);
     const c=makeCardinal(); c.perch=k; c.g.position.copy(perches[k]); c.g.rotation.y=rnd()*6;
     c.state='sit'; c.next=2+rnd()*8; birds.push(c);
@@ -1210,7 +1227,9 @@ function start(){
       const flip = Math.floor(T/14)%2===1;
       const a=flip?c.b:c.a, b=flip?c.a:c.b;
       const t=REDUCE?0:ease(u);
-      c.g.position.set(a[0]+(b[0]-a[0])*t, walkPhase&&!REDUCE?Math.abs(Math.sin(T*12+i))*.06:0, a[1]+(b[1]-a[1])*t);
+      const moving=walkPhase && u<1 && !REDUCE;
+      c.g.position.set(a[0]+(b[0]-a[0])*t, moving?Math.abs(Math.cos(T*9+i))*.03:0, a[1]+(b[1]-a[1])*t);
+      swing(c.g, T*9+i, moving?.55:0);
       c.g.rotation.y=Math.atan2(b[0]-a[0],b[1]-a[1]);
     });
 
@@ -1219,7 +1238,9 @@ function start(){
         const L=Math.hypot(p.b[0]-p.a[0],p.b[1]-p.a[1])||1;
         p.t+=p.dir*p.speed*dt*12/L; if(p.t>1){p.t=1;p.dir=-1;} if(p.t<0){p.t=0;p.dir=1;}
         const vx=(p.b[0]-p.a[0])/L, vz=(p.b[1]-p.a[1])/L;
-        p.g.position.set(p.a[0]+(p.b[0]-p.a[0])*p.t - vz*p.off, Math.abs(Math.sin(now*.012+p.off*9))*.06, p.a[1]+(p.b[1]-p.a[1])*p.t + vx*p.off);
+        const ph=now*.009+p.off*9;
+        p.g.position.set(p.a[0]+(p.b[0]-p.a[0])*p.t - vz*p.off, Math.abs(Math.cos(ph))*.03, p.a[1]+(p.b[1]-p.a[1])*p.t + vx*p.off);
+        p.g.rotation.y=Math.atan2(vx*p.dir, vz*p.dir); swing(p.g, ph, .55);
       });
       if(groups.grants.userData.gear) groups.grants.userData.gear.rotation.z += dt*.6;
       flag.rotation.y=Math.sin(T*1.7)*.12;
