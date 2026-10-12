@@ -169,13 +169,7 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .tag{font:600 .8rem/1 var(--display); color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:999px; padding:.45rem .7rem; cursor:pointer}
 .tag:hover{border-color:var(--ink)}
 .tag.on{background:var(--ink); color:var(--paper); border-color:var(--ink)}
-.stall{grid-template-columns:112px 1fr !important; gap:14px !important; padding:14px 0 !important}
 .stall[hidden]{display:none}
-.thumb{position:relative; display:block; width:112px; aspect-ratio:4/3; border-radius:12px; overflow:hidden; background:var(--sc);
-  box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.15)}
-.thumb span{position:absolute; inset:0; display:grid; place-items:center; font:800 1.6rem/1 var(--display); color:#fff;
-  text-shadow:0 1px 2px rgba(0,0,0,.25); background:repeating-linear-gradient(135deg, rgba(255,255,255,.14) 0 10px, transparent 10px 20px)}
-.thumb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:top}
 .pills{display:flex; flex-wrap:wrap; gap:4px; margin:.35rem 0 .1rem}
 .pills em{font:600 .72rem/1 var(--display); font-style:normal; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.3rem .5rem}
 .loader{position:fixed; inset:0; display:grid; place-items:center; z-index:20; background:var(--sea); transition:opacity .6s}
@@ -198,8 +192,6 @@ body.panel-open .sign{opacity:0}
 
   .controls{right:12px; left:auto; top:auto; bottom:calc(66px + env(safe-area-inset-bottom,0px))}
   .hint{bottom:calc(114px + env(safe-area-inset-bottom,0px)) !important}
-  .stall{grid-template-columns:88px 1fr !important}
-  .thumb{width:88px}
   #tourEnd{display:none}
   .tourbar{padding:10px 14px}
   .tourbar .step{white-space:nowrap}
@@ -264,27 +256,27 @@ const SCHOLAR = "https://scholar.google.com/citations?user=-VpF4mUAAAAJ&hl=en&oi
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
 
 const SITES = [
-  { name:"Wonder Pond", tags:["Games", "Elementary"], img:"assets/sites/wonder-pond.jpg", url:"https://wonderpond.github.io", color:"#7fb8a4",
+  { name:"Wonder Pond", tags:["Games", "Elementary"], url:"https://wonderpond.github.io", color:"#7fb8a4",
     blurb:"Learning games for US elementary students across subjects, guided by Edie and her frog friends Hop and Skip." },
-  { name:"Daltokki", tags:["Language learning", "Korean"], img:"assets/sites/daltokki.jpg", url:"https://hyeonhoyu.github.io/daltokki/", color:"#e9c46a",
+  { name:"Daltokki", tags:["Language learning", "Korean"], url:"https://hyeonhoyu.github.io/daltokki/", color:"#e9c46a",
     blurb:"A Korean learning site for second-generation Korean Americans and anyone who wants to learn Korean." },
-  { name:"Literacy Quest", tags:["Literacy", "Elementary"], img:"assets/sites/literacy-quest.jpg", url:"https://literacyquest.github.io/", color:"#c45f4f",
+  { name:"Literacy Quest", tags:["Literacy", "Elementary"], url:"https://literacyquest.github.io/", color:"#c45f4f",
     blurb:"A quest-style site for building early literacy skills." },
-  { name:"Phonogram Studio", tags:["Literacy", "AI voices"], img:"assets/sites/phonogram-studio.jpg", url:"https://hyeonhoyu.github.io/Phonogram-Studio/", color:"#7f92c8",
+  { name:"Phonogram Studio", tags:["Literacy", "AI voices"], url:"https://hyeonhoyu.github.io/Phonogram-Studio/", color:"#7f92c8",
     blurb:"Hear and practice English phonogram sounds with clear AI voice recordings." },
-  { name:"Frog Baby", tags:["Ball State", "History"], img:"assets/sites/frog-baby.jpg", url:"https://hyeonhoyu.github.io/frogbaby/", color:"#8fb07a",
+  { name:"Frog Baby", tags:["Ball State", "History"], url:"https://hyeonhoyu.github.io/frogbaby/", color:"#8fb07a",
     blurb:"The history of Frog Baby, the beloved statue on the Ball State campus." },
-  { name:"Whistle", tags:["Physical education", "Sports"], img:"assets/sites/whistle.jpg", url:"https://hyeonhoyu.github.io/whistle-sports-rulebook/", color:"#e9a64b",
+  { name:"Whistle", tags:["Physical education", "Sports"], url:"https://hyeonhoyu.github.io/whistle-sports-rulebook/", color:"#e9a64b",
     blurb:"A friendly sports rulebook for teachers and young players." },
-  { name:"Buen Camino", tags:["Language learning", "Spanish"], img:"assets/sites/buen-camino.jpg", url:"https://hyeonhoyu.github.io/Buen-Camino/", color:"#b98a5e",
+  { name:"Buen Camino", tags:["Language learning", "Spanish"], url:"https://hyeonhoyu.github.io/Buen-Camino/", color:"#b98a5e",
     blurb:"A site for learning Spanish." },
-  { name:"PIPS AI Lab", tags:["AI literacy", "Elementary"], img:"assets/sites/pips-ai-lab.jpg", url:"https://pips-ai-lab.github.io/", color:"#6fa3b8",
+  { name:"PIPS AI Lab", tags:["AI literacy", "Elementary"], url:"https://pips-ai-lab.github.io/", color:"#6fa3b8",
     blurb:"AI literacy lessons for US elementary students." },
-  { name:"Pai Thiao", tags:["Language learning", "Thai"], img:"assets/sites/pai-thiao.jpg", url:"https://iohsk.github.io/Pai-Thiao/", color:"#d98a9c",
+  { name:"Pai Thiao", tags:["Language learning", "Thai"], url:"https://iohsk.github.io/Pai-Thiao/", color:"#d98a9c",
     blurb:"A site for learning Thai." },
-  { name:"ASL for Teachers", tags:["Accessibility", "Teachers"], img:"assets/sites/asl-for-teachers.jpg", url:"https://hyeonhoyu.github.io/ASL-for-Teachers/", color:"#9a86c2",
+  { name:"ASL for Teachers", tags:["Accessibility", "Teachers"], url:"https://hyeonhoyu.github.io/ASL-for-Teachers/", color:"#9a86c2",
     blurb:"Everyday American Sign Language for classroom teachers." },
-  { name:"IOHSK AI Hub", tags:["AI literacy", "IOHSK"], img:"assets/sites/iohsk-ai-hub.jpg", url:"https://iohsk.github.io/AI-hub/", color:"#5f9e8f",
+  { name:"IOHSK AI Hub", tags:["AI literacy", "IOHSK"], url:"https://iohsk.github.io/AI-hub/", color:"#5f9e8f",
     blurb:"AI resources gathered for members of the International Organization for Health, Sports, and Kinesiology." },
 ];
 
@@ -541,10 +533,7 @@ const PLACES = {
       </div>
       <div class="stalls">${SITES.map((s,i)=>`
         <div class="stall" id="stall-${i}" style="--sc:${s.color}" data-tags="${s.tags.join('|')}">
-          <a class="thumb" href="${s.url}" target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
-            <span>${s.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</span>
-            <img src="${s.img}" alt="" loading="lazy" onerror="this.remove()">
-          </a>
+          <span class="sw" aria-hidden="true"></span>
           <div>
             <strong>${s.name}</strong>
             <span class="url">${s.url.replace(/^https:\/\//,'').replace(/\/$/,'')}</span>

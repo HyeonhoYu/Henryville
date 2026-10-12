@@ -9,7 +9,6 @@ A 3D island village portfolio for Dr. Henry Yu. Each building opens a section of
 - `assets/frogbaby.jpg` : Frog Baby character sheet in the guide panel
 - `assets/og-image.jpg` : the preview card shown when the link is shared
 - `assets/favicon-32.png`, `icon-192.png`, `favicon.ico`, `apple-touch-icon.png` : browser tab and home screen icons
-- `assets/sites/` : screenshots for the market stalls (see the README inside)
 - `for-meshy/` : front, side, and back views of Frog Baby for making a 3D model. You do not need to upload this folder to GitHub.
 
 ## Publish on GitHub Pages
