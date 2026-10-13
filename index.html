@@ -10,12 +10,12 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="theme-color" content="#a9d3cf">
 <meta name="description" content="Henryville is the 3D island village portfolio of Dr. Henry Yu, Assistant Professor of Educational Technology at Ball State University. Explore his research, teaching, awards, and the websites he built.">
-<!-- Share preview. If the repository is not named henryville, change the two URLs below. -->
+<!-- Share preview. If the repository is not named Henryville, change the two URLs below. -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Henryville | Dr. Henry Yu">
 <meta property="og:description" content="The working village of Dr. Henry Yu, Teachers College, Ball State University.">
-<meta property="og:url" content="https://hyeonhoyu.github.io/henryville/">
-<meta property="og:image" content="https://hyeonhoyu.github.io/henryville/assets/og-image.jpg">
+<meta property="og:url" content="https://hyeonhoyu.github.io/Henryville/">
+<meta property="og:image" content="https://hyeonhoyu.github.io/Henryville/assets/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="A low-poly island village with brick campus buildings, a bell tower, and a market">
@@ -1272,7 +1272,7 @@ function start(){
     return {pos:new THREE.Vector3(2, 40*k, 58*k), tgt:new THREE.Vector3(1,0,1.5)};
   }
   let tween=null;
-  function moveTo(pos,tgt,dur=1200){
+  function moveTo(pos,tgt,dur=1900){
     if(REDUCE) dur=0;
     tween={p0:camera.position.clone(), t0:controls.target.clone(), p1:pos, t1:tgt, start:performance.now(), dur};
     controls.enabled=false;
@@ -1348,6 +1348,7 @@ function start(){
 
   /* ---------- Loop ---------- */
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const camEase=t=>-(Math.cos(Math.PI*t)-1)/2;
   let nightT=NIGHT?1:0, lastNight=-1;
   const FOG_DAY=new THREE.Color(C.skyBot), FOG_NIGHT=new THREE.Color('#1c3640'), SUN_DAY=new THREE.Color(C.sunColor), SUN_NIGHT=new THREE.Color('#9fb6dd'),
         SEA_DAY=new THREE.Color(C.sea), SEA_NIGHT=new THREE.Color('#1d3a43'), SH_DAY=new THREE.Color(C.shallow), SH_NIGHT=new THREE.Color('#2a4d55'),
@@ -1358,7 +1359,7 @@ function start(){
   function frame(now){
     const dt=Math.min(.05,(now-last)/1000); last=now; const T=now/1000;
     if(tween){
-      const t=tween.dur?Math.min(1,(now-tween.start)/tween.dur):1, e=ease(t);
+      const t=tween.dur?Math.min(1,(now-tween.start)/tween.dur):1, e=camEase(t);
       camera.position.lerpVectors(tween.p0,tween.p1,e);
       controls.target.lerpVectors(tween.t0,tween.t1,e);
       if(t>=1){ tween=null; controls.enabled=true; }
@@ -1391,7 +1392,7 @@ function start(){
     if(fb.target){
       tmp.copy(fb.target).sub(frog.position); tmp.y=0; const d=tmp.length();
       if(d<.06){ frog.position.x=fb.target.x; frog.position.z=fb.target.z; fb.target=null; fb.speed=null; }
-      else { if(fb.speed==null) fb.speed=Math.max(5.2,d/1.3); const step=Math.min(d, dt*fb.speed); tmp.normalize(); frog.position.addScaledVector(tmp,step);
+      else { if(fb.speed==null) fb.speed=Math.max(3.6,d/2.1); const step=Math.min(d, dt*fb.speed); tmp.normalize(); frog.position.addScaledVector(tmp,step);
         const want=Math.atan2(tmp.x,tmp.z); let dr=want-frog.rotation.y; dr=Math.atan2(Math.sin(dr),Math.cos(dr)); frog.rotation.y+=dr*Math.min(1,dt*10);
         fbModel.position.y=Math.abs(Math.sin(T*11))*.16; }
     } else {

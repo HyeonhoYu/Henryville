@@ -13,10 +13,10 @@ A 3D island village portfolio for Dr. Henry Yu. Each building opens a section of
 
 ## Publish on GitHub Pages
 
-1. Create a public repository named `henryville`.
+1. Create a public repository named `Henryville`.
 2. Upload everything in this folder (keep the `assets` folder).
 3. Settings, then Pages. Deploy from a branch, `main`, `/ (root)`, Save.
-4. The site goes live at `https://hyeonhoyu.github.io/henryville/`.
+4. The site goes live at `https://hyeonhoyu.github.io/Henryville/`.
 
 If you use a different repository name, open `index.html` and change the two `og:` URLs near the top so the share preview still works.
 
