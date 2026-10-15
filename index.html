@@ -172,6 +172,16 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .stall[hidden]{display:none}
 .pills{display:flex; flex-wrap:wrap; gap:4px; margin:.35rem 0 .1rem}
 .pills em{font:600 .72rem/1 var(--display); font-style:normal; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.3rem .5rem}
+.videos{display:grid; gap:18px; margin-top:.6rem}
+.vid{margin:0}
+.vthumb, .vframe{position:relative; display:block; width:100%; aspect-ratio:16/9; border:0; padding:0; border-radius:12px; overflow:hidden; background:#1e2422; cursor:pointer}
+.vthumb img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s}
+.vthumb:hover img{transform:scale(1.03)}
+.vthumb .play{position:absolute; left:50%; top:50%; width:64px; height:44px; margin:-22px 0 0 -32px; border-radius:12px; background:#b5192b; box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.vthumb .play::after{content:""; position:absolute; left:26px; top:13px; border-left:16px solid #fff; border-top:9px solid transparent; border-bottom:9px solid transparent}
+.vid figcaption{padding:.5rem 0 0}
+.vid strong{font-family:var(--display); font-size:1rem; line-height:1.3; display:block}
+.vid figcaption a{font-family:var(--display); font-size:.85rem; color:var(--muted)}
 .loader{position:fixed; inset:0; display:grid; place-items:center; z-index:20; background:var(--sea); transition:opacity .6s}
 .loader span{font:600 1rem var(--display); color:var(--muted)}
 .loader.done{opacity:0; pointer-events:none}
@@ -253,6 +263,15 @@ const SCHOLAR = "https://scholar.google.com/citations?user=-VpF4mUAAAAJ&hl=en&oi
 
 // Real 3D Frog Baby: export a GLB from Meshy or Tripo and save it at this path.
 // height is in village units (a door is about 1.5). turn rotates the model if it faces the wrong way (Math.PI turns it around).
+// Education videos shown in the Cinema. Paste a YouTube id (the part after youtu.be/).
+// Leave title empty to load it from YouTube automatically, or type your own.
+const VIDEOS = [
+  { id:"8Dvz6wicNGI", title:"" },
+  { id:"7bgF6u-Yles", title:"" },
+  { id:"ySZdetATV-Y", title:"" },
+  { id:"_t_zmMusHtk", title:"" },
+];
+
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
 
 const SITES = [
@@ -523,6 +542,19 @@ const PLACES = {
         item("Data analysis, Science of Reading grant project","2024 to present")
       ])}`
   },
+  videos:{
+    name:"Cinema", title:"Education Videos", color:"#9a86c2",
+    lede:"Short videos Henry made for teachers and future teachers. Press play to watch right here.",
+    html:()=>`<div class="videos">${VIDEOS.map((v,i)=>`
+      <figure class="vid">
+        <button class="vthumb" type="button" data-id="${v.id}" aria-label="Play video ${i+1}">
+          <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+          <span class="play" aria-hidden="true"></span>
+        </button>
+        <figcaption><strong class="vtitle" data-id="${v.id}">${v.title || VIDEO_TITLES[v.id] || 'Video '+(i+1)}</strong>
+        <a href="https://youtu.be/${v.id}" target="_blank" rel="noopener">Watch on YouTube</a></figcaption>
+      </figure>`).join('')}</div>`
+  },
   market:{
     name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
     lede:"Every stall in the market is a working site. Open one in a new tab, or tap a stall on the island.",
@@ -548,7 +580,7 @@ const PLACES = {
     }
   }
 };
-const ORDER = ["frog","hall","library","school","talks","awards","grants","service","market"];
+const ORDER = ["frog","hall","library","school","talks","awards","grants","service","videos","market"];
 
 /* =========================================================
    UI: directory and panel
@@ -584,7 +616,29 @@ function renderPanel(k, siteIdx){
     if(el){ requestAnimationFrame(()=>{ el.scrollIntoView({block:'center', behavior: REDUCE?'auto':'smooth'}); el.classList.add('flash'); }); }
   }
   if(k==='market') setupMarket();
+  if(k==='videos') setupVideos();
   document.getElementById('ptitle').focus({preventScroll:true});
+}
+const VIDEO_TITLES={};
+function setupVideos(){
+  const body=document.getElementById('pbody');
+  body.querySelectorAll('.vthumb').forEach(b=>b.addEventListener('click',()=>{
+    const f=document.createElement('iframe');
+    f.src=`https://www.youtube-nocookie.com/embed/${b.dataset.id}?autoplay=1&rel=0&playsinline=1`;
+    f.title=b.parentElement.querySelector('.vtitle').textContent;
+    f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    f.allowFullscreen=true; f.className='vframe';
+    b.replaceWith(f);
+  }));
+  VIDEOS.forEach(v=>{
+    if(v.title || VIDEO_TITLES[v.id]) return;
+    const url=encodeURIComponent('https://www.youtube.com/watch?v='+v.id);
+    fetch('https://www.youtube.com/oembed?format=json&url='+url).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+      .catch(()=>fetch('https://noembed.com/embed?url='+url).then(r=>r.json()))
+      .then(d=>{ if(d && d.title){ VIDEO_TITLES[v.id]=d.title;
+        document.querySelectorAll(`.vtitle[data-id="${v.id}"]`).forEach(el=>el.textContent=d.title); } })
+      .catch(()=>{});
+  });
 }
 let marketTag='';
 function setupMarket(){
@@ -658,6 +712,7 @@ const TOUR=[
   {k:'awards',  say:"Hear the bell? The tower keeps Henry's awards."},
   {k:'grants',  say:"Grants keep this little workshop's gear turning."},
   {k:'service', say:"Committees and community work meet in this hall."},
+  {k:'videos',  say:"Grab a seat! Henry's videos are playing tonight."},
   {k:'market',  say:"Last stop! Every stall is a website Henry built."}
 ];
 let tourIdx=-1, bubbleText='';
@@ -742,6 +797,7 @@ function start(){
   const glow=(c,i)=>new THREE.MeshStandardMaterial({color:c, emissive:new THREE.Color(c), emissiveIntensity:i, roughness:.6});
   const winMat = new THREE.MeshStandardMaterial({color:C.win, roughness:.35, emissive:new THREE.Color('#ffc46b'), emissiveIntensity:0});
   const glassMat = new THREE.MeshStandardMaterial({color:C.glass, roughness:.25, emissive:new THREE.Color('#ffcf7a'), emissiveIntensity:0});
+  let signMat=null;
   const lampMat = new THREE.MeshStandardMaterial({color:'#fff6dc', roughness:.4, emissive:new THREE.Color('#ffd98a'), emissiveIntensity:0});
   const brickBase=(()=>{
     const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
@@ -823,6 +879,7 @@ function start(){
     {key:'talks',   x:-11.5,z:9.5, from:WEST, depth:4.4},
     {key:'awards',  x:24.5,z:-2,   from:EAST, depth:2.8},
     {key:'grants',  x:15.5,z:-11,  from:EAST, depth:4.0},
+    {key:'videos',  x:-21.5,z:8.5, from:WEST, depth:4.4},
     {key:'service', x:14.5,z:10.5, from:EAST, depth:4.4},
   ];
   const segments=[[WEST,EAST],[MID,[QUAD.x,QUAD.z-QUAD.d/2]]];
@@ -991,6 +1048,30 @@ function start(){
       box(3.4,.2,1.7,'#86ad86',0,2.4,d/2+.85,gp);
       cyl(.09,.09,2.4,8,C.lime,-1.45,0,d/2+1.45,gp); cyl(.09,.09,2.4,8,C.lime,1.45,0,d/2+1.45,gp);
       return {h:5.6, perches:[[0,5.02,0],[0,5.02,-1.6]]};
+    },
+    videos(gp){ // cinema
+      const w=6,d=4.4,h=3.4;
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
+      rbox(w,1.3,.5,brick(w,1.3),0,h,d/2-.25,gp,.04);
+      box(w+.3,.3,d+.3,C.lime,0,h,0,gp); box(w+.2,.25,.7,C.lime,0,h+1.3,d/2-.25,gp);
+      rbox(w-.4,.25,d-.6,'#5a6066',0,h+.3,-.3,gp,.05);
+      // marquee
+      const mq=new THREE.Group(); mq.position.set(0,2.35,d/2+.45); gp.add(mq);
+      rbox(w-.5,.95,.7,'#2e3a35',0,0,0,mq,.06);
+      const c=document.createElement('canvas'); c.width=1024; c.height=176; const x=c.getContext('2d');
+      x.fillStyle='#fff8e6'; x.fillRect(0,0,1024,176);
+      x.fillStyle='#b5192b'; x.font='800 54px "Bricolage Grotesque", system-ui, sans-serif'; x.textAlign='center';
+      x.fillText('NOW SHOWING',512,70);
+      x.fillStyle='#2e3a35'; x.font='800 60px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('EDUCATION VIDEOS',512,145);
+      const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
+      signMat=new THREE.MeshStandardMaterial({map:tex, emissive:new THREE.Color('#ffffff'), emissiveMap:tex, emissiveIntensity:.15, roughness:.6});
+      const sign=new THREE.Mesh(new THREE.PlaneGeometry(w-.8,.78), signMat); sign.position.set(0,.48,.36); mq.add(sign);
+      for(let i=0;i<14;i++){ const bx=-(w-.6)/2+i*((w-.6)/13); sph(.05,lampMat,bx,.98,.32,mq); sph(.05,lampMat,bx,0,.36,mq); }
+      // doors and posters
+      box(2.4,1.9,.06,C.lime,0,0,d/2+.02,gp); box(1,1.75,.1,glassMat,-.55,0,d/2+.04,gp); box(1,1.75,.1,glassMat,.55,0,d/2+.04,gp);
+      [-2.2,2.2].forEach((px,i)=>{ box(.9,1.3,.06,C.lime,px,.35,d/2+.02,gp); box(.76,1.16,.08,['#9a86c2','#e9a64b'][i],px,.42,d/2+.04,gp); });
+      box(w-.2,.12,.9,C.lime,0,0,d/2+.45,gp);
+      return {h:5.4, perches:[[-2.4,h+1.56,d/2-.25],[2.2,h+1.56,d/2-.25]]};
     },
     post(gp){ // post office
       const w=4,d=3.4,h=2.6;
@@ -1374,7 +1455,7 @@ function start(){
       hemi.intensity=.42+(.22-.42)*n; amb.intensity=.08+(.05-.08)*n;
       sea.material.color.copy(SEA_DAY).lerp(SEA_NIGHT,n); shallow.material.color.copy(SH_DAY).lerp(SH_NIGHT,n);
       winMat.emissiveIntensity=.95*n; winMat.color.copy(WIN_DAY).lerp(WIN_NIGHT,n);
-      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n;
+      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n; if(signMat) signMat.emissiveIntensity=.15+.75*n;
       nightLights.forEach(l=>l.intensity=1.1*n); stars.material.opacity=n;
     }
     for(const k in groups){ const g=groups[k]; const goal=(hovered===k||openKey===k)?.3:0; g.position.y+=(goal-g.position.y)*Math.min(1,dt*10); }

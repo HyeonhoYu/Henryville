@@ -35,6 +35,7 @@ Near the top of the script in `index.html`:
 - `PUBS` : publications
 - `PLACES` : text for every building panel
 - `TOUR` : the stops and what Frog Baby says at each one
+- `VIDEOS` : YouTube videos in the Cinema. Add a line with the video id (the part after `youtu.be/`). Titles load from YouTube automatically, or type your own in `title`.
 
 ## Adding a real 3D Frog Baby
 
