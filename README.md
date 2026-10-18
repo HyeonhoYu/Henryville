@@ -35,7 +35,7 @@ Near the top of the script in `index.html`:
 - `PUBS` : publications
 - `PLACES` : text for every building panel
 - `TOUR` : the stops and what Frog Baby says at each one
-- `PLAYLIST` : the YouTube playlist shown in the Cinema. Add videos to the playlist on YouTube and they appear on the site automatically.
+- `PLAYLIST` : the YouTube playlist shown in the Cinema. Add videos to the playlist on YouTube and they appear on the site automatically. The Cinema shows a player with every video in the playlist listed below it as thumbnails, so visitors can watch any of them without leaving the page.
 
 ## Adding a real 3D Frog Baby
 

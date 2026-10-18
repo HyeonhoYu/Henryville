@@ -173,9 +173,20 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .pills{display:flex; flex-wrap:wrap; gap:4px; margin:.35rem 0 .1rem}
 .pills em{font:600 .72rem/1 var(--display); font-style:normal; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.3rem .5rem}
 .videos{display:grid; gap:12px; margin-top:.6rem}
-.vframe{position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#1e2422}
+.vframe{position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#1e2422; scroll-margin-top:12px}
 .vframe iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.vnow{margin:0; font-family:var(--display); font-weight:700; font-size:1rem; line-height:1.3; min-height:1.3em}
 .vnote{margin:0; font-size:.9rem; color:var(--muted)}
+.vlist{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px 12px; margin-top:.3rem}
+.vitem{display:block; width:100%; text-align:left; border:0; padding:0; background:none; cursor:pointer; color:inherit; font:inherit}
+.vitem .vt{position:relative; display:block; aspect-ratio:16/9; border-radius:9px; overflow:hidden; background:#1e2422; outline:3px solid transparent; outline-offset:2px; transition:outline-color .2s}
+.vitem img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s}
+.vitem:hover img{transform:scale(1.04)}
+.vitem .vn{position:absolute; left:6px; bottom:6px; background:rgba(0,0,0,.72); color:#fff; font-size:.75rem; font-weight:700; padding:1px 7px; border-radius:6px}
+.vitem .vtitle{display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:6px; font-family:var(--display); font-size:.85rem; line-height:1.3}
+.vitem.on .vt{outline-color:var(--c)}
+.vitem.on .vtitle{font-weight:700}
+.vitem:focus-visible .vt{outline-color:var(--c)}
 .vall{font-family:var(--display); font-size:.95rem; font-weight:700; color:inherit}
 .loader{position:fixed; inset:0; display:grid; place-items:center; z-index:20; background:var(--sea); transition:opacity .6s}
 .loader span{font:600 1rem var(--display); color:var(--muted)}
@@ -535,13 +546,12 @@ const PLACES = {
   },
   videos:{
     name:"Cinema", title:"Education Videos", color:"#9a86c2",
-    lede:"Short videos Henry made for teachers and future teachers. Press play to watch right here, or browse the playlist.",
+    lede:"Short videos Henry made for teachers and future teachers. Pick any video below to watch it right here.",
     html:()=>`<div class="videos">
-      <div class="vframe"><iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${PLAYLIST}&rel=0&playsinline=1"
-        title="Henry Yu's education videos playlist" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen loading="lazy"></iframe></div>
-      <p class="vnote">Use the playlist button in the top right corner of the player to pick any video.</p>
-      <a class="vall" href="https://www.youtube.com/playlist?list=${PLAYLIST}" target="_blank" rel="noopener">See the full playlist on YouTube</a>
+      <div class="vframe" id="vframe"><div id="ytplayer"></div></div>
+      <p class="vnow" id="vnow" aria-live="polite"></p>
+      <div class="vlist" id="vlist"><p class="vnote">Loading the videos...</p></div>
+      <a class="vall" href="https://www.youtube.com/playlist?list=${PLAYLIST}" target="_blank" rel="noopener">Open the playlist on YouTube</a>
     </div>`
   },
   market:{
@@ -595,6 +605,7 @@ function renderPanel(k, siteIdx){
   document.getElementById('ptitle').textContent=p.title;
   const pl=document.getElementById('plede'); pl.textContent=p.lede; pl.style.display=p.lede?'':'none';
   const body=document.getElementById('pbody');
+  stopVideos();
   body.innerHTML=p.html(); body.scrollTop=0;
   panel.classList.add('open'); panel.setAttribute('aria-hidden','false');
   document.body.classList.add('panel-open');
@@ -603,7 +614,95 @@ function renderPanel(k, siteIdx){
     if(el){ requestAnimationFrame(()=>{ el.scrollIntoView({block:'center', behavior: REDUCE?'auto':'smooth'}); el.classList.add('flash'); }); }
   }
   if(k==='market') setupMarket();
+  if(k==='videos') setupVideos();
   document.getElementById('ptitle').focus({preventScroll:true});
+}
+/* ---------- Cinema: playlist player with a video list ---------- */
+let ytPlayer=null, vidToken=0, ytLoading=null;
+const VIDEO_TITLES={};
+function loadYT(){
+  if(window.YT && YT.Player) return Promise.resolve();
+  if(ytLoading) return ytLoading;
+  ytLoading=new Promise((res,rej)=>{
+    const prev=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=()=>{ if(prev) prev(); res(); };
+    const sc=document.createElement('script'); sc.src='https://www.youtube.com/iframe_api';
+    sc.onerror=()=>{ ytLoading=null; rej(); }; document.head.appendChild(sc);
+  });
+  return ytLoading;
+}
+function stopVideos(){
+  vidToken++;
+  if(ytPlayer){ try{ ytPlayer.destroy(); }catch(e){} ytPlayer=null; }
+  document.querySelectorAll('#pbody iframe').forEach(f=>f.remove());
+}
+function videoFallback(token){
+  // If the YouTube player API is blocked, show the plain playlist player instead.
+  if(token!==vidToken) return;
+  if(ytPlayer){ try{ ytPlayer.destroy(); }catch(e){} ytPlayer=null; }
+  const fr=document.getElementById('vframe'); if(!fr) return;
+  fr.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${PLAYLIST}&rel=0&playsinline=1" title="Henry Yu's education videos" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+  const l=document.getElementById('vlist');
+  if(l) l.innerHTML='<p class="vnote">After a video starts, tap the list icon in the top right corner of the player to pick another video.</p>';
+}
+function setupVideos(){
+  const token=vidToken;
+  const timer=setTimeout(()=>{ if(!document.querySelector('#vlist .vitem')) videoFallback(token); },12000);
+  loadYT().then(()=>{
+    if(token!==vidToken || !document.getElementById('ytplayer')) return;
+    ytPlayer=new YT.Player('ytplayer',{
+      width:'100%', height:'100%',
+      playerVars:{ listType:'playlist', list:PLAYLIST, rel:0, playsinline:1 },
+      events:{
+        onReady:()=>waitForList(token,0,timer),
+        onStateChange:()=>markCurrent(),
+        onError:()=>{}
+      }
+    });
+  }).catch(()=>{ clearTimeout(timer); videoFallback(token); });
+}
+function waitForList(token,tries,timer){
+  if(token!==vidToken || !ytPlayer) return;
+  let ids=null; try{ ids=ytPlayer.getPlaylist(); }catch(e){}
+  if(ids && ids.length){ clearTimeout(timer); renderVideoList(ids); return; }
+  if(tries<40) setTimeout(()=>waitForList(token,tries+1,timer),300);
+}
+function renderVideoList(ids){
+  const l=document.getElementById('vlist'); if(!l) return;
+  l.setAttribute('role','list'); l.setAttribute('aria-label',ids.length+' videos');
+  l.innerHTML=ids.map((id,i)=>`<div role="listitem"><button class="vitem" type="button" data-i="${i}" data-id="${id}">
+      <span class="vt"><img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span class="vn">${i+1}</span></span>
+      <span class="vtitle" data-id="${id}">${VIDEO_TITLES[id] || 'Video '+(i+1)}</span></button></div>`).join('');
+  l.querySelectorAll('.vitem').forEach(b=>b.addEventListener('click',()=>{
+    if(!ytPlayer) return;
+    try{ ytPlayer.playVideoAt(+b.dataset.i); }catch(e){}
+    setCurrent(+b.dataset.i);
+    const fr=document.getElementById('vframe'); if(fr) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
+  }));
+  markCurrent();
+  ids.forEach(id=>{
+    if(VIDEO_TITLES[id]) return;
+    const url=encodeURIComponent('https://www.youtube.com/watch?v='+id);
+    fetch('https://www.youtube.com/oembed?format=json&url='+url).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+      .catch(()=>fetch('https://noembed.com/embed?url='+url).then(r=>r.json()))
+      .then(d=>{ if(d && d.title){ VIDEO_TITLES[id]=d.title;
+        document.querySelectorAll(`.vtitle[data-id="${id}"]`).forEach(el=>{ el.textContent=d.title; el.parentElement.setAttribute('aria-label','Play '+d.title); });
+        markCurrent(); } })
+      .catch(()=>{});
+  });
+}
+function setCurrent(i){
+  document.querySelectorAll('#vlist .vitem').forEach(b=>{
+    const on=+b.dataset.i===i; b.classList.toggle('on',on);
+    if(on) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current');
+  });
+  const cur=document.querySelector(`#vlist .vitem[data-i="${i}"]`), now=document.getElementById('vnow');
+  if(now && cur) now.textContent='Now showing: '+cur.querySelector('.vtitle').textContent;
+}
+function markCurrent(){
+  if(!ytPlayer) return;
+  let i=0; try{ const x=ytPlayer.getPlaylistIndex(); if(x>=0) i=x; }catch(e){}
+  setCurrent(i);
 }
 let marketTag='';
 function setupMarket(){
@@ -631,7 +730,7 @@ function openPlace(k, siteIdx, fromTour){
 }
 function closePanel(){
   endTour(true); marketTag='';
-  document.querySelectorAll('#pbody iframe').forEach(f=>f.remove()); // stop any playing video
+  stopVideos();
   openKey=null; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
   document.body.classList.remove('panel-open'); goHome();
 }
