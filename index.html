@@ -172,16 +172,11 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .stall[hidden]{display:none}
 .pills{display:flex; flex-wrap:wrap; gap:4px; margin:.35rem 0 .1rem}
 .pills em{font:600 .72rem/1 var(--display); font-style:normal; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.3rem .5rem}
-.videos{display:grid; gap:18px; margin-top:.6rem}
-.vid{margin:0}
-.vthumb, .vframe{position:relative; display:block; width:100%; aspect-ratio:16/9; border:0; padding:0; border-radius:12px; overflow:hidden; background:#1e2422; cursor:pointer}
-.vthumb img{width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s}
-.vthumb:hover img{transform:scale(1.03)}
-.vthumb .play{position:absolute; left:50%; top:50%; width:64px; height:44px; margin:-22px 0 0 -32px; border-radius:12px; background:#b5192b; box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.vthumb .play::after{content:""; position:absolute; left:26px; top:13px; border-left:16px solid #fff; border-top:9px solid transparent; border-bottom:9px solid transparent}
-.vid figcaption{padding:.5rem 0 0}
-.vid strong{font-family:var(--display); font-size:1rem; line-height:1.3; display:block}
-.vid figcaption a{font-family:var(--display); font-size:.85rem; color:var(--muted)}
+.videos{display:grid; gap:12px; margin-top:.6rem}
+.vframe{position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#1e2422}
+.vframe iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.vnote{margin:0; font-size:.9rem; color:var(--muted)}
+.vall{font-family:var(--display); font-size:.95rem; font-weight:700; color:inherit}
 .loader{position:fixed; inset:0; display:grid; place-items:center; z-index:20; background:var(--sea); transition:opacity .6s}
 .loader span{font:600 1rem var(--display); color:var(--muted)}
 .loader.done{opacity:0; pointer-events:none}
@@ -263,17 +258,10 @@ const SCHOLAR = "https://scholar.google.com/citations?user=-VpF4mUAAAAJ&hl=en&oi
 
 // Real 3D Frog Baby: export a GLB from Meshy or Tripo and save it at this path.
 // height is in village units (a door is about 1.5). turn rotates the model if it faces the wrong way (Math.PI turns it around).
-// Education videos shown in the Cinema. Paste a YouTube id (the part after youtu.be/).
-// Leave title empty to load it from YouTube automatically, or type your own.
-const VIDEOS = [
-  { id:"qpNxCgL4cyI", title:"" },
-  { id:"8Dvz6wicNGI", title:"" },
-  { id:"7bgF6u-Yles", title:"" },
-  { id:"ySZdetATV-Y", title:"" },
-  { id:"_t_zmMusHtk", title:"" },
-  { id:"Sc7P9lUZsGI", title:"" },
-  { id:"KbjBvtXdXmk", title:"" },
-];
+// Education videos shown in the Cinema: one YouTube playlist.
+// Add or remove videos on YouTube and the Cinema updates by itself.
+// To use a different playlist, paste the part after list= in its link.
+const PLAYLIST = "PLDyujKJHdZ7I";
 
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
 
@@ -547,16 +535,14 @@ const PLACES = {
   },
   videos:{
     name:"Cinema", title:"Education Videos", color:"#9a86c2",
-    lede:"Short videos Henry made for teachers and future teachers. Press play to watch right here.",
-    html:()=>`<div class="videos">${VIDEOS.map((v,i)=>`
-      <figure class="vid">
-        <button class="vthumb" type="button" data-id="${v.id}" aria-label="Play video ${i+1}">
-          <img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
-          <span class="play" aria-hidden="true"></span>
-        </button>
-        <figcaption><strong class="vtitle" data-id="${v.id}">${v.title || VIDEO_TITLES[v.id] || 'Video '+(i+1)}</strong>
-        <a href="https://youtu.be/${v.id}" target="_blank" rel="noopener">Watch on YouTube</a></figcaption>
-      </figure>`).join('')}</div>`
+    lede:"Short videos Henry made for teachers and future teachers. Press play to watch right here, or browse the playlist.",
+    html:()=>`<div class="videos">
+      <div class="vframe"><iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${PLAYLIST}&rel=0&playsinline=1"
+        title="Henry Yu's education videos playlist" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen loading="lazy"></iframe></div>
+      <p class="vnote">Use the playlist button in the top right corner of the player to pick any video.</p>
+      <a class="vall" href="https://www.youtube.com/playlist?list=${PLAYLIST}" target="_blank" rel="noopener">See the full playlist on YouTube</a>
+    </div>`
   },
   market:{
     name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
@@ -617,29 +603,7 @@ function renderPanel(k, siteIdx){
     if(el){ requestAnimationFrame(()=>{ el.scrollIntoView({block:'center', behavior: REDUCE?'auto':'smooth'}); el.classList.add('flash'); }); }
   }
   if(k==='market') setupMarket();
-  if(k==='videos') setupVideos();
   document.getElementById('ptitle').focus({preventScroll:true});
-}
-const VIDEO_TITLES={};
-function setupVideos(){
-  const body=document.getElementById('pbody');
-  body.querySelectorAll('.vthumb').forEach(b=>b.addEventListener('click',()=>{
-    const f=document.createElement('iframe');
-    f.src=`https://www.youtube-nocookie.com/embed/${b.dataset.id}?autoplay=1&rel=0&playsinline=1`;
-    f.title=b.parentElement.querySelector('.vtitle').textContent;
-    f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    f.allowFullscreen=true; f.className='vframe';
-    b.replaceWith(f);
-  }));
-  VIDEOS.forEach(v=>{
-    if(v.title || VIDEO_TITLES[v.id]) return;
-    const url=encodeURIComponent('https://www.youtube.com/watch?v='+v.id);
-    fetch('https://www.youtube.com/oembed?format=json&url='+url).then(r=>{ if(!r.ok) throw 0; return r.json(); })
-      .catch(()=>fetch('https://noembed.com/embed?url='+url).then(r=>r.json()))
-      .then(d=>{ if(d && d.title){ VIDEO_TITLES[v.id]=d.title;
-        document.querySelectorAll(`.vtitle[data-id="${v.id}"]`).forEach(el=>el.textContent=d.title); } })
-      .catch(()=>{});
-  });
 }
 let marketTag='';
 function setupMarket(){
@@ -667,6 +631,7 @@ function openPlace(k, siteIdx, fromTour){
 }
 function closePanel(){
   endTour(true); marketTag='';
+  document.querySelectorAll('#pbody iframe').forEach(f=>f.remove()); // stop any playing video
   openKey=null; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
   document.body.classList.remove('panel-open'); goHome();
 }
