@@ -172,7 +172,10 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .stall[hidden]{display:none}
 .pills{display:flex; flex-wrap:wrap; gap:4px; margin:.35rem 0 .1rem}
 .pills em{font:600 .72rem/1 var(--display); font-style:normal; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.3rem .5rem}
-.videos{display:grid; gap:12px; margin-top:.6rem}
+.videos{display:grid; gap:34px; margin-top:.6rem}
+.vsec{display:grid; gap:12px}
+.vsec+.vsec{padding-top:26px; border-top:1px solid rgba(0,0,0,.1)}
+.vh{margin:0; font-family:var(--display); font-size:1.3rem; line-height:1.2}
 .vframe{position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#1e2422; scroll-margin-top:12px}
 .vframe iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
 .vnow{margin:0; font-family:var(--display); font-weight:700; font-size:1rem; line-height:1.3; min-height:1.3em}
@@ -269,10 +272,13 @@ const SCHOLAR = "https://scholar.google.com/citations?user=-VpF4mUAAAAJ&hl=en&oi
 
 // Real 3D Frog Baby: export a GLB from Meshy or Tripo and save it at this path.
 // height is in village units (a door is about 1.5). turn rotates the model if it faces the wrong way (Math.PI turns it around).
-// Education videos shown in the Cinema: one YouTube playlist.
+// Education videos shown in the Cinema: YouTube playlists, shown in this order.
 // Add or remove videos on YouTube and the Cinema updates by itself.
-// To use a different playlist, paste the part after list= in its link.
-const PLAYLIST = "PLDyujKJHdZ7I";
+// To add or change a playlist, paste the part after list= in its link.
+const PLAYLISTS = [
+  { title:"Research Videos", list:"PLHMBlIdE1aws" },
+  { title:"Teaching Videos", list:"PLDyujKJHdZ7I" },
+];
 
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
 
@@ -547,11 +553,14 @@ const PLACES = {
   videos:{
     name:"Cinema", title:"Education Videos", color:"#9a86c2",
     lede:"Short videos Henry made for teachers and future teachers. Pick any video below to watch it right here.",
-    html:()=>`<div class="videos">
-      <div class="vframe" id="vframe"><div id="ytplayer"></div></div>
-      <p class="vnow" id="vnow" aria-live="polite"></p>
-      <div class="vlist" id="vlist"><p class="vnote">Loading the videos...</p></div>
-      <a class="vall" href="https://www.youtube.com/playlist?list=${PLAYLIST}" target="_blank" rel="noopener">Open the playlist on YouTube</a>
+    html:()=>`<div class="videos">${PLAYLISTS.map((pl,k)=>`
+      <section class="vsec" aria-labelledby="vh-${k}">
+        <h3 class="vh" id="vh-${k}">${pl.title}</h3>
+        <div class="vframe" id="vframe-${k}"><div id="ytplayer-${k}"></div></div>
+        <p class="vnow" id="vnow-${k}" aria-live="polite"></p>
+        <div class="vlist" id="vlist-${k}"><p class="vnote">Loading the videos...</p></div>
+        <a class="vall" href="https://www.youtube.com/playlist?list=${pl.list}" target="_blank" rel="noopener">Open this playlist on YouTube</a>
+      </section>`).join('')}
     </div>`
   },
   market:{
@@ -618,7 +627,7 @@ function renderPanel(k, siteIdx){
   document.getElementById('ptitle').focus({preventScroll:true});
 }
 /* ---------- Cinema: playlist player with a video list ---------- */
-let ytPlayer=null, vidToken=0, ytLoading=null;
+let ytPlayers=[], vidToken=0, ytLoading=null;
 const VIDEO_TITLES={};
 function loadYT(){
   if(window.YT && YT.Player) return Promise.resolve();
@@ -633,53 +642,62 @@ function loadYT(){
 }
 function stopVideos(){
   vidToken++;
-  if(ytPlayer){ try{ ytPlayer.destroy(); }catch(e){} ytPlayer=null; }
+  ytPlayers.forEach(pl=>{ if(pl){ try{ pl.destroy(); }catch(e){} } });
+  ytPlayers=[];
   document.querySelectorAll('#pbody iframe').forEach(f=>f.remove());
 }
-function videoFallback(token){
+function videoFallback(token,k){
   // If the YouTube player API is blocked, show the plain playlist player instead.
   if(token!==vidToken) return;
-  if(ytPlayer){ try{ ytPlayer.destroy(); }catch(e){} ytPlayer=null; }
-  const fr=document.getElementById('vframe'); if(!fr) return;
-  fr.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${PLAYLIST}&rel=0&playsinline=1" title="Henry Yu's education videos" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
-  const l=document.getElementById('vlist');
+  if(ytPlayers[k]){ try{ ytPlayers[k].destroy(); }catch(e){} ytPlayers[k]=null; }
+  const fr=document.getElementById('vframe-'+k); if(!fr) return;
+  fr.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/videoseries?list=${PLAYLISTS[k].list}&rel=0&playsinline=1" title="${PLAYLISTS[k].title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+  const l=document.getElementById('vlist-'+k);
   if(l) l.innerHTML='<p class="vnote">After a video starts, tap the list icon in the top right corner of the player to pick another video.</p>';
 }
 function setupVideos(){
   const token=vidToken;
-  const timer=setTimeout(()=>{ if(!document.querySelector('#vlist .vitem')) videoFallback(token); },12000);
+  const timers=PLAYLISTS.map((_,k)=>setTimeout(()=>{ if(!document.querySelector('#vlist-'+k+' .vitem')) videoFallback(token,k); },12000));
   loadYT().then(()=>{
-    if(token!==vidToken || !document.getElementById('ytplayer')) return;
-    ytPlayer=new YT.Player('ytplayer',{
-      width:'100%', height:'100%',
-      playerVars:{ listType:'playlist', list:PLAYLIST, rel:0, playsinline:1 },
-      events:{
-        onReady:()=>waitForList(token,0,timer),
-        onStateChange:()=>markCurrent(),
-        onError:()=>{}
-      }
+    if(token!==vidToken) return;
+    PLAYLISTS.forEach((pl,k)=>{
+      if(!document.getElementById('ytplayer-'+k)) return;
+      ytPlayers[k]=new YT.Player('ytplayer-'+k,{
+        width:'100%', height:'100%',
+        playerVars:{ listType:'playlist', list:pl.list, rel:0, playsinline:1 },
+        events:{
+          onReady:()=>waitForList(token,k,0,timers[k]),
+          onStateChange:e=>{
+            // only one video plays at a time
+            if(e && e.data===1) ytPlayers.forEach((o,j)=>{ if(j!==k && o){ try{ o.pauseVideo(); }catch(err){} } });
+            markCurrent(k);
+          },
+          onError:()=>{}
+        }
+      });
     });
-  }).catch(()=>{ clearTimeout(timer); videoFallback(token); });
+  }).catch(()=>{ timers.forEach(clearTimeout); PLAYLISTS.forEach((_,k)=>videoFallback(token,k)); });
 }
-function waitForList(token,tries,timer){
-  if(token!==vidToken || !ytPlayer) return;
-  let ids=null; try{ ids=ytPlayer.getPlaylist(); }catch(e){}
-  if(ids && ids.length){ clearTimeout(timer); renderVideoList(ids); return; }
-  if(tries<40) setTimeout(()=>waitForList(token,tries+1,timer),300);
+function waitForList(token,k,tries,timer){
+  const pl=ytPlayers[k];
+  if(token!==vidToken || !pl) return;
+  let ids=null; try{ ids=pl.getPlaylist(); }catch(e){}
+  if(ids && ids.length){ clearTimeout(timer); renderVideoList(k,ids); return; }
+  if(tries<40) setTimeout(()=>waitForList(token,k,tries+1,timer),300);
 }
-function renderVideoList(ids){
-  const l=document.getElementById('vlist'); if(!l) return;
-  l.setAttribute('role','list'); l.setAttribute('aria-label',ids.length+' videos');
+function renderVideoList(k,ids){
+  const l=document.getElementById('vlist-'+k); if(!l) return;
+  l.setAttribute('role','list'); l.setAttribute('aria-label',PLAYLISTS[k].title+', '+ids.length+' videos');
   l.innerHTML=ids.map((id,i)=>`<div role="listitem"><button class="vitem" type="button" data-i="${i}" data-id="${id}">
       <span class="vt"><img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span class="vn">${i+1}</span></span>
       <span class="vtitle" data-id="${id}">${VIDEO_TITLES[id] || 'Video '+(i+1)}</span></button></div>`).join('');
   l.querySelectorAll('.vitem').forEach(b=>b.addEventListener('click',()=>{
-    if(!ytPlayer) return;
-    try{ ytPlayer.playVideoAt(+b.dataset.i); }catch(e){}
-    setCurrent(+b.dataset.i);
-    const fr=document.getElementById('vframe'); if(fr) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
+    const pl=ytPlayers[k]; if(!pl) return;
+    try{ pl.playVideoAt(+b.dataset.i); }catch(e){}
+    setCurrent(k,+b.dataset.i);
+    const fr=document.getElementById('vframe-'+k); if(fr) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
   }));
-  markCurrent();
+  markCurrent(k);
   ids.forEach(id=>{
     if(VIDEO_TITLES[id]) return;
     const url=encodeURIComponent('https://www.youtube.com/watch?v='+id);
@@ -687,22 +705,22 @@ function renderVideoList(ids){
       .catch(()=>fetch('https://noembed.com/embed?url='+url).then(r=>r.json()))
       .then(d=>{ if(d && d.title){ VIDEO_TITLES[id]=d.title;
         document.querySelectorAll(`.vtitle[data-id="${id}"]`).forEach(el=>{ el.textContent=d.title; el.parentElement.setAttribute('aria-label','Play '+d.title); });
-        markCurrent(); } })
+        PLAYLISTS.forEach((_,j)=>markCurrent(j)); } })
       .catch(()=>{});
   });
 }
-function setCurrent(i){
-  document.querySelectorAll('#vlist .vitem').forEach(b=>{
+function setCurrent(k,i){
+  document.querySelectorAll('#vlist-'+k+' .vitem').forEach(b=>{
     const on=+b.dataset.i===i; b.classList.toggle('on',on);
     if(on) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current');
   });
-  const cur=document.querySelector(`#vlist .vitem[data-i="${i}"]`), now=document.getElementById('vnow');
+  const cur=document.querySelector('#vlist-'+k+' .vitem[data-i="'+i+'"]'), now=document.getElementById('vnow-'+k);
   if(now && cur) now.textContent='Now showing: '+cur.querySelector('.vtitle').textContent;
 }
-function markCurrent(){
-  if(!ytPlayer) return;
-  let i=0; try{ const x=ytPlayer.getPlaylistIndex(); if(x>=0) i=x; }catch(e){}
-  setCurrent(i);
+function markCurrent(k){
+  const pl=ytPlayers[k]; if(!pl) return;
+  let i=0; try{ const x=pl.getPlaylistIndex(); if(x>=0) i=x; }catch(e){}
+  setCurrent(k,i);
 }
 let marketTag='';
 function setupMarket(){
