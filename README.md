@@ -35,7 +35,7 @@ Near the top of the script in `index.html`:
 - `PUBS` : publications
 - `PLACES` : text for every building panel
 - `TOUR` : the stops and what Frog Baby says at each one
-- `PLAYLISTS` : the YouTube playlists shown in the Cinema, in order (Research, then Teaching). Each one gets its own player with every video listed below it as thumbnails. Add videos to a playlist on YouTube and they appear on the site automatically. To add another playlist, add a line with a title and the part after `list=` in its link.
+- `PLAYLISTS` : the YouTube playlists shown in the Cinema, in order (Research, LessonHook, then Teaching). Each one gets its own player with every video listed below it as thumbnails. Add videos to a playlist on YouTube and they appear on the site automatically. To add another playlist, add a line with a title and the part after `list=` in its link.
 
 ## Adding a real 3D Frog Baby
 
