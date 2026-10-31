@@ -5,6 +5,7 @@ A 3D island village portfolio for Dr. Henry Yu. Each building opens a section of
 ## Files
 
 - `index.html` : the whole page (village, CV content, site list, tour)
+- `pd/` : slide decks shown in the PD Lab (AI Professional Development building)
 - `assets/henry.jpg` : portrait in the About panel
 - `assets/frogbaby.jpg` : Frog Baby character sheet in the guide panel
 - `assets/og-image.jpg` : the preview card shown when the link is shared
@@ -22,7 +23,7 @@ If you use a different repository name, open `index.html` and change the two `og
 
 ## Features
 
-- Take the tour: Frog Baby walks through eight stops with a speech bubble at each.
+- Take the tour: Frog Baby walks through ten stops with a speech bubble at each.
 - Night and Day: switches the lighting. Windows, street lamps, and stars light up at night. The choice is remembered.
 - Sound: off by default. Turn it on for cardinal chirps, the bell tower, the scramble crossing signal, and soft clicks. All sounds are made in the browser, so there are no audio files.
 - Market filters: tap a topic to show only those sites. Matching stalls lift up on the island.
@@ -35,6 +36,7 @@ Near the top of the script in `index.html`:
 - `PUBS` : publications
 - `PLACES` : text for every building panel
 - `TOUR` : the stops and what Frog Baby says at each one
+- `PD_SESSIONS` : the AI professional development sessions in the PD Lab, newest first. Put the slide deck HTML file in the `pd` folder, then add a line with its title, date, audience, file path, and a short description. Visitors can page through the slides inside the panel or open them full screen.
 - `PLAYLISTS` : the YouTube playlists shown in the Cinema, in order (Research, LessonHook, then Teaching). Each one gets its own player with every video listed below it as thumbnails. Add videos to a playlist on YouTube and they appear on the site automatically. To add another playlist, add a line with a title and the part after `list=` in its link.
 
 ## Adding a real 3D Frog Baby

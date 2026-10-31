@@ -178,6 +178,18 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .vh{margin:0; font-family:var(--display); font-size:1.3rem; line-height:1.2}
 .vframe{position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#1e2422; scroll-margin-top:12px}
 .vframe iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.pds{display:grid; gap:12px; margin-top:.6rem}
+.pdframe{background:#f4efe6}
+.pdlist{display:grid; gap:14px; margin-top:6px}
+.pdcard{padding:14px 16px; border-radius:14px; background:rgba(0,0,0,.035); border-left:5px solid transparent}
+.pdcard.on{border-left-color:var(--c)}
+.pdcard h3{margin:.2rem 0 .4rem; font-size:1.15rem; line-height:1.25}
+.pdcard p{margin:0 0 .6rem; font-family:var(--serif); line-height:1.5}
+.pdcard .pdmeta{font-family:var(--display); font-size:.85rem; font-weight:700; color:var(--muted); margin:0}
+.pdcard .pdmeta span{display:block; font-weight:400}
+.pdbtns{display:flex; flex-wrap:wrap; gap:8px}
+.pdbtns .btn{margin:0}
+.btn.alt{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 2px var(--c, currentColor)}
 .vnow{margin:0; font-family:var(--display); font-weight:700; font-size:1rem; line-height:1.3; min-height:1.3em}
 .vnote{margin:0; font-size:.9rem; color:var(--muted)}
 .vlist{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px 12px; margin-top:.3rem}
@@ -279,6 +291,15 @@ const PLAYLISTS = [
   { title:"Research Videos", list:"PLHMBlIdE1aws" },
   { title:"LessonHook Videos", list:"PLaskma5pdOdw" },
   { title:"Teaching Videos", list:"PLDyujKJHdZ7I" },
+];
+
+// AI professional development sessions shown in the PD Lab, newest first.
+// Put each slide deck (a single HTML file) in the pd folder and add a line here.
+const PD_SESSIONS = [
+  { title:"AI Tools for Educators: Faculty Workshop",
+    date:"November 12, 2026", audience:"Faculty professional development, Ball State University",
+    file:"pd/ai-tools-for-educators.html",
+    blurb:"A hands-on workshop using free ChatGPT or Gemini. It covers what AI is, why it matters for educators, AI search and image generation, comparing LLMs, NotebookLM, and ten practice tips for everyday faculty work such as course schedules, rubrics, feedback, recommendation letters, and course evaluations. Every practice file is fictional." },
 ];
 
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
@@ -564,6 +585,25 @@ const PLACES = {
       </section>`).join('')}
     </div>`
   },
+  pd:{
+    name:"PD Lab", title:"AI Professional Development", color:"#c56d8f",
+    lede:"Workshops Henry leads to help teachers and faculty use AI well. Pick a session to page through its slides right here.",
+    html:()=>`<div class="pds">
+      <div class="vframe pdframe" id="pdframe"></div>
+      <p class="vnow" id="pdnow" aria-live="polite"></p>
+      <div class="pdlist">${PD_SESSIONS.map((x,i)=>`
+        <article class="pdcard" id="pdcard-${i}">
+          <p class="pdmeta">${x.date}${x.audience?` <span>${x.audience}</span>`:''}</p>
+          <h3>${x.title}</h3>
+          <p>${x.blurb}</p>
+          <div class="pdbtns">
+            <button class="btn pdshow" data-i="${i}">View the slides here</button>
+            <a class="btn alt" href="${x.file}" target="_blank" rel="noopener">Open full screen</a>
+          </div>
+        </article>`).join('')}
+      </div>
+    </div>`
+  },
   market:{
     name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
     lede:"Every stall in the market is a working site. Open one in a new tab, or tap a stall on the island.",
@@ -587,7 +627,7 @@ const PLACES = {
     }
   }
 };
-const ORDER = ["frog","hall","library","school","talks","awards","grants","service","videos","market"];
+const ORDER = ["frog","hall","library","school","talks","pd","awards","grants","service","videos","market"];
 
 /* =========================================================
    UI: directory and panel
@@ -625,7 +665,20 @@ function renderPanel(k, siteIdx){
   }
   if(k==='market') setupMarket();
   if(k==='videos') setupVideos();
+  if(k==='pd') setupPD();
   document.getElementById('ptitle').focus({preventScroll:true});
+}
+/* ---------- PD Lab: slide deck viewer ---------- */
+function showPD(i, scroll){
+  const x=PD_SESSIONS[i], fr=document.getElementById('pdframe'); if(!x||!fr) return;
+  fr.innerHTML=`<iframe src="${x.file}" title="${x.title.replace(/"/g,'&quot;')} slides" allow="fullscreen; clipboard-write" allowfullscreen></iframe>`;
+  document.getElementById('pdnow').textContent='Now showing: '+x.title+'. Click the slides, then use the arrow keys or the buttons at the bottom.';
+  document.querySelectorAll('.pdcard').forEach((c,j)=>c.classList.toggle('on',j===i));
+  if(scroll) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
+}
+function setupPD(){
+  document.querySelectorAll('.pdshow').forEach(b=>b.addEventListener('click',()=>showPD(+b.dataset.i,true)));
+  if(PD_SESSIONS.length) showPD(0,false);
 }
 /* ---------- Cinema: playlist player with a video list ---------- */
 let ytPlayers=[], vidToken=0, ytLoading=null;
@@ -793,6 +846,7 @@ const TOUR=[
   {k:'library', say:"Every paper Henry has published lives in this library."},
   {k:'school',  say:"Up in Teachers College, Henry teaches future teachers."},
   {k:'talks',   say:"Talks and workshops for colleagues happen here."},
+  {k:'pd',      say:"In the PD Lab, Henry helps teachers and faculty learn AI."},
   {k:'awards',  say:"Hear the bell? The tower keeps Henry's awards."},
   {k:'grants',  say:"Grants keep this little workshop's gear turning."},
   {k:'service', say:"Committees and community work meet in this hall."},
@@ -881,7 +935,7 @@ function start(){
   const glow=(c,i)=>new THREE.MeshStandardMaterial({color:c, emissive:new THREE.Color(c), emissiveIntensity:i, roughness:.6});
   const winMat = new THREE.MeshStandardMaterial({color:C.win, roughness:.35, emissive:new THREE.Color('#ffc46b'), emissiveIntensity:0});
   const glassMat = new THREE.MeshStandardMaterial({color:C.glass, roughness:.25, emissive:new THREE.Color('#ffcf7a'), emissiveIntensity:0});
-  let signMat=null;
+  let signMat=null, pdSignMat=null;
   const lampMat = new THREE.MeshStandardMaterial({color:'#fff6dc', roughness:.4, emissive:new THREE.Color('#ffd98a'), emissiveIntensity:0});
   const brickBase=(()=>{
     const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
@@ -965,6 +1019,7 @@ function start(){
     {key:'grants',  x:15.5,z:-11,  from:EAST, depth:4.0},
     {key:'videos',  x:-21.5,z:8.5, from:WEST, depth:4.4},
     {key:'service', x:14.5,z:10.5, from:EAST, depth:4.4},
+    {key:'pd',      x:24,  z:10,   from:EAST, depth:4.2},
   ];
   const segments=[[WEST,EAST],[MID,[QUAD.x,QUAD.z-QUAD.d/2]]];
   BUILD.forEach(b=>{
@@ -1156,6 +1211,34 @@ function start(){
       [-2.2,2.2].forEach((px,i)=>{ box(.9,1.3,.06,C.lime,px,.35,d/2+.02,gp); box(.76,1.16,.08,['#9a86c2','#e9a64b'][i],px,.42,d/2+.04,gp); });
       box(w-.2,.12,.9,C.lime,0,0,d/2+.45,gp);
       return {h:5.4, perches:[[-2.4,h+1.56,d/2-.25],[2.2,h+1.56,d/2-.25]]};
+    },
+    pd(gp){ // PD lab: brick base, glass upper studio, AI sign, glowing spark on the roof
+      const w=5.4,d=4.2,h=2.6;
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
+      box(w+.2,.22,d+.2,C.lime,0,h,0,gp);
+      rbox(w-.3,2.1,d-.3,glassMat,0,h+.22,0,gp,.05);
+      for(let i=0;i<6;i++){ const fx=-(w-.3)/2+i*((w-.3)/5); box(.1,2.1,.1,C.lime,fx,h+.22,(d-.3)/2,gp); }
+      box(w-.3,.1,.1,C.lime,0,h+1.25,(d-.3)/2,gp);
+      rbox(w+.1,.26,d+.1,'#c56d8f',0,h+2.32,0,gp,.05);
+      windows(gp,w,d,1,2,.9,1,.6,.75,true);
+      box(1.4,1.75,.06,C.lime,0,0,d/2+.02,gp); box(.6,1.65,.1,glassMat,-.33,0,d/2+.04,gp); box(.6,1.65,.1,glassMat,.33,0,d/2+.04,gp);
+      // sign over the door
+      const c=document.createElement('canvas'); c.width=1024; c.height=200; const x=c.getContext('2d');
+      x.fillStyle='#fff8e6'; x.fillRect(0,0,1024,200);
+      x.fillStyle='#c56d8f'; x.fillRect(0,0,1024,14); x.fillRect(0,186,1024,14);
+      x.textAlign='center'; x.fillStyle='#b5192b'; x.font='800 92px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('AI PD LAB',512,118);
+      x.fillStyle='#2e3a35'; x.font='700 38px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('PROFESSIONAL DEVELOPMENT',512,170);
+      const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
+      pdSignMat=new THREE.MeshStandardMaterial({map:tex, emissive:new THREE.Color('#ffffff'), emissiveMap:tex, emissiveIntensity:.15, roughness:.6});
+      rbox(3.6,.85,.2,'#2e3a35',0,1.9,d/2+.1,gp,.04);
+      const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.4,.68), pdSignMat); sign.position.set(0,2.325,d/2+.21); gp.add(sign);
+      // rooftop spark
+      cyl(.08,.1,.7,8,'#3a3f44',0,h+2.58,0,gp);
+      const spark=new THREE.Mesh(new THREE.OctahedronGeometry(.55,0), new THREE.MeshStandardMaterial({color:'#f6c64b', emissive:new THREE.Color('#f6c64b'), emissiveIntensity:.35, roughness:.35, metalness:.2}));
+      spark.position.y=h+3.75; gp.add(spark); gp.userData.spark=spark;
+      // two benches out front for workshop breaks
+      [-1.9,1.9].forEach(bx=>{ box(1,.12,.38,'#8a6a48',bx,.38,d/2+1.05,gp); box(.08,.38,.3,'#3a3f44',bx-.4,0,d/2+1.05,gp); box(.08,.38,.3,'#3a3f44',bx+.4,0,d/2+1.05,gp); });
+      return {h:7.2, perches:[[-1.8,h+2.45,-1],[1.8,h+2.45,.8]]};
     },
     post(gp){ // post office
       const w=4,d=3.4,h=2.6;
@@ -1580,7 +1663,7 @@ function start(){
       hemi.intensity=.42+(.22-.42)*n; amb.intensity=.08+(.05-.08)*n;
       sea.material.color.copy(SEA_DAY).lerp(SEA_NIGHT,n); shallow.material.color.copy(SH_DAY).lerp(SH_NIGHT,n);
       winMat.emissiveIntensity=.95*n; winMat.color.copy(WIN_DAY).lerp(WIN_NIGHT,n);
-      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n; if(signMat) signMat.emissiveIntensity=.15+.75*n;
+      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n; if(signMat) signMat.emissiveIntensity=.15+.75*n; if(pdSignMat) pdSignMat.emissiveIntensity=.15+.75*n;
       nightLights.forEach(l=>l.intensity=1.1*n); stars.material.opacity=n;
     }
     for(const k in groups){ const g=groups[k]; const goal=(hovered===k||openKey===k)?.3:0; g.position.y+=(goal-g.position.y)*Math.min(1,dt*10); }
@@ -1644,6 +1727,7 @@ function start(){
         p.g.rotation.y=Math.atan2(vx*p.dir, vz*p.dir); swing(p.g, ph, .55);
       });
       if(groups.grants.userData.gear) groups.grants.userData.gear.rotation.z += dt*.6;
+      if(groups.pd && groups.pd.userData.spark){ const sp=groups.pd.userData.spark; sp.rotation.y += dt*.9; sp.position.y=6.35+Math.sin(T*2)*.12; }
       flag.rotation.y=Math.sin(T*1.7)*.12;
       leaves.forEach(l=>{
         l.y-=dt*l.sp; if(l.y<0.02){ l.y=l.t.y; }
