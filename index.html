@@ -183,7 +183,12 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .pdlist{display:grid; gap:14px; margin-top:6px}
 .pdcard{padding:14px 16px; border-radius:14px; background:rgba(0,0,0,.035); border-left:5px solid transparent}
 .pdcard.on{border-left-color:var(--c)}
-.pdcard h3{margin:.2rem 0 .4rem; font-size:1.15rem; line-height:1.25}
+.pdcard h4{margin:.2rem 0 .4rem; font-size:1.1rem; line-height:1.25}
+.pdyear h3{margin:1.2rem 0 .2rem; font-size:1.2rem}
+.pdcard .pdaud{font-family:var(--display); font-size:.85rem; font-weight:600; color:var(--c); margin:-.1rem 0 .5rem}
+.pdparts{margin:.2rem 0 .3rem; padding-left:1.3rem; font-family:var(--serif); line-height:1.45}
+.pdparts li{margin:.2rem 0}
+.pdcard>*:last-child{margin-bottom:0}
 .pdcard p{margin:0 0 .6rem; font-family:var(--serif); line-height:1.5}
 .pdcard .pdmeta{font-family:var(--display); font-size:.85rem; font-weight:700; color:var(--muted); margin:0}
 .pdcard .pdmeta span{display:block; font-weight:400}
@@ -293,13 +298,47 @@ const PLAYLISTS = [
   { title:"Teaching Videos", list:"PLDyujKJHdZ7I" },
 ];
 
-// AI professional development sessions shown in the PD Lab, newest first.
-// Put each slide deck (a single HTML file) in the pd folder and add a line here.
-const PD_SESSIONS = [
-  { title:"AI Tools for Educators: Faculty Workshop",
-    date:"November 12, 2026", audience:"Faculty professional development, Ball State University",
-    file:"pd/ai-tools-for-educators.html",
-    blurb:"A hands-on workshop using free ChatGPT or Gemini. It covers what AI is, why it matters for educators, AI search and image generation, comparing LLMs, NotebookLM, and ten practice tips for everyday faculty work such as course schedules, rubrics, feedback, recommendation letters, and course evaluations. Every practice file is fictional." },
+// AI workshops and professional development shown in the PD Lab, newest first.
+// year groups the cards. Add file:"pd/your-deck.html" to show a slide deck right in the panel.
+// parts lists the sessions inside a series. Leave blurb, audience, or host out if not needed.
+const PD_WORKSHOPS = [
+  { year:"2026 to 2027", when:"November 12, 2026",
+    title:"AI Tools for Educators: Faculty Workshop",
+    host:"Early Childhood, Youth, and Family Studies, Ball State University", audience:"Faculty",
+    blurb:"A hands-on workshop using free ChatGPT or Gemini. It covers what AI is, why it matters for educators, AI search and image generation, comparing LLMs, NotebookLM, and ten practice tips for everyday faculty work such as course schedules, rubrics, feedback, recommendation letters, and course evaluations. Every practice file is fictional.",
+    file:"pd/ai-tools-for-educators.html" },
+  { year:"2026 to 2027", when:"September 1, 2026",
+    title:"AI as a Student and as a Future Teacher",
+    host:"Elementary Education, Ball State University", audience:"Elementary education majors",
+    blurb:"A start-of-semester talk on how to use AI as a college student and as a preservice teacher, and how to handle AI as an elementary classroom teacher, built around whole-class interactive activities." },
+  { year:"2025 to 2026", when:"February 2026",
+    title:"From Prompts to Practice: Human-Centered AI Use in Higher Education",
+    host:"Ball State AI Symposium" },
+  { year:"2025 to 2026", when:"February 2026",
+    title:"Embedding a Syllabus Chatbot into Canvas",
+    host:"Teachers College, Ball State University" },
+  { year:"2025 to 2026", when:"February 2026",
+    title:"From Critical Technology Studies to Generative AI in Teacher Education",
+    host:"Doctoral seminar, Ball State University", audience:"Doctoral students" },
+  { year:"2025 to 2026", when:"January 2026",
+    title:"Balancing Tech and Values: Safe and Useful AI Pedagogy",
+    host:"EDEL Lunch and Learn, Ball State University" },
+  { year:"2025 to 2026", when:"November 2025",
+    title:"Ethical Use of AI in Graduate Education",
+    host:"Graduate School, Ball State University" },
+  { year:"2025 to 2026", when:"2025 to 2026",
+    title:"AI Faculty Associate Workshop Series",
+    host:"Ball State University", audience:"Faculty",
+    blurb:"A six-part series led as an Artificial Intelligence Faculty Associate.",
+    parts:["Getting Started with AI in the Classroom","AI for Lesson Design and Media Creation","Responsible and Equitable Use of AI","Building Assignments and Policies for AI-Empowered Learning","Understanding Students' Perspective in the AI Era","AI-Assisted Assessment and Feedback"] },
+];
+// Ongoing PD projects and resources shown at the bottom of the PD Lab.
+const PD_EXTRAS = [
+  { title:"BSU TC AI Resources", when:"Website",
+    text:"A Teachers College resource site with 100 curated AI tools for education and ten topic guides.",
+    url:"https://sites.google.com/view/tcairesources", link:"Visit the site" },
+  { title:"Bridging the AI Literacy Divide", when:"May to December 2026",
+    text:"A collaborative faculty professional development and inclusive toolkit initiative for elementary education, funded by an Inclusiveness Committee Departmental Award." },
 ];
 
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
@@ -501,14 +540,8 @@ const PLACES = {
       ])}
       <p>Since 2016 Henry has also presented regularly at SHAPE America, AERA, AIESEP, NAKHE, ISPAH, and IOHSK on school physical activity, CSPAP, and app-based learning in physical education.</p>
       <h3>Workshops for colleagues</h3>
-      ${li([
-        item("From Prompts to Practice: Human-Centered AI Use in Higher Education","February 2026","Ball State AI Symposium"),
-        item("AI Faculty Associate series: Getting Started with AI in the Classroom; AI for Lesson Design and Media Creation; Responsible and Equitable Use of AI; Building Assignments and Policies for AI-Empowered Learning; Understanding Students' Perspective in the AI Era; AI-Assisted Assessment and Feedback","2025 to 2026"),
-        item("Embedding a Syllabus Chatbot into Canvas","February 2026","Teachers College"),
-        item("Balancing Tech and Values: Safe and Useful AI Pedagogy","January 2026","EDEL Lunch and Learn"),
-        item("Ethical Use of AI in Graduate Education","November 2025","Graduate School"),
-        item("From Critical Technology Studies to Generative AI in Teacher Education","February 2026","Doctoral seminar")
-      ])}`
+      <p>Henry's AI workshops and professional development sessions for faculty, teachers, and future teachers are gathered in the PD Lab.</p>
+      <button class="btn" onclick="openPlace('pd')">Visit the PD Lab</button>`
   },
   awards:{
     name:"Bell Tower", title:"Awards", color:"#e9a64b",
@@ -587,22 +620,36 @@ const PLACES = {
   },
   pd:{
     name:"PD Lab", title:"AI Professional Development", color:"#c56d8f",
-    lede:"Workshops Henry leads to help teachers and faculty use AI well. Pick a session to page through its slides right here.",
-    html:()=>`<div class="pds">
-      <div class="vframe pdframe" id="pdframe"></div>
-      <p class="vnow" id="pdnow" aria-live="polite"></p>
-      <div class="pdlist">${PD_SESSIONS.map((x,i)=>`
+    lede:"AI workshops Henry has led for faculty, teachers, and future teachers, newest first. Sessions with slides open right here.",
+    html:()=>{
+      const decks=PD_WORKSHOPS.map((x,i)=>x.file?i:-1).filter(i=>i>=0);
+      const years=[...new Set(PD_WORKSHOPS.map(x=>x.year))];
+      const card=(x,i)=>`
         <article class="pdcard" id="pdcard-${i}">
-          <p class="pdmeta">${x.date}${x.audience?` <span>${x.audience}</span>`:''}</p>
-          <h3>${x.title}</h3>
-          <p>${x.blurb}</p>
-          <div class="pdbtns">
+          <p class="pdmeta">${x.when}${x.host?` <span>${x.host}</span>`:''}</p>
+          <h4>${x.title}</h4>
+          ${x.audience?`<p class="pdaud">For ${x.audience.charAt(0).toLowerCase()+x.audience.slice(1)}</p>`:''}
+          ${x.blurb?`<p>${x.blurb}</p>`:''}
+          ${x.parts?`<ol class="pdparts">${x.parts.map(t=>`<li>${t}</li>`).join('')}</ol>`:''}
+          ${x.file?`<div class="pdbtns">
             <button class="btn pdshow" data-i="${i}">View the slides here</button>
             <a class="btn alt" href="${x.file}" target="_blank" rel="noopener">Open full screen</a>
-          </div>
-        </article>`).join('')}
-      </div>
-    </div>`
+          </div>`:''}
+        </article>`;
+      return `<div class="pds">
+      ${decks.length?`<div class="vframe pdframe" id="pdframe"></div>
+      <p class="vnow" id="pdnow" aria-live="polite"></p>`:''}
+      ${years.map(y=>`<section class="pdyear" aria-label="${y}">
+        <h3>${y}</h3>
+        <div class="pdlist">${PD_WORKSHOPS.map((x,i)=>x.year===y?card(x,i):'').join('')}</div>
+      </section>`).join('')}
+      ${PD_EXTRAS.length?`<section class="pdyear"><h3>Ongoing PD work and resources</h3>
+        <div class="pdlist">${PD_EXTRAS.map(x=>`<article class="pdcard">
+          <p class="pdmeta">${x.when}</p><h4>${x.title}</h4><p>${x.text}</p>
+          ${x.url?`<div class="pdbtns"><a class="btn alt" href="${x.url}" target="_blank" rel="noopener">${x.link||'Open'}</a></div>`:''}
+        </article>`).join('')}</div></section>`:''}
+    </div>`;
+    }
   },
   market:{
     name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
@@ -670,15 +717,15 @@ function renderPanel(k, siteIdx){
 }
 /* ---------- PD Lab: slide deck viewer ---------- */
 function showPD(i, scroll){
-  const x=PD_SESSIONS[i], fr=document.getElementById('pdframe'); if(!x||!fr) return;
+  const x=PD_WORKSHOPS[i], fr=document.getElementById('pdframe'); if(!x||!x.file||!fr) return;
   fr.innerHTML=`<iframe src="${x.file}" title="${x.title.replace(/"/g,'&quot;')} slides" allow="fullscreen; clipboard-write" allowfullscreen></iframe>`;
   document.getElementById('pdnow').textContent='Now showing: '+x.title+'. Click the slides, then use the arrow keys or the buttons at the bottom.';
-  document.querySelectorAll('.pdcard').forEach((c,j)=>c.classList.toggle('on',j===i));
+  document.querySelectorAll('.pdcard').forEach(c=>c.classList.toggle('on',c.id==='pdcard-'+i));
   if(scroll) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
 }
 function setupPD(){
   document.querySelectorAll('.pdshow').forEach(b=>b.addEventListener('click',()=>showPD(+b.dataset.i,true)));
-  if(PD_SESSIONS.length) showPD(0,false);
+  const first=PD_WORKSHOPS.findIndex(x=>x.file); if(first>=0) showPD(first,false);
 }
 /* ---------- Cinema: playlist player with a video list ---------- */
 let ytPlayers=[], vidToken=0, ytLoading=null;
