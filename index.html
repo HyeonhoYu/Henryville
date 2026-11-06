@@ -180,6 +180,7 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .vframe iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
 .pds{display:grid; gap:12px; margin-top:.6rem}
 .pdframe{background:#f4efe6}
+.pdframe.tool{aspect-ratio:auto; height:min(640px,72vh); padding:0}
 .pdlist{display:grid; gap:14px; margin-top:6px}
 .pdcard{padding:14px 16px; border-radius:14px; background:rgba(0,0,0,.035); border-left:5px solid transparent}
 .pdcard.on{border-left-color:var(--c)}
@@ -331,6 +332,12 @@ const PD_WORKSHOPS = [
     host:"Ball State University", audience:"Faculty",
     blurb:"A six-part series led as an Artificial Intelligence Faculty Associate.",
     parts:["Getting Started with AI in the Classroom","AI for Lesson Design and Media Creation","Responsible and Equitable Use of AI","Building Assignments and Policies for AI-Empowered Learning","Understanding Students' Perspective in the AI Era","AI-Assisted Assessment and Feedback"] },
+];
+// Classroom tools Henry built, shown in the PD Lab. file opens the tool right in the panel.
+const PD_TOOLS = [
+  { title:"Group Maker", when:"Classroom tool",
+    text:"Add a class list, pick the number of groups or students per group, and let Frog Baby mix things up with a shuffle or a spinning wheel. Hidden teacher settings let you place students and keep pairs apart while the screen still looks random. The class list stays saved in the browser.",
+    file:"pd/group-maker.html", label:"Try it here" },
 ];
 // Ongoing PD projects and resources shown at the bottom of the PD Lab.
 const PD_EXTRAS = [
@@ -622,27 +629,33 @@ const PLACES = {
     name:"PD Lab", title:"AI Professional Development", color:"#c56d8f",
     lede:"AI workshops Henry has led for faculty, teachers, and future teachers, newest first. Sessions with slides open right here.",
     html:()=>{
-      const decks=PD_WORKSHOPS.map((x,i)=>x.file?i:-1).filter(i=>i>=0);
+      const decks=PD_WORKSHOPS.filter(x=>x.file).length+PD_TOOLS.filter(x=>x.file).length;
       const years=[...new Set(PD_WORKSHOPS.map(x=>x.year))];
       const card=(x,i)=>`
-        <article class="pdcard" id="pdcard-${i}">
+        <article class="pdcard" id="pdcard-w${i}">
           <p class="pdmeta">${x.when}${x.host?` <span>${x.host}</span>`:''}</p>
           <h4>${x.title}</h4>
           ${x.audience?`<p class="pdaud">For ${x.audience.charAt(0).toLowerCase()+x.audience.slice(1)}</p>`:''}
           ${x.blurb?`<p>${x.blurb}</p>`:''}
           ${x.parts?`<ol class="pdparts">${x.parts.map(t=>`<li>${t}</li>`).join('')}</ol>`:''}
           ${x.file?`<div class="pdbtns">
-            <button class="btn pdshow" data-i="${i}">View the slides here</button>
+            <button class="btn pdshow" data-k="w${i}">View the slides here</button>
             <a class="btn alt" href="${x.file}" target="_blank" rel="noopener">Open full screen</a>
           </div>`:''}
         </article>`;
       return `<div class="pds">
-      ${decks.length?`<div class="vframe pdframe" id="pdframe"></div>
+      ${decks?`<div class="vframe pdframe" id="pdframe"></div>
       <p class="vnow" id="pdnow" aria-live="polite"></p>`:''}
       ${years.map(y=>`<section class="pdyear" aria-label="${y}">
         <h3>${y}</h3>
         <div class="pdlist">${PD_WORKSHOPS.map((x,i)=>x.year===y?card(x,i):'').join('')}</div>
       </section>`).join('')}
+      ${PD_TOOLS.length?`<section class="pdyear"><h3>Classroom tools</h3>
+        <div class="pdlist">${PD_TOOLS.map((x,i)=>`<article class="pdcard" id="pdcard-t${i}">
+          <p class="pdmeta">${x.when}</p><h4>${x.title}</h4><p>${x.text}</p>
+          ${x.file?`<div class="pdbtns"><button class="btn pdshow" data-k="t${i}">${x.label||'Open here'}</button>
+            <a class="btn alt" href="${x.file}" target="_blank" rel="noopener">Open full screen</a></div>`:''}
+        </article>`).join('')}</div></section>`:''}
       ${PD_EXTRAS.length?`<section class="pdyear"><h3>Ongoing PD work and resources</h3>
         <div class="pdlist">${PD_EXTRAS.map(x=>`<article class="pdcard">
           <p class="pdmeta">${x.when}</p><h4>${x.title}</h4><p>${x.text}</p>
@@ -716,16 +729,19 @@ function renderPanel(k, siteIdx){
   document.getElementById('ptitle').focus({preventScroll:true});
 }
 /* ---------- PD Lab: slide deck viewer ---------- */
-function showPD(i, scroll){
-  const x=PD_WORKSHOPS[i], fr=document.getElementById('pdframe'); if(!x||!x.file||!fr) return;
-  fr.innerHTML=`<iframe src="${x.file}" title="${x.title.replace(/"/g,'&quot;')} slides" allow="fullscreen; clipboard-write" allowfullscreen></iframe>`;
-  document.getElementById('pdnow').textContent='Now showing: '+x.title+'. Click the slides, then use the arrow keys or the buttons at the bottom.';
-  document.querySelectorAll('.pdcard').forEach(c=>c.classList.toggle('on',c.id==='pdcard-'+i));
+function showPD(k, scroll){
+  const x=(k[0]==='t'?PD_TOOLS:PD_WORKSHOPS)[+k.slice(1)], fr=document.getElementById('pdframe'); if(!x||!x.file||!fr) return;
+  const tool=k[0]==='t';
+  fr.classList.toggle('tool',tool);
+  fr.innerHTML=`<iframe src="${x.file}" title="${x.title.replace(/"/g,'&quot;')}${tool?'':' slides'}" allow="fullscreen; clipboard-write" allowfullscreen></iframe>`;
+  document.getElementById('pdnow').textContent='Now showing: '+x.title+(tool?'. For a whole class, use Open full screen.':'. Click the slides, then use the arrow keys or the buttons at the bottom.');
+  document.querySelectorAll('.pdcard').forEach(c=>c.classList.toggle('on',c.id==='pdcard-'+k));
   if(scroll) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
 }
 function setupPD(){
-  document.querySelectorAll('.pdshow').forEach(b=>b.addEventListener('click',()=>showPD(+b.dataset.i,true)));
-  const first=PD_WORKSHOPS.findIndex(x=>x.file); if(first>=0) showPD(first,false);
+  document.querySelectorAll('.pdshow').forEach(b=>b.addEventListener('click',()=>showPD(b.dataset.k,true)));
+  const w=PD_WORKSHOPS.findIndex(x=>x.file), t=PD_TOOLS.findIndex(x=>x.file);
+  if(w>=0) showPD('w'+w,false); else if(t>=0) showPD('t'+t,false);
 }
 /* ---------- Cinema: playlist player with a video list ---------- */
 let ytPlayers=[], vidToken=0, ytLoading=null;

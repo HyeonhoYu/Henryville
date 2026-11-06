@@ -37,6 +37,7 @@ Near the top of the script in `index.html`:
 - `PLACES` : text for every building panel
 - `TOUR` : the stops and what Frog Baby says at each one
 - `PD_WORKSHOPS` : every AI workshop and PD session in the PD Lab, newest first, grouped by academic year (`year`). Each has a date, title, host, audience, and an optional description. To show slides inside the panel, put the deck's HTML file in the `pd` folder and add `file:"pd/name.html"`. A series can list its sessions in `parts`.
+- `PD_TOOLS` : classroom tools in the PD Lab (Group Maker). Put the tool's HTML file in the `pd` folder and set `file`; visitors can try it in the panel or open it full screen.
 - `PD_EXTRAS` : ongoing PD projects and resource sites shown at the bottom of the PD Lab.
 - `PLAYLISTS` : the YouTube playlists shown in the Cinema, in order (Research, LessonHook, then Teaching). Each one gets its own player with every video listed below it as thumbnails. Add videos to a playlist on YouTube and they appear on the site automatically. To add another playlist, add a line with a title and the part after `list=` in its link.
 
