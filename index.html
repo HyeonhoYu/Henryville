@@ -9,7 +9,7 @@
 <link rel="alternate icon" href="assets/favicon.ico">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="theme-color" content="#a9d3cf">
-<meta name="description" content="Henryville is the 3D island village portfolio of Dr. Henry Yu, Assistant Professor of Educational Technology at Ball State University. Explore his research, teaching, awards, and the websites he built.">
+<meta name="description" content="Henryville is the 3D island village portfolio of Dr. Henry Yu, Assistant Professor of Educational Technology at Ball State University. Explore his research, teaching, awards, and the free classroom software he builds for teachers.">
 <!-- Share preview. If the repository is not named Henryville, change the two URLs below. -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Henryville | Dr. Henry Yu">
@@ -18,7 +18,7 @@
 <meta property="og:image" content="https://hyeonhoyu.github.io/Henryville/assets/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A low-poly island village with brick campus buildings, a bell tower, and a market">
+<meta property="og:image:alt" content="A low-poly island village with brick campus buildings, a bell tower, and a software workshop">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -131,16 +131,6 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
   border:1.5px solid var(--ink); border-radius:14px; padding:14px 16px; margin:.8rem 0 1rem;
 }
 .feature strong{font-family:var(--display); display:block; font-size:1.05rem; line-height:1.25; margin-bottom:.25rem}
-.stalls{display:grid; gap:10px; margin-top:.6rem}
-.stall{
-  display:grid; grid-template-columns:14px 1fr; gap:12px; align-items:start;
-  padding:12px 12px 12px 0; border-bottom:1px solid var(--line);
-}
-.stall .sw{width:14px; height:100%; min-height:44px; border-radius:4px; background:var(--sc)}
-.stall strong{font-family:var(--display); font-size:1.02rem; display:block}
-.stall .url{font-family:var(--display); font-size:.8rem; color:var(--muted); word-break:break-all}
-.stall p{margin:.25rem 0 .35rem}
-.stall.flash{animation:flash 1.4s ease}
 @keyframes flash{0%,40%{background:color-mix(in srgb, var(--sc) 25%, transparent)}100%{background:transparent}}
 .stats{display:flex; gap:22px; flex-wrap:wrap; margin:.6rem 0 .4rem; font-family:var(--display)}
 .stats div{font-size:.85rem; color:var(--muted)}
@@ -165,11 +155,6 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .tourbar.on{display:flex}
 .tourbar .step{font-size:.85rem; color:var(--muted); font-weight:600; margin-right:auto}
 .tourbar .btn{margin:0; padding:.55rem .9rem}
-.filters{display:flex; flex-wrap:wrap; gap:6px; margin:.6rem 0 .4rem}
-.tag{font:600 .8rem/1 var(--display); color:var(--ink); background:transparent; border:1px solid var(--line); border-radius:999px; padding:.45rem .7rem; cursor:pointer}
-.tag:hover{border-color:var(--ink)}
-.tag.on{background:var(--ink); color:var(--paper); border-color:var(--ink)}
-.stall[hidden]{display:none}
 .pills{display:flex; flex-wrap:wrap; gap:4px; margin:.35rem 0 .1rem}
 .pills em{font:600 .72rem/1 var(--display); font-style:normal; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:.3rem .5rem}
 .videos{display:grid; gap:34px; margin-top:.6rem}
@@ -237,7 +222,6 @@ body.panel-open .sign{opacity:0}
 }
 @media (prefers-reduced-motion: reduce){
   .panel, .directory, .loader, .hint{transition:none}
-  .stall.flash{animation:none}
 }
 </style>
 </head>
@@ -350,30 +334,11 @@ const PD_EXTRAS = [
 
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
 
-const SITES = [
-  { name:"Wonder Pond", tags:["Games", "Elementary"], url:"https://wonderpond.github.io", color:"#7fb8a4",
-    blurb:"Learning games for US elementary students across subjects, guided by Edie and her frog friends Hop and Skip." },
-  { name:"Daltokki", tags:["Language learning", "Korean"], url:"https://hyeonhoyu.github.io/daltokki/", color:"#e9c46a",
-    blurb:"A Korean learning site for second-generation Korean Americans and anyone who wants to learn Korean." },
-  { name:"Literacy Quest", tags:["Literacy", "Elementary"], url:"https://literacyquest.github.io/", color:"#c45f4f",
-    blurb:"A quest-style site for building early literacy skills." },
-  { name:"Phonogram Studio", tags:["Literacy", "AI voices"], url:"https://hyeonhoyu.github.io/Phonogram-Studio/", color:"#7f92c8",
-    blurb:"Hear and practice English phonogram sounds with clear AI voice recordings." },
-  { name:"Frog Baby", tags:["Ball State", "History"], url:"https://hyeonhoyu.github.io/frogbaby/", color:"#8fb07a",
-    blurb:"The history of Frog Baby, the beloved statue on the Ball State campus." },
-  { name:"Whistle", tags:["Physical education", "Sports"], url:"https://hyeonhoyu.github.io/whistle-sports-rulebook/", color:"#e9a64b",
-    blurb:"A friendly sports rulebook for teachers and young players." },
-  { name:"Buen Camino", tags:["Language learning", "Spanish"], url:"https://hyeonhoyu.github.io/Buen-Camino/", color:"#b98a5e",
-    blurb:"A site for learning Spanish." },
-  { name:"PIPS AI Lab", tags:["AI literacy", "Elementary"], url:"https://pips-ai-lab.github.io/", color:"#6fa3b8",
-    blurb:"AI literacy lessons for US elementary students." },
-  { name:"Pai Thiao", tags:["Language learning", "Thai"], url:"https://iohsk.github.io/Pai-Thiao/", color:"#d98a9c",
-    blurb:"A site for learning Thai." },
-  { name:"ASL for Teachers", tags:["Accessibility", "Teachers"], url:"https://hyeonhoyu.github.io/ASL-for-Teachers/", color:"#9a86c2",
-    blurb:"Everyday American Sign Language for classroom teachers." },
-  { name:"IOHSK AI Hub", tags:["AI literacy", "IOHSK"], url:"https://iohsk.github.io/AI-hub/", color:"#5f9e8f",
-    blurb:"AI resources gathered for members of the International Organization for Health, Sports, and Kinesiology." },
-];
+// The MYOS Workshop links out to Make Your Own Software, which gathers every site and tool Henry has built.
+const MYOS = {
+  url:"https://makeyourownsoftware.github.io/MYOS/",
+  request:"https://makeyourownsoftware.github.io/MYOS/#request",
+};
 
 const PUBS = {
   inPress:[
@@ -429,7 +394,7 @@ const PLACES = {
       <img src="assets/frogbaby.jpg" alt="Frog Baby, a smiling child in red overalls with a star on the hair bun, holding a green frog and a teal frog" style="width:100%;height:auto;border-radius:14px;display:block;margin:.4rem 0 1rem">
       <button class="btn solid" type="button" onclick="startTour()">Take the tour with Frog Baby</button>
       <p>Tap any building and Frog Baby will walk over and meet you at the door. Close the panel and Frog Baby heads back to the pond by the Quad.</p>
-      <p>The real Frog Baby statue is one of Ball State's best loved landmarks. Its story has its own stall in the Maker's Market.</p>
+      <p>The real Frog Baby statue is one of Ball State's best loved landmarks. Its story has a website of its own.</p>
       <a class="btn" href="https://hyeonhoyu.github.io/frogbaby/" target="_blank" rel="noopener">Read the Frog Baby story</a>`
   },
   hall:{
@@ -665,26 +630,22 @@ const PLACES = {
     }
   },
   market:{
-    name:"Maker's Market", title:"Websites Henry built", color:"#e9c46a",
-    lede:"Every stall in the market is a working site. Open one in a new tab, or tap a stall on the island.",
-    html:()=>{
-      const all=[...new Set(SITES.flatMap(x=>x.tags))].sort();
-      return `<div class="filters" role="group" aria-label="Filter websites by topic">
-        <button class="tag on" data-tag="" aria-pressed="true">All</button>${all.map(t=>`<button class="tag" data-tag="${t}" aria-pressed="false">${t}</button>`).join('')}
-      </div>
-      <div class="stalls">${SITES.map((s,i)=>`
-        <div class="stall" id="stall-${i}" style="--sc:${s.color}" data-tags="${s.tags.join('|')}">
-          <span class="sw" aria-hidden="true"></span>
-          <div>
-            <strong>${s.name}</strong>
-            <span class="url">${s.url.replace(/^https:\/\//,'').replace(/\/$/,'')}</span>
-            <span class="pills">${s.tags.map(t=>`<em>${t}</em>`).join('')}</span>
-            <p>${s.blurb}</p>
-            <a class="btn" href="${s.url}" target="_blank" rel="noopener">Visit ${s.name}</a>
-          </div>
-        </div>`).join('')}
-      </div>`;
-    }
+    name:"MYOS Workshop", title:"Make Your Own Software", color:"#e9c46a",
+    lede:"Teachers bring a classroom need. Henry builds a free tool for it.",
+    html:()=>`
+      <p>MYOS (Make Your Own Software) is Henry's free build service for teachers. He makes small, focused webpages, websites, and apps that solve real classroom problems, and he shares every one of them freely.</p>
+      <p>Everything Henry has built lives there: flagship learning sites such as Wonder Pond, Daltokki, Literacy Quest, PIPS AI Lab, and Buen Camino, plus a gallery of smaller classroom tools you can search by subject, grade, or topic.</p>
+      <h3>How it works</h3>
+      <ol>
+        <li>A teacher shares what the classroom needs.</li>
+        <li>Henry reviews the request.</li>
+        <li>Henry builds the tool.</li>
+        <li>The teacher uses it with students, free of charge.</li>
+      </ol>
+      <div class="pdbtns">
+        <a class="btn solid" href="${MYOS.url}" target="_blank" rel="noopener">Visit MYOS</a>
+        <a class="btn alt" href="${MYOS.request}" target="_blank" rel="noopener">Request a tool</a>
+      </div>`
   }
 };
 const ORDER = ["frog","hall","library","school","talks","pd","awards","grants","service","videos","market"];
@@ -707,7 +668,7 @@ ORDER.forEach(k=>{
 
 const panel=document.getElementById('panel');
 let openKey=null;
-function renderPanel(k, siteIdx){
+function renderPanel(k){
   const p=PLACES[k];
   panel.style.setProperty('--c',p.color);
   document.getElementById('phead').style.setProperty('--c',p.color);
@@ -719,11 +680,6 @@ function renderPanel(k, siteIdx){
   body.innerHTML=p.html(); body.scrollTop=0;
   panel.classList.add('open'); panel.setAttribute('aria-hidden','false');
   document.body.classList.add('panel-open');
-  if(siteIdx!=null){
-    const el=document.getElementById('stall-'+siteIdx);
-    if(el){ requestAnimationFrame(()=>{ el.scrollIntoView({block:'center', behavior: REDUCE?'auto':'smooth'}); el.classList.add('flash'); }); }
-  }
-  if(k==='market') setupMarket();
   if(k==='videos') setupVideos();
   if(k==='pd') setupPD();
   document.getElementById('ptitle').focus({preventScroll:true});
@@ -839,16 +795,6 @@ function markCurrent(k){
   let i=0; try{ const x=pl.getPlaylistIndex(); if(x>=0) i=x; }catch(e){}
   setCurrent(k,i);
 }
-let marketTag='';
-function setupMarket(){
-  const body=document.getElementById('pbody');
-  body.querySelectorAll('.tag').forEach(b=>b.addEventListener('click',()=>{
-    marketTag=b.dataset.tag;
-    body.querySelectorAll('.tag').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); });
-    body.querySelectorAll('.stall').forEach(st=>{ st.hidden = !!marketTag && !st.dataset.tags.split('|').includes(marketTag); });
-    Sound.pop();
-  }));
-}
 document.getElementById('pclose').addEventListener('click',()=>closePanel());
 addEventListener('keydown',e=>{ if(e.key==='Escape' && openKey) closePanel(); });
 
@@ -857,14 +803,13 @@ const forced = document.documentElement.getAttribute('data-theme');
 const DARK = forced ? forced==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
 
 let focusPlace = ()=>{}, goHome = ()=>{};
-function openPlace(k, siteIdx, fromTour){
+function openPlace(k, fromTour){
   if(!fromTour) endTour(true);
-  if(k!=='market') marketTag='';
-  openKey=k; renderPanel(k, siteIdx); focusPlace(k, siteIdx); hideHint();
+  openKey=k; renderPanel(k); focusPlace(k); hideHint();
   if(k==='awards') Sound.bell(); else Sound.pop();
 }
 function closePanel(){
-  endTour(true); marketTag='';
+  endTour(true);
   stopVideos();
   openKey=null; panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
   document.body.classList.remove('panel-open'); goHome();
@@ -914,13 +859,13 @@ const TOUR=[
   {k:'grants',  say:"Grants keep this little workshop's gear turning."},
   {k:'service', say:"Committees and community work meet in this hall."},
   {k:'videos',  say:"Grab a seat! Henry's videos are playing tonight."},
-  {k:'market',  say:"Last stop! Every stall is a website Henry built."}
+  {k:'market',  say:"Last stop! At the MYOS Workshop, Henry builds free tools for teachers."}
 ];
 let tourIdx=-1, bubbleText='';
 const tourbar=document.getElementById('tourbar'), bubble=document.getElementById('bubble');
 function goTour(){
   const st=TOUR[tourIdx];
-  openPlace(st.k, null, true);
+  openPlace(st.k, true);
   bubbleText=st.say; bubble.textContent=st.say;
   tourbar.classList.add('on');
   document.getElementById('tourstep').textContent=`Stop ${tourIdx+1} of ${TOUR.length}`;
@@ -998,7 +943,7 @@ function start(){
   const glow=(c,i)=>new THREE.MeshStandardMaterial({color:c, emissive:new THREE.Color(c), emissiveIntensity:i, roughness:.6});
   const winMat = new THREE.MeshStandardMaterial({color:C.win, roughness:.35, emissive:new THREE.Color('#ffc46b'), emissiveIntensity:0});
   const glassMat = new THREE.MeshStandardMaterial({color:C.glass, roughness:.25, emissive:new THREE.Color('#ffcf7a'), emissiveIntensity:0});
-  let signMat=null, pdSignMat=null;
+  let signMat=null, pdSignMat=null, myosSignMat=null;
   const lampMat = new THREE.MeshStandardMaterial({color:'#fff6dc', roughness:.4, emissive:new THREE.Color('#ffd98a'), emissiveIntensity:0});
   const brickBase=(()=>{
     const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
@@ -1083,6 +1028,7 @@ function start(){
     {key:'videos',  x:-21.5,z:8.5, from:WEST, depth:4.4},
     {key:'service', x:14.5,z:10.5, from:EAST, depth:4.4},
     {key:'pd',      x:24,  z:10,   from:EAST, depth:4.2},
+    {key:'market',  x:9.5, z:-5.6, from:[9.5,0], depth:4},
   ];
   const segments=[[WEST,EAST],[MID,[QUAD.x,QUAD.z-QUAD.d/2]]];
   BUILD.forEach(b=>{
@@ -1303,6 +1249,39 @@ function start(){
       [-1.9,1.9].forEach(bx=>{ box(1,.12,.38,'#8a6a48',bx,.38,d/2+1.05,gp); box(.08,.38,.3,'#3a3f44',bx-.4,0,d/2+1.05,gp); box(.08,.38,.3,'#3a3f44',bx+.4,0,d/2+1.05,gp); });
       return {h:7.2, perches:[[-1.8,h+2.45,-1],[1.8,h+2.45,.8]]};
     },
+    market(gp){ // MYOS Workshop: brick maker space with a sawtooth roof and a glass roll-up door
+      const w=5.6,d=4,h=2.8, Y='#e9c46a';
+      rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
+      box(w+.2,.22,d+.2,C.lime,0,h,0,gp);
+      windows(gp,w,d,1,0,.95,1,.55,.75,true);
+      // sawtooth roof, glass faces the street
+      const n=3, dz=d/n, th=.85, L=Math.hypot(dz,th), ang=Math.atan2(th,dz), y0=h+.22;
+      const tri=new THREE.Shape(); tri.moveTo(0,0); tri.lineTo(dz,0); tri.lineTo(dz,th); tri.lineTo(0,0);
+      const triGeo=new THREE.ExtrudeGeometry(tri,{depth:.08, bevelEnabled:false});
+      for(let i=0;i<n;i++){ const z0=-d/2+i*dz;
+        const r=new THREE.Mesh(new THREE.BoxGeometry(w+.1,.12,L+.06), mat(Y)); r.position.set(0,y0+th/2+.03,z0+dz/2); r.rotation.x=-ang; gp.add(r);
+        box(w-.3,th-.06,.08,glassMat,0,y0,z0+dz-.04,gp);
+        [-1,1].forEach(sd=>{ const m=new THREE.Mesh(triGeo, M(brick(1,1))); m.rotation.y=-Math.PI/2; m.position.set(sd*(w/2-.04)+(sd<0?.08:0),y0,z0); gp.add(m); });
+      }
+      // glass roll-up door
+      box(2.4,1.62,.06,C.lime,0,0,d/2+.02,gp); box(2.2,1.52,.1,glassMat,0,0,d/2+.04,gp);
+      [.38,.76,1.14].forEach(yy=>box(2.2,.05,.12,C.lime,0,yy,d/2+.05,gp));
+      // sign
+      const c=document.createElement('canvas'); c.width=1024; c.height=200; const x=c.getContext('2d');
+      x.fillStyle='#fff8e6'; x.fillRect(0,0,1024,200);
+      x.fillStyle=Y; x.fillRect(0,0,1024,14); x.fillRect(0,186,1024,14);
+      x.textAlign='center'; x.fillStyle='#b5192b'; x.font='800 96px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('MYOS',512,116);
+      x.fillStyle='#2e3a35'; x.font='700 38px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('MAKE YOUR OWN SOFTWARE',512,170);
+      const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
+      myosSignMat=new THREE.MeshStandardMaterial({map:tex, emissive:new THREE.Color('#ffffff'), emissiveMap:tex, emissiveIntensity:.15, roughness:.6});
+      rbox(3.8,.82,.2,'#2e3a35',0,1.86,d/2+.1,gp,.04);
+      const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.6,.66), myosSignMat); sign.position.set(0,2.27,d/2+.21); gp.add(sign);
+      // workbench out front with a few project crates
+      box(1.5,.08,.6,'#b98a5e',0,.72,d/2+1.05,gp);
+      [[-.65,-.22],[.65,-.22],[-.65,.22],[.65,.22]].forEach(([a,b])=>box(.07,.72,.07,'#8a6a48',a,0,d/2+1.05+b,gp));
+      ['#b5192b','#6fa3b8',Y].forEach((col,i)=>rbox(.3,.24-i*.03,.3,col,-.45+i*.45,.8,d/2+1.05,gp,.04));
+      return {h:4.4, perches:[[-1.6,y0+th+.1,-d/2+dz],[1.5,y0+th+.1,-d/2+2*dz]]};
+    },
     post(gp){ // post office
       const w=4,d=3.4,h=2.6;
       rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
@@ -1327,36 +1306,6 @@ function start(){
     s.position.set(b.x, info.h+1.2, b.z); s.userData.place=b.key;
     pickables.push(gp,s);
   });
-
-  /* ---------- Maker's Market ---------- */
-  const stallX=[[-3.4,-1,1.4,5.6,8,10.4],[-3.4,-1,1.4,5.6,8]];
-  const stalls=[]; let si=0;
-  stallX.forEach((row,ri)=>{
-    row.forEach(x=>{
-      if(si>=SITES.length) return;
-      const site=SITES[si];
-      const sg=new THREE.Group(); const z=ri===0?-3.1:3.1;
-      sg.position.set(x,0,z); sg.rotation.y= ri===0?0:Math.PI;
-      rbox(1.9,.9,1,'#b98a5e',0,0,0,sg,.06);
-      box(1.95,.1,1.05,C.lime,0,.9,0,sg);
-      [[-.85,-.45,2],[.85,-.45,2],[-.85,.45,1.7],[.85,.45,1.7]].forEach(([a,b,hh])=>cyl(.05,.05,hh,6,'#8a6a48',a,0,b,sg));
-      const aw=new THREE.Mesh(new THREE.BoxGeometry(2.2,.1,1.5), mat(site.color)); aw.position.set(0,1.95,.05); aw.rotation.x=.28; sg.add(aw);
-      for(let k=0;k<5;k++){ const st=new THREE.Mesh(new THREE.BoxGeometry(.22,.11,1.52), mat('#ffffff')); st.position.set(-.88+k*.44,1.955,.05); st.rotation.x=.28; sg.add(st); }
-      const flap=new THREE.Mesh(new THREE.BoxGeometry(2.2,.3,.06), mat(site.color)); flap.position.set(0,1.62,.79); sg.add(flap);
-      for(let k=0;k<3;k++) rbox(.32,.26,.32,[site.color,'#f2b84b','#ffffff'][k],-.55+k*.55,1.0,.1,sg,.05);
-      shade(sg); sg.userData.place='site'; sg.userData.site=si; scene.add(sg);
-      const s=label(site.name, site.color, .62); s.position.set(x,ri===0?3.25:2.75,z); s.userData.place='site'; s.userData.site=si; s.visible=false;
-      stalls.push({g:sg,s,x,z}); pickables.push(sg,s); si++;
-    });
-  });
-  const gate=new THREE.Group(); gate.position.set(-4.9,0,0); scene.add(gate);
-  [-2.4,2.4].forEach(z=>{ rbox(.7,3.6,.7,brick(.7,3.6),0,0,z,gate,.05); rbox(.85,.3,.85,C.lime,0,3.6,z,gate,.05); });
-  box(.3,.3,5.4,'#3a3f44',0,3.3,0,gate);
-  rbox(.2,.9,3.2,'#ffffff',0,2.25,0,gate,.05);
-  box(.22,.18,3.2,RED,0,3.0,0,gate);
-  shade(gate); gate.userData.place='market'; pickables.push(gate);
-  const gateLabel=label("Maker's Market", PLACES.market.color, 1.2); gateLabel.position.set(-4.9,5,0); gateLabel.userData.place='market'; pickables.push(gateLabel);
-  groups.market=gate;
 
   /* ---------- Lamp posts with cardinal banners ---------- */
   const lampHeads=[];
@@ -1629,16 +1578,11 @@ function start(){
     tween={p0:camera.position.clone(), t0:controls.target.clone(), p1:pos, t1:tgt, start:performance.now(), dur};
     controls.enabled=false;
   }
-  focusPlace=(k, siteIdx)=>{
+  focusPlace=(k)=>{
     let center, dir, dist;
     if(k==='frog'){
       center=new THREE.Vector3(frog.position.x,1,frog.position.z); dist=9;
       dir=camera.position.clone().sub(controls.target).setY(0).normalize(); dir.y=.6; dir.normalize();
-    } else if(k==='market'||siteIdx!=null){
-      const st = siteIdx!=null ? stalls[siteIdx] : null;
-      center=new THREE.Vector3(st?st.x:3.5,1,st?st.z:0);
-      dist= st?18:30; dir=new THREE.Vector3(0,.75,1).normalize();
-      if(st) walkTo(st.x, st.z>0?1.2:-1.2, st.z>0?0:Math.PI); else walkTo(2.2,.4,0);
     } else {
       const g=groups[k], b=BUILD.find(x=>x.key===k);
       center=new THREE.Vector3(g.position.x,(g.userData.h||4)*.42,g.position.z); dist=k==='school'||k==='awards'?34:28;
@@ -1683,12 +1627,12 @@ function start(){
     if(!down) return; const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y); down=null;
     if(moved>7) return;
     const u=pick(e.clientX,e.clientY); if(!u) return;
-    if(u.place==='site') openPlace('market', u.site); else openPlace(u.place);
+    openPlace(u.place);
   });
   canvas.addEventListener('pointermove',e=>{
     if(e.pointerType!=='mouse') return;
     const u=pick(e.clientX,e.clientY);
-    hovered=u? (u.place==='site'?'site'+u.site:u.place) : null;
+    hovered=u? u.place : null;
     canvas.classList.toggle('hovering', !!u);
   });
   canvas.addEventListener('pointerleave',()=>{ hovered=null; canvas.classList.remove('hovering'); });
@@ -1706,7 +1650,7 @@ function start(){
         SEA_DAY=new THREE.Color(C.sea), SEA_NIGHT=new THREE.Color('#1d3a43'), SH_DAY=new THREE.Color(C.shallow), SH_NIGHT=new THREE.Color('#2a4d55'),
         WIN_DAY=new THREE.Color(C.win), WIN_NIGHT=new THREE.Color('#ffd27f');
   let wasWalk=false;
-  const MARKET=new THREE.Vector3(3.5,0,0), PLAZA=new THREE.Vector3(WEST[0],0,0), tmp=new THREE.Vector3(), proj=new THREE.Vector3();
+  const PLAZA=new THREE.Vector3(WEST[0],0,0), tmp=new THREE.Vector3(), proj=new THREE.Vector3();
   let last=performance.now();
   function frame(now){
     const dt=Math.min(.05,(now-last)/1000); last=now; const T=now/1000;
@@ -1726,13 +1670,10 @@ function start(){
       hemi.intensity=.42+(.22-.42)*n; amb.intensity=.08+(.05-.08)*n;
       sea.material.color.copy(SEA_DAY).lerp(SEA_NIGHT,n); shallow.material.color.copy(SH_DAY).lerp(SH_NIGHT,n);
       winMat.emissiveIntensity=.95*n; winMat.color.copy(WIN_DAY).lerp(WIN_NIGHT,n);
-      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n; if(signMat) signMat.emissiveIntensity=.15+.75*n; if(pdSignMat) pdSignMat.emissiveIntensity=.15+.75*n;
+      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n; if(signMat) signMat.emissiveIntensity=.15+.75*n; if(pdSignMat) pdSignMat.emissiveIntensity=.15+.75*n; if(myosSignMat) myosSignMat.emissiveIntensity=.15+.75*n;
       nightLights.forEach(l=>l.intensity=1.1*n); stars.material.opacity=n;
     }
     for(const k in groups){ const g=groups[k]; const goal=(hovered===k||openKey===k)?.3:0; g.position.y+=(goal-g.position.y)*Math.min(1,dt*10); }
-    stalls.forEach((st,i)=>{ const goal=(hovered==='site'+i || (marketTag && SITES[i].tags.includes(marketTag)))?.45:0; st.g.position.y+=(goal-st.g.position.y)*Math.min(1,dt*10); });
-    const showStalls = camera.position.distanceTo(MARKET)<26 || openKey==='market';
-    stalls.forEach((st,i)=>{ st.s.visible = !!(showStalls || hovered==='site'+i || (marketTag && SITES[i].tags.includes(marketTag))); });
     LABELS.forEach(l=>{ const f=Math.min(1.15,Math.max(.32,camera.position.distanceTo(l.position)/60)); l.scale.set(l.userData.bs.x*f,l.userData.bs.y*f,1); });
 
     // Frog Baby
