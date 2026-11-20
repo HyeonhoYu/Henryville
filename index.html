@@ -1622,6 +1622,8 @@ function start(){
   const h0=homeView();
   if(REDUCE){ camera.position.copy(h0.pos); controls.target.copy(h0.tgt); }
   else { camera.position.set(-48,70,96); controls.target.set(0,0,0); moveTo(h0.pos,h0.tgt,2200); }
+  // Open the About Dr. Henry Yu panel on every visit, once the opening fly-in finishes
+  setTimeout(()=>{ if(!openKey) openPlace('hall'); }, REDUCE?300:2300);
 
   const composer=null;
 
