@@ -18,7 +18,7 @@
 <meta property="og:image" content="https://hyeonhoyu.github.io/Henryville/assets/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A low-poly island village with brick campus buildings, a bell tower, and a software workshop">
+<meta property="og:image:alt" content="A low-poly island village with brick campus buildings, a bell tower, and a software workshop on the town square">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -334,10 +334,10 @@ const PD_EXTRAS = [
 
 const FROG_MODEL = { url:"assets/frogbaby.glb", height:2.1, turn:0 };
 
-// The MYOS Workshop links out to Make Your Own Software, which gathers every site and tool Henry has built.
-const MYOS = {
-  url:"https://makeyourownsoftware.github.io/MYOS/",
-  request:"https://makeyourownsoftware.github.io/MYOS/#request",
+// The workshop on the town square links out to YuMadeIt, which gathers every site and tool Henry has built.
+const YUMADEIT = {
+  url:"https://yumadeit.org/",
+  request:"https://yumadeit.org/#request",
 };
 
 const PUBS = {
@@ -630,10 +630,10 @@ const PLACES = {
     }
   },
   market:{
-    name:"MYOS Workshop", title:"Make Your Own Software", color:"#e9c46a",
-    lede:"Teachers bring a classroom need. Henry builds a free tool for it.",
+    name:"Town Square Workshop", title:"yumadeit.org", color:"#e9c46a",
+    lede:"Tell Henry what your classroom needs. He'll build it, free.",
     html:()=>`
-      <p>MYOS (Make Your Own Software) is Henry's free build service for teachers. He makes small, focused webpages, websites, and apps that solve real classroom problems, and he shares every one of them freely.</p>
+      <p>YuMadeIt is Henry's free build service for teachers. He makes small, focused webpages, websites, and apps that solve real classroom problems, and he shares every one of them freely.</p>
       <p>Everything Henry has built lives there: flagship learning sites such as Wonder Pond, Daltokki, Literacy Quest, PIPS AI Lab, and Buen Camino, plus a gallery of smaller classroom tools you can search by subject, grade, or topic.</p>
       <h3>How it works</h3>
       <ol>
@@ -643,8 +643,8 @@ const PLACES = {
         <li>The teacher uses it with students, free of charge.</li>
       </ol>
       <div class="pdbtns">
-        <a class="btn solid" href="${MYOS.url}" target="_blank" rel="noopener">Visit MYOS</a>
-        <a class="btn alt" href="${MYOS.request}" target="_blank" rel="noopener">Request a tool</a>
+        <a class="btn solid" href="${YUMADEIT.url}" target="_blank" rel="noopener">Visit yumadeit.org</a>
+        <a class="btn alt" href="${YUMADEIT.request}" target="_blank" rel="noopener">Request a tool</a>
       </div>`
   }
 };
@@ -859,7 +859,7 @@ const TOUR=[
   {k:'grants',  say:"Grants keep this little workshop's gear turning."},
   {k:'service', say:"Committees and community work meet in this hall."},
   {k:'videos',  say:"Grab a seat! Henry's videos are playing tonight."},
-  {k:'market',  say:"Last stop! At the MYOS Workshop, Henry builds free tools for teachers."}
+  {k:'market',  say:"Last stop! Right in the town square, Henry builds free tools for teachers at yumadeit.org."}
 ];
 let tourIdx=-1, bubbleText='';
 const tourbar=document.getElementById('tourbar'), bubble=document.getElementById('bubble');
@@ -943,7 +943,7 @@ function start(){
   const glow=(c,i)=>new THREE.MeshStandardMaterial({color:c, emissive:new THREE.Color(c), emissiveIntensity:i, roughness:.6});
   const winMat = new THREE.MeshStandardMaterial({color:C.win, roughness:.35, emissive:new THREE.Color('#ffc46b'), emissiveIntensity:0});
   const glassMat = new THREE.MeshStandardMaterial({color:C.glass, roughness:.25, emissive:new THREE.Color('#ffcf7a'), emissiveIntensity:0});
-  let signMat=null, pdSignMat=null, myosSignMat=null;
+  let signMat=null, pdSignMat=null, myosSignMat=null, bulbMat=null;
   const lampMat = new THREE.MeshStandardMaterial({color:'#fff6dc', roughness:.4, emissive:new THREE.Color('#ffd98a'), emissiveIntensity:0});
   const brickBase=(()=>{
     const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
@@ -1014,23 +1014,24 @@ function start(){
   sea.rotation.x=-Math.PI/2; sea.position.y=-1.66; scene.add(sea);
 
   /* ---------- Layout ---------- */
-  const WEST=[-7,0], MID=[3.5,0], EAST=[14,0];
+  const WEST=[-7,0], EAST=[14,0];
   const QUAD={x:4, z:13, w:8, d:5};
   const POND={x:-3.6, z:14, rx:2.9, rz:2};
   const FB_HOME=[0.6,11.6];
+  const SQ={x:3.5, z:0, r:5.8}; // town square around the yumadeit.org workshop
   const BUILD=[
     {key:'hall',    x:-20, z:-3,   from:WEST, depth:4.4},
     {key:'library', x:-9.5,z:-12,  from:WEST, depth:5.2},
-    {key:'school',  x:3.5, z:-13,  from:MID,  depth:4.6},
+    {key:'school',  x:3.5, z:-13,  from:[3.5,-SQ.r], depth:4.6},
     {key:'talks',   x:-11.5,z:9.5, from:WEST, depth:4.4},
     {key:'awards',  x:24.5,z:-2,   from:EAST, depth:2.8},
     {key:'grants',  x:15.5,z:-11,  from:EAST, depth:4.0},
     {key:'videos',  x:-21.5,z:8.5, from:WEST, depth:4.4},
     {key:'service', x:14.5,z:10.5, from:EAST, depth:4.4},
     {key:'pd',      x:24,  z:10,   from:EAST, depth:4.2},
-    {key:'market',  x:9.5, z:-5.6, from:[9.5,0], depth:4},
+    {key:'market',  x:3.5, z:-.7,  from:[3.5,SQ.r], depth:4.8},
   ];
-  const segments=[[WEST,EAST],[MID,[QUAD.x,QUAD.z-QUAD.d/2]]];
+  const segments=[[WEST,[SQ.x-SQ.r,0]],[[SQ.x+SQ.r,0],EAST],[[SQ.x,SQ.r],[QUAD.x,QUAD.z-QUAD.d/2]]];
   BUILD.forEach(b=>{
     const dx=b.from[0]-b.x, dz=b.from[1]-b.z, L=Math.hypot(dx,dz);
     b.rot=Math.atan2(dx,dz);
@@ -1057,6 +1058,10 @@ function start(){
   line([qx0,qz0],[qx0+QUAD.w,qz0+QUAD.d],C.path,.8); line([qx0+QUAD.w,qz0],[qx0,qz0+QUAD.d],C.path,.8);
   [[C.pathEdge,1.75],[C.path,1.4]].forEach(([c,w])=>segments.forEach(([a,b])=>line(a,b,c,w)));
   line([-5,0],[12.5,0],C.pathEdge,4.4); line([-5,0],[12.5,0],C.path,4);
+  // town square: paved circle with a limestone ring
+  const disc=(r,col)=>{ g.fillStyle=col; g.beginPath(); g.arc(px(SQ.x),pz(SQ.z),r*ppu,0,Math.PI*2); g.fill(); };
+  disc(SQ.r+.2,C.pathEdge); disc(SQ.r,C.path);
+  g.strokeStyle=C.pathEdge; g.lineWidth=.12*ppu; g.beginPath(); g.arc(px(SQ.x),pz(SQ.z),(SQ.r-.7)*ppu,0,Math.PI*2); g.stroke();
   line([FB_HOME[0],FB_HOME[1]],[QUAD.x-QUAD.w/2-.6,QUAD.z],C.path,1.2);
   // scramble intersection
   const S=7.6, sx0=WEST[0]-S/2, sz0=-S/2;
@@ -1249,13 +1254,13 @@ function start(){
       [-1.9,1.9].forEach(bx=>{ box(1,.12,.38,'#8a6a48',bx,.38,d/2+1.05,gp); box(.08,.38,.3,'#3a3f44',bx-.4,0,d/2+1.05,gp); box(.08,.38,.3,'#3a3f44',bx+.4,0,d/2+1.05,gp); });
       return {h:7.2, perches:[[-1.8,h+2.45,-1],[1.8,h+2.45,.8]]};
     },
-    market(gp){ // MYOS Workshop: brick maker space with a sawtooth roof and a glass roll-up door
-      const w=5.6,d=4,h=2.8, Y='#e9c46a';
+    market(gp){ // yumadeit.org workshop: brick maker space, sawtooth roof, glass roll-up door, glowing idea bulb on top
+      const w=6.8,d=4.8,h=3.2, Y='#e9c46a';
       rbox(w,h,d,brick(w,h),0,0,0,gp,.06);
-      box(w+.2,.22,d+.2,C.lime,0,h,0,gp);
-      windows(gp,w,d,1,0,.95,1,.55,.75,true);
-      // sawtooth roof, glass faces the street
-      const n=3, dz=d/n, th=.85, L=Math.hypot(dz,th), ang=Math.atan2(th,dz), y0=h+.22;
+      box(w+.2,.24,d+.2,C.lime,0,h,0,gp);
+      windows(gp,w,d,1,0,1.05,1,.6,.85,true,true);
+      // sawtooth roof, glass faces the Quad
+      const n=3, dz=d/n, th=1, L=Math.hypot(dz,th), ang=Math.atan2(th,dz), y0=h+.24;
       const tri=new THREE.Shape(); tri.moveTo(0,0); tri.lineTo(dz,0); tri.lineTo(dz,th); tri.lineTo(0,0);
       const triGeo=new THREE.ExtrudeGeometry(tri,{depth:.08, bevelEnabled:false});
       for(let i=0;i<n;i++){ const z0=-d/2+i*dz;
@@ -1264,23 +1269,31 @@ function start(){
         [-1,1].forEach(sd=>{ const m=new THREE.Mesh(triGeo, M(brick(1,1))); m.rotation.y=-Math.PI/2; m.position.set(sd*(w/2-.04)+(sd<0?.08:0),y0,z0); gp.add(m); });
       }
       // glass roll-up door
-      box(2.4,1.62,.06,C.lime,0,0,d/2+.02,gp); box(2.2,1.52,.1,glassMat,0,0,d/2+.04,gp);
-      [.38,.76,1.14].forEach(yy=>box(2.2,.05,.12,C.lime,0,yy,d/2+.05,gp));
+      box(2.7,1.82,.06,C.lime,0,0,d/2+.02,gp); box(2.5,1.72,.1,glassMat,0,0,d/2+.04,gp);
+      [.43,.86,1.29].forEach(yy=>box(2.5,.05,.12,C.lime,0,yy,d/2+.05,gp));
       // sign
-      const c=document.createElement('canvas'); c.width=1024; c.height=200; const x=c.getContext('2d');
-      x.fillStyle='#fff8e6'; x.fillRect(0,0,1024,200);
-      x.fillStyle=Y; x.fillRect(0,0,1024,14); x.fillRect(0,186,1024,14);
-      x.textAlign='center'; x.fillStyle='#b5192b'; x.font='800 96px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('MYOS',512,116);
-      x.fillStyle='#2e3a35'; x.font='700 38px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('MAKE YOUR OWN SOFTWARE',512,170);
+      const c=document.createElement('canvas'); c.width=1200; c.height=210; const x=c.getContext('2d');
+      x.fillStyle='#fff8e6'; x.fillRect(0,0,1200,210);
+      x.fillStyle=Y; x.fillRect(0,0,1200,14); x.fillRect(0,196,1200,14);
+      x.textAlign='center'; x.fillStyle='#b5192b'; x.font='800 100px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('yumadeit.org',600,120);
+      x.fillStyle='#2e3a35'; x.font='700 40px "Bricolage Grotesque", system-ui, sans-serif'; x.fillText('FREE TOOLS FOR TEACHERS',600,176);
       const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
       myosSignMat=new THREE.MeshStandardMaterial({map:tex, emissive:new THREE.Color('#ffffff'), emissiveMap:tex, emissiveIntensity:.15, roughness:.6});
-      rbox(3.8,.82,.2,'#2e3a35',0,1.86,d/2+.1,gp,.04);
-      const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.6,.66), myosSignMat); sign.position.set(0,2.27,d/2+.21); gp.add(sign);
+      rbox(4.9,.92,.2,'#2e3a35',0,2.08,d/2+.1,gp,.04);
+      const sign=new THREE.Mesh(new THREE.PlaneGeometry(4.7,.82), myosSignMat); sign.position.set(0,2.54,d/2+.21); gp.add(sign);
       // workbench out front with a few project crates
-      box(1.5,.08,.6,'#b98a5e',0,.72,d/2+1.05,gp);
-      [[-.65,-.22],[.65,-.22],[-.65,.22],[.65,.22]].forEach(([a,b])=>box(.07,.72,.07,'#8a6a48',a,0,d/2+1.05+b,gp));
-      ['#b5192b','#6fa3b8',Y].forEach((col,i)=>rbox(.3,.24-i*.03,.3,col,-.45+i*.45,.8,d/2+1.05,gp,.04));
-      return {h:4.4, perches:[[-1.6,y0+th+.1,-d/2+dz],[1.5,y0+th+.1,-d/2+2*dz]]};
+      box(1.6,.08,.62,'#b98a5e',0,.72,d/2+1.05,gp);
+      [[-.7,-.23],[.7,-.23],[-.7,.23],[.7,.23]].forEach(([a,b])=>box(.07,.72,.07,'#8a6a48',a,0,d/2+1.05+b,gp));
+      ['#b5192b','#6fa3b8',Y].forEach((col,i)=>rbox(.3,.24-i*.03,.3,col,-.48+i*.48,.8,d/2+1.05,gp,.04));
+      // idea bulb on the roof
+      const top=y0+th;
+      cyl(.09,.12,1.1,8,'#3a3f44',0,top,-d/2+dz,gp);
+      cyl(.2,.24,.32,12,'#8a8f94',0,top+1.1,-d/2+dz,gp);
+      bulbMat=new THREE.MeshStandardMaterial({color:'#ffe08a', emissive:new THREE.Color('#f6c64b'), emissiveIntensity:.45, roughness:.3});
+      const bulb=new THREE.Mesh(new THREE.SphereGeometry(.55,20,16), bulbMat);
+      bulb.position.set(0,top+1.95,-d/2+dz); gp.add(bulb); gp.userData.bulb=bulb;
+      { const pl=new THREE.PointLight('#ffd27f',0,16); pl.position.set(0,top+2,-d/2+dz); gp.add(pl); nightLights.push(pl); }
+      return {h:top+2.5, perches:[[-2.2,top+.1,-d/2+dz],[2.1,top+.1,-d/2+2*dz]]};
     },
     post(gp){ // post office
       const w=4,d=3.4,h=2.6;
@@ -1302,7 +1315,7 @@ function start(){
     scene.add(gp); groups[b.key]=gp;
     gp.updateMatrixWorld(true);
     info.perches.forEach(p=>perches.push(gp.localToWorld(new THREE.Vector3(...p))));
-    const s=label(PLACES[b.key].title, PLACES[b.key].color);
+    const s=label(PLACES[b.key].title, PLACES[b.key].color, b.key==='market'?1.6:1.25);
     s.position.set(b.x, info.h+1.2, b.z); s.userData.place=b.key;
     pickables.push(gp,s);
   });
@@ -1316,7 +1329,8 @@ function start(){
     box(.03,.75,.42,RED,0,1.55,.24,lg); box(.035,.12,.42,'#ffffff',0,1.95,.24,lg);
     shade(lg);
   };
-  [-2.6,3.5,12.4].forEach(x=>{ lamp(x,2.05); lamp(x,-2.05,Math.PI); });
+  [-3.4,10.4].forEach(x=>{ lamp(x,2.05); lamp(x,-2.05,Math.PI); });
+  [45,135,225,315].forEach(a=>{ const t=a*Math.PI/180; lamp(SQ.x+Math.cos(t)*(SQ.r-.35), SQ.z+Math.sin(t)*(SQ.r-.35), -t+Math.PI/2); });
   BUILD.forEach(b=>{ const [a,c]=[b.from,b.front]; const mx=(a[0]+c[0])/2, mz=(a[1]+c[1])/2; const L=Math.hypot(c[0]-a[0],c[1]-a[1]);
     lamp(mx-(c[1]-a[1])/L*1.15, mz+(c[0]-a[0])/L*1.15, Math.atan2(c[0]-a[0],c[1]-a[1])+Math.PI/2); });
 
@@ -1351,7 +1365,7 @@ function start(){
     lp.position.set(POND.x+(rnd()-.5)*POND.rx*1.3,.05,POND.z+(rnd()-.5)*POND.rz*1.2); lp.rotation.y=rnd()*6; scene.add(lp); }
 
   /* ---------- Trees with autumn color ---------- */
-  const keepOut=BUILD.map(b=>[b.x,b.z, b.key==='hall'?5.8:b.key==='library'?5:4.5]);
+  const keepOut=[...BUILD.map(b=>[b.x,b.z, b.key==='hall'?5.8:b.key==='library'?5:4.5]), [SQ.x,SQ.z,SQ.r+1]];
   const segDist=(p,a,b)=>{ const vx=b[0]-a[0], vz=b[1]-a[1]; const t=Math.max(0,Math.min(1,((p[0]-a[0])*vx+(p[1]-a[1])*vz)/(vx*vx+vz*vz))); return Math.hypot(p[0]-a[0]-vx*t, p[1]-a[1]-vz*t); };
   const trunkGeo=new THREE.CylinderGeometry(.12,.17,.9,6);
   const leafGeos=[new THREE.IcosahedronGeometry(.85,0), new THREE.ConeGeometry(.85,1.9,7), new THREE.DodecahedronGeometry(.8,0)];
@@ -1670,7 +1684,7 @@ function start(){
       hemi.intensity=.42+(.22-.42)*n; amb.intensity=.08+(.05-.08)*n;
       sea.material.color.copy(SEA_DAY).lerp(SEA_NIGHT,n); shallow.material.color.copy(SH_DAY).lerp(SH_NIGHT,n);
       winMat.emissiveIntensity=.95*n; winMat.color.copy(WIN_DAY).lerp(WIN_NIGHT,n);
-      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n; if(signMat) signMat.emissiveIntensity=.15+.75*n; if(pdSignMat) pdSignMat.emissiveIntensity=.15+.75*n; if(myosSignMat) myosSignMat.emissiveIntensity=.15+.75*n;
+      glassMat.emissiveIntensity=.6*n; lampMat.emissiveIntensity=1.4*n; if(signMat) signMat.emissiveIntensity=.15+.75*n; if(pdSignMat) pdSignMat.emissiveIntensity=.15+.75*n; if(myosSignMat) myosSignMat.emissiveIntensity=.15+.75*n; if(bulbMat) bulbMat.emissiveIntensity=.45+1.2*n;
       nightLights.forEach(l=>l.intensity=1.1*n); stars.material.opacity=n;
     }
     for(const k in groups){ const g=groups[k]; const goal=(hovered===k||openKey===k)?.3:0; g.position.y+=(goal-g.position.y)*Math.min(1,dt*10); }

@@ -1,10 +1,10 @@
 # Henryville
 
-A 3D island village portfolio for Dr. Henry Yu. Each building opens a section of the CV, every stall in the Maker's Market links to a website Henry built, and Frog Baby walks visitors around.
+A 3D island village portfolio for Dr. Henry Yu. Each building opens a section of the CV, the workshop on the town square links to yumadeit.org, where every site and tool Henry has built lives, and Frog Baby walks visitors around.
 
 ## Files
 
-- `index.html` : the whole page (village, CV content, site list, tour)
+- `index.html` : the whole page (village, CV content, tour)
 - `pd/` : slide decks shown in the PD Lab (AI Professional Development building)
 - `assets/henry.jpg` : portrait in the About panel
 - `assets/frogbaby.jpg` : Frog Baby character sheet in the guide panel
@@ -26,13 +26,12 @@ If you use a different repository name, open `index.html` and change the two `og
 - Take the tour: Frog Baby walks through ten stops with a speech bubble at each.
 - Night and Day: switches the lighting. Windows, street lamps, and stars light up at night. The choice is remembered.
 - Sound: off by default. Turn it on for cardinal chirps, the bell tower, the scramble crossing signal, and soft clicks. All sounds are made in the browser, so there are no audio files.
-- Market filters: tap a topic to show only those sites. Matching stalls lift up on the island.
 
 ## Editing content
 
 Near the top of the script in `index.html`:
 
-- `SITES` : name, link, tags, color, and description for each market stall
+- `YUMADEIT` : the yumadeit.org link and request form link used by the town square workshop
 - `PUBS` : publications
 - `PLACES` : text for every building panel
 - `TOUR` : the stops and what Frog Baby says at each one
