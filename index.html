@@ -165,6 +165,8 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .vframe iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
 .pds{display:grid; gap:12px; margin-top:.6rem}
 .pdframe{background:#f4efe6}
+.pdlede{margin:.1rem 0 .6rem; font-family:var(--serif); line-height:1.5}
+.pdcard.soon{opacity:.7}
 .pdframe.tool{aspect-ratio:auto; height:min(640px,72vh); padding:0}
 .pdlist{display:grid; gap:14px; margin-top:6px}
 .pdcard{padding:14px 16px; border-radius:14px; background:rgba(0,0,0,.035); border-left:5px solid transparent}
@@ -316,6 +318,18 @@ const PD_WORKSHOPS = [
     host:"Ball State University", audience:"Faculty",
     blurb:"A six-part series led as an Artificial Intelligence Faculty Associate.",
     parts:["Getting Started with AI in the Classroom","AI for Lesson Design and Media Creation","Responsible and Equitable Use of AI","Building Assignments and Policies for AI-Empowered Learning","Understanding Students' Perspective in the AI Era","AI-Assisted Assessment and Feedback"] },
+];
+// Interactive lecture series shown at the top of the PD Lab. Add each new episode to the end of episodes.
+// Put the episode's HTML file in the pd folder. Episodes without a file show as "Coming soon".
+const PD_SERIES = [
+  { title:"AI Now: Thinking Together About AI",
+    text:"An interactive lecture series on AI issues in the news. Each episode mixes a short news brief with live polls, guessing games, and discussion. Students can join from their phones through ClassLive.",
+    episodes:[
+      { n:1, title:"Is This Cheating?", when:"November 2026",
+        blurb:"AI, academic integrity, and why drawing the line has become so hard. Includes a Cheating Spectrum activity with eight everyday AI uses, a detector dilemma, and a shareable social card built from the class results.",
+        file:"pd/ainow-ep01-is-this-cheating.html" },
+      { n:2, title:"Cognitive Surrender", blurb:"What do we lose when we hand our thinking to AI?" },
+    ] },
 ];
 // Classroom tools Henry built, shown in the PD Lab. file opens the tool right in the panel.
 const PD_TOOLS = [
@@ -592,9 +606,9 @@ const PLACES = {
   },
   pd:{
     name:"PD Lab", title:"AI Professional Development", color:"#c56d8f",
-    lede:"AI workshops Henry has led for faculty, teachers, and future teachers, newest first. Sessions with slides open right here.",
+    lede:"AI workshops and lecture series Henry has led for faculty, teachers, and future teachers, newest first. Sessions with slides open right here.",
     html:()=>{
-      const decks=PD_WORKSHOPS.filter(x=>x.file).length+PD_TOOLS.filter(x=>x.file).length;
+      const decks=PD_WORKSHOPS.filter(x=>x.file).length+PD_TOOLS.filter(x=>x.file).length+PD_SERIES.reduce((a,z)=>a+z.episodes.filter(e=>e.file).length,0);
       const years=[...new Set(PD_WORKSHOPS.map(x=>x.year))];
       const card=(x,i)=>`
         <article class="pdcard" id="pdcard-w${i}">
@@ -611,6 +625,17 @@ const PLACES = {
       return `<div class="pds">
       ${decks?`<div class="vframe pdframe" id="pdframe"></div>
       <p class="vnow" id="pdnow" aria-live="polite"></p>`:''}
+      ${PD_SERIES.map((z,si)=>`<section class="pdyear pdseries" aria-label="${z.title}">
+        <h3>${z.title}</h3>
+        <p class="pdlede">${z.text}</p>
+        <div class="pdlist">${z.episodes.map((e,ei)=>`<article class="pdcard${e.file?'':' soon'}" id="pdcard-s${si}_${ei}">
+          <p class="pdmeta">Episode ${e.n}${e.when?` <span>${e.when}</span>`:''}</p>
+          <h4>${e.title}</h4>
+          ${e.blurb?`<p>${e.blurb}</p>`:''}
+          ${e.file?`<div class="pdbtns"><button class="btn pdshow" data-k="s${si}_${ei}">View the slides here</button>
+            <a class="btn alt" href="${e.file}" target="_blank" rel="noopener">Open full screen</a></div>`:'<p class="pdaud">Coming soon</p>'}
+        </article>`).join('')}</div>
+      </section>`).join('')}
       ${years.map(y=>`<section class="pdyear" aria-label="${y}">
         <h3>${y}</h3>
         <div class="pdlist">${PD_WORKSHOPS.map((x,i)=>x.year===y?card(x,i):'').join('')}</div>
@@ -686,18 +711,21 @@ function renderPanel(k){
 }
 /* ---------- PD Lab: slide deck viewer ---------- */
 function showPD(k, scroll){
-  const x=(k[0]==='t'?PD_TOOLS:PD_WORKSHOPS)[+k.slice(1)], fr=document.getElementById('pdframe'); if(!x||!x.file||!fr) return;
+  let x; if(k[0]==='s'){ const [a,b]=k.slice(1).split('_').map(Number); x=PD_SERIES[a]&&PD_SERIES[a].episodes[b]; } else x=(k[0]==='t'?PD_TOOLS:PD_WORKSHOPS)[+k.slice(1)];
+  const fr=document.getElementById('pdframe'); if(!x||!x.file||!fr) return;
   const tool=k[0]==='t';
   fr.classList.toggle('tool',tool);
   fr.innerHTML=`<iframe src="${x.file}" title="${x.title.replace(/"/g,'&quot;')}${tool?'':' slides'}" allow="fullscreen; clipboard-write" allowfullscreen></iframe>`;
-  document.getElementById('pdnow').textContent='Now showing: '+x.title+(tool?'. For a whole class, use Open full screen.':'. Click the slides, then use the arrow keys or the buttons at the bottom.');
+  const tt=/[.?!]$/.test(x.title)?x.title:x.title+'.';
+  document.getElementById('pdnow').textContent='Now showing: '+tt+(tool?' For a whole class, use Open full screen.':(k[0]==='s'?' Click the slides, then use the arrow keys. For a live class, use Open full screen.':' Click the slides, then use the arrow keys or the buttons at the bottom.'));
   document.querySelectorAll('.pdcard').forEach(c=>c.classList.toggle('on',c.id==='pdcard-'+k));
   if(scroll) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
 }
 function setupPD(){
   document.querySelectorAll('.pdshow').forEach(b=>b.addEventListener('click',()=>showPD(b.dataset.k,true)));
   const w=PD_WORKSHOPS.findIndex(x=>x.file), t=PD_TOOLS.findIndex(x=>x.file);
-  if(w>=0) showPD('w'+w,false); else if(t>=0) showPD('t'+t,false);
+  let sk=null; PD_SERIES.forEach((z,a)=>z.episodes.forEach((e,b)=>{ if(e.file) sk='s'+a+'_'+b; }));
+  if(sk) showPD(sk,false); else if(w>=0) showPD('w'+w,false); else if(t>=0) showPD('t'+t,false);
 }
 /* ---------- Cinema: playlist player with a video list ---------- */
 let ytPlayers=[], vidToken=0, ytLoading=null;

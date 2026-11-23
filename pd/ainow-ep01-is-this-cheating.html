@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Now, Episode 1: Is This Cheating?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --paper:#F4F1EA; --paper2:#EAE5D9; --ink:#14213D; --ink2:#3D4A66; --muted:#7A8294;
+    --red:#E4572E; --teal:#2A9D8F; --gold:#E9B44C; --line:#D6CFBF;
+    --s1:#2A9D8F; --s2:#8CB369; --s3:#E9B44C; --s4:#F08A4B; --s5:#E4572E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0f1729;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:var(--ink)}
+  #viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  #stage{flex:none;width:1280px;height:720px;position:relative;background:var(--paper);transform-origin:center center;box-shadow:0 20px 80px rgba(0,0,0,.45);overflow:hidden}
+  .slide{position:absolute;inset:0;padding:56px 72px 70px;display:none;flex-direction:column}
+  .slide.active{display:flex;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em}
+  h1{font-size:76px;line-height:1.02;font-weight:800}
+  h2{font-size:44px;line-height:1.1;font-weight:800;margin-bottom:10px}
+  h3{font-size:22px;font-weight:600}
+  .kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+  .sub{font-size:20px;color:var(--ink2);line-height:1.45}
+  .small{font-size:13px;color:var(--muted)}
+  .row{display:flex;gap:28px}
+  .grow{flex:1}
+  button{font-family:inherit;cursor:pointer}
+  .btn{border:2px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:999px;padding:10px 20px;font-weight:700;font-size:15px;transition:transform .1s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn.red{background:var(--red);border-color:var(--red)}
+  .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--paper)}
+
+  /* chrome */
+  #bar{position:absolute;left:0;bottom:0;height:5px;background:var(--red);transition:width .3s}
+  #foot{position:absolute;left:72px;right:72px;bottom:20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);z-index:5}
+  #foot .ctrls{display:flex;gap:8px}
+  #foot button{background:transparent;border:1px solid var(--line);color:var(--ink2);border-radius:6px;padding:4px 10px;font-size:12px}
+  #notes{position:absolute;right:16px;top:16px;width:380px;max-height:300px;overflow:auto;background:var(--ink);color:#E8ECF5;padding:16px 18px;border-radius:12px;font-size:14px;line-height:1.5;display:none;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  #notes b{color:var(--gold)}
+
+  /* title */
+  .title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative}
+  .title-wrap .series{font-family:Fraunces,serif;font-size:22px;color:var(--ink2);margin-bottom:18px}
+  .title-wrap h1 span{color:var(--red)}
+  .big-q{position:absolute;right:-20px;top:40px;font-family:Fraunces,serif;font-size:420px;font-weight:800;color:var(--paper2);line-height:1;z-index:0}
+  .title-wrap > *:not(.big-q){position:relative;z-index:1}
+
+  /* poll */
+  .poll{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+  .opt{display:grid;grid-template-columns:260px 1fr 70px 76px;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 18px;cursor:pointer;user-select:none;transition:border-color .15s}
+  .opt:hover{border-color:var(--ink)}
+  .opt .lab{font-weight:600;font-size:18px}
+  .opt .track{height:22px;background:var(--paper2);border-radius:999px;overflow:hidden}
+  .opt .fill{height:100%;width:0;border-radius:999px;transition:width .35s ease}
+  .opt .num{font-family:Fraunces,serif;font-size:26px;font-weight:800;text-align:right}
+  .opt .pm{display:flex;gap:6px}
+  .opt .pm button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-weight:700;font-size:16px;color:var(--ink)}
+  .hint{font-size:13px;color:var(--muted);margin-top:10px}
+
+  /* news */
+  .news{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px}
+  .card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:20px 22px;position:relative;cursor:pointer;transition:transform .15s}
+  .card:hover{transform:translateY(-2px)}
+  .card .stat{font-family:Fraunces,serif;font-size:34px;font-weight:800;color:var(--red);line-height:1;margin:8px 0 8px}
+  .card p{font-size:15px;line-height:1.45;color:var(--ink2)}
+  .card .src{position:absolute;right:18px;top:18px;font-size:11px;color:var(--muted)}
+  .card .more{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px;color:var(--ink);line-height:1.45}
+  .card.open .more{display:block}
+
+  /* guess */
+  .guess{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .gauge{width:380px;height:380px;border-radius:50%;background:conic-gradient(var(--red) 0deg,var(--paper2) 0deg);display:flex;align-items:center;justify-content:center;transition:background .2s}
+  .gauge .inner{width:290px;height:290px;border-radius:50%;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .gauge .val{font-family:Fraunces,serif;font-size:96px;font-weight:800;line-height:1}
+  .gauge .lbl{font-size:14px;color:var(--muted);margin-top:6px;letter-spacing:.1em;text-transform:uppercase}
+  input[type=range]{width:100%;accent-color:var(--ink)}
+  .reveal-box{margin-top:18px;padding:18px 20px;border-radius:14px;background:var(--ink);color:var(--paper);display:none}
+  .reveal-box b{color:var(--gold)}
+
+  /* syllabus */
+  .syl{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+  .syl .s{background:#fff;border:2px solid var(--line);border-radius:14px;padding:18px;min-height:230px;display:flex;flex-direction:column}
+  .syl .code{font-family:Fraunces,serif;font-weight:800;font-size:22px;margin-bottom:4px}
+  .syl .pol{font-size:15px;line-height:1.45;color:var(--ink2);flex:1;margin-top:10px}
+  .syl .chip{align-self:flex-start;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+
+  /* spectrum */
+  .spec-top{display:flex;justify-content:space-between;align-items:flex-end}
+  .scen{margin-top:16px;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:24px 28px;display:flex;align-items:center;gap:24px;min-height:120px}
+  .scen .n{font-family:Fraunces,serif;font-size:64px;font-weight:800;color:var(--red);line-height:1;min-width:70px}
+  .scen .t{font-size:26px;font-weight:600;line-height:1.3;flex:1}
+  .buckets{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+  .bucket{border-radius:14px;padding:14px 10px 12px;text-align:center;color:#fff;cursor:pointer;user-select:none;position:relative;transition:transform .1s}
+  .bucket:active{transform:scale(.97)}
+  .bucket .bn{font-family:Fraunces,serif;font-size:40px;font-weight:800;line-height:1}
+  .bucket .bl{font-size:13px;font-weight:700;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+  .bucket .minus{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:6px;border:none;background:rgba(255,255,255,.3);color:#fff;font-weight:800}
+  .meter{position:relative;height:16px;border-radius:999px;margin-top:26px;background:linear-gradient(90deg,var(--s1),var(--s2),var(--s3),var(--s4),var(--s5))}
+  .meter .pin{position:absolute;top:-12px;width:4px;height:40px;background:var(--ink);border-radius:2px;transform:translateX(-2px);transition:left .4s ease;display:none}
+  .meter .pin span{position:absolute;top:-28px;left:50%;transform:translateX(-50%);white-space:nowrap;font-weight:800;font-size:14px;background:var(--ink);color:var(--paper);padding:2px 8px;border-radius:6px}
+  .navdots{display:flex;gap:8px;align-items:center}
+  .navdots .d{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:13px;color:var(--ink2)}
+  .navdots .d.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .navdots .d.done{border-color:var(--teal)}
+
+  /* summary */
+  .sum{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .srow{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;align-items:center}
+  .srow .st{font-size:14px;font-weight:600;line-height:1.25}
+  .srow .str{position:relative;height:30px;border-radius:8px;background:linear-gradient(90deg,rgba(42,157,143,.15),rgba(233,180,76,.15),rgba(228,87,46,.15))}
+  .srow .whisk{position:absolute;top:13px;height:4px;background:var(--ink2);border-radius:2px;opacity:.45}
+  .srow .dot{position:absolute;top:5px;width:20px;height:20px;border-radius:50%;background:var(--ink);transform:translateX(-10px);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .srow .sv{font-family:Fraunces,serif;font-weight:800;font-size:18px;text-align:right}
+  .srow.divided .st{color:var(--red)}
+  .srow.divided .str{outline:2px solid var(--red)}
+  .axis{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .axis div:nth-child(2){display:flex;justify-content:space-between}
+
+  /* dilemma */
+  .dilemma{display:flex;gap:30px;margin-top:16px;flex:1}
+  .flag{width:380px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column}
+  .flag .pct{font-family:Fraunces,serif;font-size:88px;font-weight:800;color:var(--red);line-height:1}
+  .flag p{font-size:16px;line-height:1.5;margin-top:10px;color:#D5DBE8}
+  .dil-opts .opt{grid-template-columns:1fr 200px 56px 76px;padding:12px 16px}
+  .dil-opts .opt .lab{font-size:16px}
+
+  /* timer */
+  .qs{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+  .q{display:flex;gap:18px;align-items:flex-start;background:#fff;border:2px solid var(--line);border-radius:16px;padding:18px 22px}
+  .q .qn{font-family:Fraunces,serif;font-weight:800;font-size:34px;color:var(--teal);line-height:1}
+  .q p{font-size:20px;line-height:1.4;font-weight:500}
+  .timer{width:300px;align-self:flex-start;margin-top:16px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .timer .clock{font-family:Fraunces,serif;font-size:80px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .timer .tb{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .timer .tb button{background:transparent;border:2px solid #56627F;color:var(--paper);border-radius:999px;padding:6px 14px;font-weight:700}
+  .timer .tb button.go{background:var(--red);border-color:var(--red)}
+  .timer.done .clock{color:var(--gold);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+
+  /* takeaways */
+  .tk{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+  .tk .t{display:flex;gap:24px;align-items:center;padding:22px 26px;border-radius:18px;background:#fff;border-left:10px solid var(--red)}
+  .tk .t:nth-child(2){border-left-color:var(--gold)}
+  .tk .t:nth-child(3){border-left-color:var(--teal)}
+  .tk .t b{font-family:Fraunces,serif;font-size:26px}
+  .tk .t p{font-size:17px;color:var(--ink2);margin-top:4px;line-height:1.45}
+
+  /* social */
+  .social{display:flex;gap:30px;margin-top:10px;flex:1;min-height:0}
+  .scard{width:430px;height:430px;flex:none;background:var(--ink);color:var(--paper);border-radius:22px;padding:34px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .scard .sq{font-family:Fraunces,serif;font-size:46px;font-weight:800;line-height:1.05}
+  .scard .sq span{color:var(--red)}
+  .scard ul{list-style:none;margin-top:22px;display:flex;flex-direction:column;gap:12px}
+  .scard li{font-size:16px;line-height:1.35;padding-left:22px;position:relative;color:#D5DBE8}
+  .scard li:before{content:"";position:absolute;left:0;top:7px;width:10px;height:10px;border-radius:2px;background:var(--gold)}
+  .scard .sf{margin-top:auto;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8F9AB3}
+  .scard .ring{position:absolute;right:-70px;top:-70px;width:200px;height:200px;border-radius:50%;border:26px solid var(--red);opacity:.9}
+  .post{flex:1;display:flex;flex-direction:column;min-width:0}
+  .post .tabs{display:flex;gap:8px;margin-bottom:10px}
+  .post textarea{flex:1;width:100%;resize:none;border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-family:Inter,sans-serif;font-size:14px;line-height:1.5;background:#fff;color:var(--ink)}
+
+  /* join */
+  .join{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .qr{width:300px;height:300px;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:14px;padding:20px}
+  .qr img{width:260px;height:260px}
+  .join input[type=text]{width:100%;font-size:16px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-family:inherit;margin-top:10px}
+
+  /* live */
+  #liveChip{display:none;align-items:center;gap:8px;background:var(--ink);color:var(--paper);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700}
+  #liveChip .dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;animation:pulse 1.6s infinite}
+  #liveChip b{color:var(--gold);letter-spacing:.08em}
+  #goLive{border-color:var(--red)!important;color:var(--red)!important;font-weight:700}
+  #qrOverlay{position:absolute;inset:0;background:rgba(20,33,61,.94);display:none;align-items:center;justify-content:center;gap:56px;z-index:30;color:var(--paper)}
+  #qrOverlay img{width:340px;height:340px;background:#fff;padding:16px;border-radius:20px}
+  #qrOverlay .code{font-family:Fraunces,serif;font-size:96px;font-weight:800;letter-spacing:.08em;color:var(--gold);line-height:1}
+  .livetag{display:none;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:#1f9d6b;padding:3px 9px;border-radius:999px;vertical-align:middle}
+  body.live .livetag{display:inline-block}
+  .cloudbox{flex:1;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:6px 18px;padding:20px;overflow:hidden;min-height:0}
+  .cloudbox span{font-family:Fraunces,serif;font-weight:800;line-height:1.1}
+  .bins{display:flex;gap:6px;margin-top:16px;align-items:flex-end;height:70px}
+  .bins div{flex:1;background:var(--ink2);border-radius:6px 6px 0 0;position:relative;min-height:2px;transition:height .3s}
+  .bins div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+  .bins div em{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:11px;font-style:normal;font-weight:700}
+
+  /* sources */
+  .srcs{margin-top:16px;columns:2;column-gap:40px}
+  .srcs li{break-inside:avoid;margin:0 0 14px 18px;font-size:14px;line-height:1.45;color:var(--ink2)}
+  .srcs a{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- 1 TITLE -->
+<section class="slide" data-notes="<b>Welcome.</b> This is the first of a series on AI issues in the news. Today: AI and academic integrity. Tell the room this session is interactive: we will vote, guess, and argue. There are no wrong answers on the spectrum activity.">
+  <div class="title-wrap">
+    <div class="big-q">?</div>
+    <div class="series">AI Now: Thinking Together About AI &nbsp;|&nbsp; Episode 1</div>
+    <h1>Is This<br><span>Cheating?</span></h1>
+    <p class="sub" style="margin-top:22px;max-width:640px">AI, academic integrity, and why drawing the line has become so hard in 2026.</p>
+    <p class="small" style="margin-top:40px">Dr. Henry Yu &nbsp;|&nbsp; Teachers College, Ball State University</p>
+  </div>
+</section>
+
+<!-- 2 JOIN -->
+<section class="slide" data-live="words" data-prompt="In one word, how do you feel about AI in school?" data-notes="<b>Join.</b> Click <b>Go live</b> in the bottom bar first (once). A ClassLive room is created and the QR code appears. Students scan, then type one word. From here on, every voting slide sends its question to their phones automatically as you advance. Press Q any time to show the big QR again. No internet? Skip live mode and count hands on each slide.">
+  <div class="kicker">Join from your phone<span class="livetag">LIVE</span></div>
+  <h2>In one word: how do you feel about AI in school?</h2>
+  <div class="join" style="margin-top:10px;align-items:stretch;min-height:0">
+    <div style="width:300px;display:flex;flex-direction:column;gap:12px">
+      <div class="qr" id="qrBox" style="height:300px">Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.</div>
+      <div id="joinInfo" style="font-size:14px;color:var(--ink2);line-height:1.5"></div>
+    </div>
+    <div class="cloudbox" id="cloud"><span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">Words will appear here as people send them.</span></div>
+  </div>
+</section>
+
+<!-- 3 OPENING POLL -->
+<section class="slide" data-live="poll:open" data-notes="<b>Opening poll.</b> In live mode, students vote on their phones. Without live mode, ask for a show of hands and tap the rows to count. You can also add hand votes on top of phone votes (for students without phones). Keep it anonymous in tone: this is about how common uncertainty is, not about catching anyone.">
+  <div class="kicker">Warm-up poll<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>Have you ever used AI on schoolwork and wondered,<br>"Wait, is this allowed?"</h2>
+  <div class="poll" data-poll="open" data-opts="Yes, more than once|Once or twice|Never|I don't use AI for school"></div>
+  <p class="hint">Tap a row to add a vote. Use + / - to correct.</p>
+</section>
+
+<!-- 3 NEWS -->
+<section class="slide" data-notes="<b>3-minute news brief.</b> Click each card to reveal the detail. Key message: the issue has moved beyond copy-paste essays to agents that complete whole courses, while detection is failing and campuses are changing course.">
+  <div class="kicker">The news in 3 minutes</div>
+  <h2>What's happening on campuses right now</h2>
+  <div class="news">
+    <div class="card"><span class="src">Cornell, May 2026</span><span class="tag">Scale</span>
+      <div class="stat">1 in 3</div>
+      <p>students regularly use generative AI for coursework, in a survey of 95,000+ students at 20 U.S. public research universities.</p>
+      <div class="more">Researchers argue this means colleges must change how they assess students, while watching for gaps in AI literacy and access.</div>
+    </div>
+    <div class="card"><span class="src">Aug 2026</span><span class="tag">Agents</span>
+      <div class="stat">A whole semester</div>
+      <p>AI agents can now complete entire online courses on a student's behalf, well beyond copy-pasted essays.</p>
+      <div class="more">Online courses, where students may never meet instructors or peers, are especially exposed.</div>
+    </div>
+    <div class="card"><span class="src">2026 reporting</span><span class="tag">Detection</span>
+      <div class="stat">False alarms</div>
+      <p>AI detectors remain unreliable and have falsely accused many students, especially non-native English speakers.</p>
+      <div class="more">An accusation built on a detector score can damage a student who did nothing wrong.</div>
+    </div>
+    <div class="card"><span class="src">Oct 2026</span><span class="tag">Response</span>
+      <div class="stat">Back to basics</div>
+      <p>Universities from Yale to Cornell discourage using detectors as primary evidence. Blue book exams, oral exams, and video debates are returning.</p>
+      <div class="more">An Emory professor gave a blue book exam for the first time since 1999.</div>
+    </div>
+  </div>
+  <p class="hint">Click a card to reveal more.</p>
+</section>
+
+<!-- 4 GUESS -->
+<section class="slide" data-live="poll:guess" data-notes="<b>Guess the number.</b> In live mode, students pick a range on their phones and the slider moves to the class average automatically. Otherwise, take shouted guesses and set the slider yourself. Then click Reveal. Answer: 65% said they had caught students cheating with AI; more than 80% had tried to AI-proof assignments.">
+  <div class="kicker">Guess the number<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>In a 2026 faculty poll, what share of professors said they had caught students cheating with AI?</h2>
+  <div class="guess">
+    <div class="gauge" id="gauge"><div class="inner"><div class="val" id="gval">50%</div><div class="lbl" id="glbl">Class guess</div></div></div>
+    <div class="grow">
+      <p class="sub" style="margin-bottom:10px">Set the slider to the class's guess:</p>
+      <input type="range" id="gslider" min="0" max="100" value="50">
+      <div class="bins" id="gbins" style="display:none"></div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button class="btn red" id="greveal">Reveal answer</button>
+        <button class="btn ghost" id="greset">Reset</button>
+      </div>
+      <div class="reveal-box" id="gbox">
+        <b>65%</b> of surveyed faculty had caught students cheating with AI, and <b>more than 80%</b> had tried to AI-proof their assignments.<br><span style="font-size:13px;opacity:.75">Source: The Chronicle of Higher Education, Aug 2026</span>
+        <div id="gdiff" style="margin-top:8px;font-size:15px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 GRAY ZONE -->
+<section class="slide" data-notes="<b>Why it is murky.</b> Rules about AI vary widely, often instructor by instructor. Ask: the same student uses AI the same way in all four courses. Where is it cheating? This sets up the spectrum activity: 'cheating' depends on the rules, not just the tool.">
+  <div class="kicker">Why the line is blurry</div>
+  <h2>One student. Four courses. Four rules.</h2>
+  <p class="sub">Same student, same AI use (an AI-generated outline). Is it cheating?</p>
+  <div class="syl">
+    <div class="s"><span class="chip" style="background:var(--s5)">Banned</span><div class="pol"><div class="code">HIST 101</div>"Any use of generative AI on assignments is a violation of academic integrity."</div></div>
+    <div class="s"><span class="chip" style="background:var(--s3)">Brainstorm only</span><div class="pol"><div class="code">BIO 210</div>"You may use AI to brainstorm ideas, but all drafting must be your own."</div></div>
+    <div class="s"><span class="chip" style="background:var(--s1)">Allowed + cite</span><div class="pol"><div class="code">EDTE 250</div>"AI is welcome at any stage. Disclose how you used it and cite the tool."</div></div>
+    <div class="s"><span class="chip" style="background:var(--muted)">Silent</span><div class="pol"><div class="code">MATH 120</div>The syllabus says nothing about AI.<br><br>Now what?</div></div>
+  </div>
+  <p class="hint">Example policies written for discussion.</p>
+</section>
+
+<!-- 6 SPECTRUM -->
+<section class="slide" id="specSlide" data-live="spec" data-notes="<b>Main activity: the Cheating Spectrum.</b> In live mode, each scenario appears on students' phones as you move through them. Without live mode, ask people to hold up 1 to 5 fingers (1 = totally fine, 5 = clearly cheating) and tap the colored boxes to record counts. Move through all 8 with the number buttons, then go to the next slide for the class map. Ask one person from each end to explain their choice.">
+  <div class="spec-top">
+    <div><div class="kicker">Activity: The Cheating Spectrum<span class="livetag">LIVE ON PHONES</span></div><h2 style="margin:0">Where would you put it?</h2></div>
+    <div class="navdots" id="specDots"></div>
+  </div>
+  <div class="scen"><div class="n" id="specN">1</div><div class="t" id="specT"></div></div>
+  <div class="buckets" id="specB"></div>
+  <div class="meter"><div class="pin" id="specPin"><span></span></div></div>
+  <div style="display:flex;justify-content:space-between;margin-top:14px">
+    <button class="btn ghost" id="specPrev">Previous scenario</button>
+    <span class="small" id="specCount" style="align-self:center"></span>
+    <button class="btn" id="specNext">Next scenario</button>
+  </div>
+</section>
+
+<!-- 7 SUMMARY -->
+<section class="slide" data-notes="<b>Class map.</b> Dots show the class average; gray lines show the spread. The item outlined in red is where the class disagreed most. Spend time there: ask both sides to explain. Point out that disagreement itself is the finding.">
+  <div class="kicker">Our class map</div>
+  <h2>Where we drew the line</h2>
+  <div class="axis"><div></div><div><span>Totally fine</span><span>Depends</span><span>Clearly cheating</span></div><div style="text-align:right">Avg</div></div>
+  <div class="sum" id="sumRows"></div>
+  <p class="hint" id="sumNote"></p>
+</section>
+
+<!-- 8 DILEMMA -->
+<section class="slide" data-live="poll:dil" data-notes="<b>Your call.</b> Read the case aloud, then vote (on phones in live mode). After voting, click 'What many campuses now advise'. Key point: a detector score alone should not be treated as proof. Process evidence (drafts, version history, a conversation about the work) is fairer.">
+  <div class="kicker">Your call<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>The detector says 92%. The student says, "I wrote this."</h2>
+  <div class="dilemma">
+    <div class="flag">
+      <span class="small" style="color:#8F9AB3;letter-spacing:.12em;text-transform:uppercase">AI detector result</span>
+      <div class="pct">92%</div>
+      <span style="font-weight:700">"Likely AI-generated"</span>
+      <p>The essay was written by a multilingual student whose writing is polished and formal. They deny using AI. You are the instructor.</p>
+      <button class="btn red" style="margin-top:auto" id="advBtn">What many campuses now advise</button>
+    </div>
+    <div class="grow">
+      <div class="poll dil-opts" data-poll="dil" data-opts="Report it as academic misconduct|Meet and have them walk through their thinking|Check drafts and version history first|Ignore the score entirely" style="margin-top:0"></div>
+      <div class="reveal-box" id="advBox">A growing number of universities have banned or discouraged relying on AI detectors as the primary evidence of cheating. A conversation about the work, drafts, and version history give a fuller and fairer picture.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 DISCUSS -->
+<section class="slide" data-notes="<b>Pair discussion.</b> Start the timer (4 minutes is a good default). Then take 2 or 3 pairs' answers. For preservice teachers, push question 3: what would your K-12 classroom AI policy say?">
+  <div class="kicker">Turn and talk</div>
+  <h2>Discuss with a partner</h2>
+  <div class="row" style="flex:1;margin-top:6px">
+    <div class="qs grow">
+      <div class="q"><div class="qn">1</div><p>Where did our class disagree most on the spectrum? What explains the split?</p></div>
+      <div class="q"><div class="qn">2</div><p>If detectors can't be trusted, what <em>should</em> count as evidence of learning?</p></div>
+      <div class="q"><div class="qn">3</div><p>As a future teacher, write one sentence of your classroom AI policy. What would it say?</p></div>
+    </div>
+    <div class="timer" id="timer">
+      <span class="small" style="color:#8F9AB3;letter-spacing:.12em;text-transform:uppercase">Timer</span>
+      <div class="clock" id="clock">4:00</div>
+      <div class="tb"><button data-m="2">2 min</button><button data-m="4">4 min</button><button data-m="6">6 min</button></div>
+      <div class="tb"><button class="go" id="tgo">Start</button><button id="treset">Reset</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 TAKEAWAYS -->
+<section class="slide" data-notes="<b>Takeaways.</b> Close the loop: the cheating crisis is really an assessment design question. Preview Episode 2: Cognitive Surrender, what we lose when we hand our thinking to AI.">
+  <div class="kicker">Takeaways</div>
+  <h2>Three things to remember</h2>
+  <div class="tk">
+    <div class="t"><div><b>Cheating is now a spectrum.</b><p>It is defined by each course's rules and the purpose of the task, not by the tool itself. Clear, explicit policies matter.</p></div></div>
+    <div class="t"><div><b>Detection alone is not evidence.</b><p>Detectors misfire, and the harm lands on innocent students, often multilingual learners.</p></div></div>
+    <div class="t"><div><b>The lasting fix is assessment design.</b><p>Process, conversation, and transparency make learning visible in ways surveillance cannot.</p></div></div>
+  </div>
+  <p class="hint" style="margin-top:18px">Next episode: <b>Cognitive Surrender</b>: what do we lose when we hand our thinking to AI?</p>
+</section>
+
+<!-- 12 SOCIAL -->
+<section class="slide" data-notes="<b>Share it.</b> The card on the left is designed for a square social post (screenshot it). The post text updates with your class's results. Edit freely, then click Copy.">
+  <div class="kicker">Share the conversation</div>
+  <h2 style="font-size:36px">Social card + ready-to-post text</h2>
+  <div class="social">
+    <div class="scard">
+      <div class="ring"></div>
+      <div class="sq">Is this<br><span>cheating?</span></div>
+      <ul>
+        <li>1 in 3 students use generative AI regularly for coursework</li>
+        <li>AI agents can now complete whole online courses</li>
+        <li>Detectors misfire, often on multilingual students</li>
+        <li id="cardLine">Where would you draw the line?</li>
+      </ul>
+      <div class="sf">AI Now &nbsp;|&nbsp; Episode 1</div>
+    </div>
+    <div class="post">
+      <div class="tabs">
+        <button class="btn" data-lang="en">English</button>
+        <button class="btn ghost" data-lang="ko">한국어</button>
+        <button class="btn red" id="copyBtn" style="margin-left:auto">Copy text</button>
+      </div>
+      <textarea id="postText"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- 13 SOURCES -->
+<section class="slide" data-notes="Sources for all statistics and news items in this deck.">
+  <div class="kicker">Sources</div>
+  <h2>Read more</h2>
+  <ul class="srcs">
+    <li>Cornell Chronicle (May 2026). <a href="https://news.cornell.edu/stories/2026/05/widespread-ai-misuse-means-higher-ed-must-rethink-assessment" target="_blank">Widespread AI misuse means higher ed must rethink assessment</a></li>
+    <li>The Star / NYT syndication (Aug 2026). <a href="https://www.thestar.com.my/tech/tech-news/2026/08/16/ai-agents-are-taking-entire-online-courses-for-cheating-students" target="_blank">AI agents are taking entire online courses for cheating students</a></li>
+    <li>Study International (2026). <a href="https://studyinternational.com/news/academic-cheating-scandals/" target="_blank">From Harvard to Brown: cheating scandals show how AI is shaking top universities</a></li>
+    <li>AFP via Malay Mail (Oct 2026). <a href="https://malaymail.com/news/tech-gadgets/2026/10/07/grappling-with-homework-scams-us-universities-shun-ai-detectors/237898" target="_blank">Grappling with "homework scams," US universities shun AI detectors</a></li>
+    <li>Atlanta Journal-Constitution (Mar 2026). <a href="https://www.ajc.com/education/2026/03/college-students-are-cheating-professors-are-struggling-to-stop-them/" target="_blank">College students are cheating. Professors are struggling to stop them.</a></li>
+    <li>The Chronicle of Higher Education (Aug 2026). <a href="https://www.chronicle.com/article/the-academic-integrity-council-cant-keep-up-with-ai" target="_blank">The academic integrity council can't keep up with AI</a></li>
+    <li>Los Angeles Times via ADN (Jun 2026). <a href="https://www.adn.com/nation-world/2026/06/21/inside-college-ai-cheating-wars-extreme-surveillance-false-accusations-jarring-confusion/" target="_blank">Inside college AI cheating wars</a></li>
+  </ul>
+</section>
+
+<div id="notes"></div>
+<div id="qrOverlay"><img id="qrBig" alt="QR code to join"><div><div style="font-size:22px;opacity:.8">Scan, or go to</div><div id="qrUrl" style="font-size:26px;font-weight:700;margin:8px 0 26px"></div><div style="font-size:22px;opacity:.8">Room code</div><div class="code" id="qrCode"></div><div style="font-size:14px;opacity:.6;margin-top:24px">Press Q or click to close</div></div></div>
+<div id="foot"><span id="count"></span><span id="liveChip"><span class="dot"></span>LIVE <b id="liveCode"></b><span id="livePeople"></span></span><div class="ctrls"><button id="goLive">Go live (ClassLive)</button><button id="qBtn" style="display:none">QR (Q)</button><button id="nBtn">Notes (N)</button><button id="fBtn">Fullscreen (F)</button><button id="rBtn">Reset votes</button></div></div>
+<div id="bar"></div>
+</div></div>
+
+<script>
+(function(){
+  const KEY='ainow-ep01';
+  let S={polls:{},spec:null,snaps:{},clUrl:'https://hyeonhoyu.github.io/ClassLive/',room:null};
+  try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+  if(!S.snaps) S.snaps={};
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+  const $=id=>document.getElementById(id);
+  const L={on:false,db:null,code:null,key:null,words:{},ref:p=>L.db.ref('rooms/'+L.code+(p?'/'+p:''))};
+
+  const SCEN=[
+    "Using an AI tool to fix grammar and spelling in an essay you wrote",
+    "Asking a chatbot to brainstorm possible topics for a paper",
+    "Having AI re-explain a concept you didn't understand in lecture",
+    "Asking AI for an outline, then writing every sentence yourself",
+    "Pasting in AI-written paragraphs and rewording them a bit",
+    "Using AI to generate citations for sources you never read",
+    "Letting an AI agent complete your weekly online quizzes",
+    "Submitting a fully AI-written essay as your own work"
+  ];
+  const SHORT=["AI grammar fixes","AI topic brainstorming","AI re-explains a concept","AI outline, own writing","Reworded AI paragraphs","Unread AI citations","AI agent takes quizzes","Fully AI-written essay"];
+  const LABELS=["Totally fine","Probably fine","Depends on rules","Probably cheating","Clearly cheating"];
+  const COLORS=["var(--s1)","var(--s2)","var(--s3)","var(--s4)","var(--s5)"];
+  const GUESS_BINS=["0 to 20%","21 to 40%","41 to 60%","61 to 80%","81 to 100%"];
+  const GUESS_MID=[10,30,50,70,90];
+  if(!S.spec||S.spec.length!==8) S.spec=SCEN.map(()=>[0,0,0,0,0]);
+
+  /* ---------- live tallies (ClassLive votes: {studentId: optionIndex}) ---------- */
+  function liveTally(key,n){const a=Array(n).fill(0);const v=S.snaps[key];if(v&&typeof v==='object')Object.values(v).forEach(x=>{if(typeof x==='number'&&x>=0&&x<n)a[x]++;});return a;}
+  function specCounts(i){const lv=liveTally('spec'+i,5);return S.spec[i].map((m,k)=>Math.max(0,m+lv[k]));}
+
+  /* scaling */
+  const stage=$('stage');
+  function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform='scale('+s+')';}
+  addEventListener('resize',fit);fit();
+
+  /* slides */
+  const slides=[...document.querySelectorAll('.slide')];
+  let cur=0;
+  const notes=$('notes');
+  function show(i){
+    cur=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===cur));
+    $('count').textContent=(cur+1)+' / '+slides.length+'   |   Arrow keys to navigate';
+    $('bar').style.width=((cur+1)/slides.length*100)+'%';
+    notes.innerHTML=slides[cur].dataset.notes||'';
+    if(slides[cur].querySelector('#sumRows')) renderSummary();
+    if(slides[cur].querySelector('#postText')) renderPost();
+    activateLive();
+  }
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();show(cur+1);}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1);}
+    if(e.key==='n'||e.key==='N') toggleNotes();
+    if(e.key==='f'||e.key==='F') toggleFS();
+    if(e.key==='q'||e.key==='Q') toggleQR();
+    if(e.key==='Escape') $('qrOverlay').style.display='none';
+  });
+  function toggleNotes(){notes.style.display=notes.style.display==='block'?'none':'block';}
+  function toggleFS(){try{if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}catch(e){}}
+  $('nBtn').onclick=toggleNotes;
+  $('fBtn').onclick=toggleFS;
+  const rBtn=$('rBtn');let armed=false;
+  rBtn.onclick=()=>{
+    if(!armed){armed=true;rBtn.textContent='Click again to reset';setTimeout(()=>{armed=false;rBtn.textContent='Reset votes';},2500);return;}
+    S.polls={};S.spec=SCEN.map(()=>[0,0,0,0,0]);S.snaps={};save();
+    if(L.on){L.ref('votes').remove().catch(()=>{});L.ref('words').remove().catch(()=>{});L.words={};}
+    refreshAll();
+    armed=false;rBtn.textContent='Reset votes';
+  };
+
+  /* ---------- polls (manual hand counts + live phone votes) ---------- */
+  const PCOL=["var(--red)","var(--gold)","var(--teal)","var(--ink2)"];
+  function renderPoll(el){
+    const id=el.dataset.poll, opts=el.dataset.opts.split('|');
+    if(!S.polls[id]) S.polls[id]=opts.map(()=>0);
+    const man=S.polls[id], lv=liveTally(id,opts.length);
+    const c=man.map((m,i)=>Math.max(0,m+lv[i]));
+    const tot=c.reduce((a,b)=>a+b,0)||1, max=Math.max(...c,1);
+    el.innerHTML='';
+    opts.forEach((o,i)=>{
+      const r=document.createElement('div');r.className='opt';
+      r.innerHTML='<div class="lab">'+o+'</div><div class="track"><div class="fill" style="background:'+PCOL[i%4]+';width:'+(c[i]/max*100)+'%"></div></div><div class="num">'+c[i]+'</div><div class="pm"><button data-d="-1">-</button><button data-d="1">+</button></div>';
+      r.title=Math.round(c[i]/tot*100)+'%';
+      r.onclick=e=>{const d=e.target.dataset.d?+e.target.dataset.d:1;man[i]=Math.max(-lv[i],man[i]+d);save();renderPoll(el);};
+      el.appendChild(r);
+    });
+  }
+  const renderPolls=()=>document.querySelectorAll('[data-poll]').forEach(renderPoll);
+  renderPolls();
+
+  /* news cards */
+  document.querySelectorAll('.card').forEach(c=>c.onclick=()=>c.classList.toggle('open'));
+
+  /* ---------- guess ---------- */
+  const gs=$('gslider'),gauge=$('gauge'),gval=$('gval'),glbl=$('glbl'),gbox=$('gbox');
+  let revealed=false;
+  function setGauge(v,col){gauge.style.background='conic-gradient('+col+' '+(v*3.6)+'deg,var(--paper2) 0deg)';gval.textContent=Math.round(v)+'%';}
+  gs.oninput=()=>{revealed=false;setGauge(+gs.value,'var(--ink2)');glbl.textContent='Class guess';gbox.style.display='none';};
+  setGauge(50,'var(--ink2)');
+  $('greveal').onclick=()=>{
+    revealed=true;const guess=+gs.value;let v=0;glbl.textContent='Actual';
+    const t=setInterval(()=>{v+=1.5;if(v>=65){v=65;clearInterval(t);}setGauge(v,'var(--red)');},16);
+    const d=guess-65;
+    $('gdiff').textContent='Class guess: '+guess+'%  ('+(d===0?'exactly right!':(Math.abs(d)+' points '+(d>0?'too high':'too low')))+')';
+    gbox.style.display='block';
+  };
+  $('greset').onclick=()=>{gs.value=50;gs.oninput();};
+  function renderGuessLive(){
+    const t=liveTally('guess',5),n=t.reduce((a,b)=>a+b,0),box=$('gbins');
+    if(!n){box.style.display='none';return;}
+    box.style.display='flex';const mx=Math.max(...t);
+    box.innerHTML=t.map((c,i)=>'<div style="height:'+(c/mx*100)+'%"><em>'+c+'</em><span>'+GUESS_BINS[i].replace(' to ','-')+'</span></div>').join('');
+    if(!revealed){const avg=Math.round(t.reduce((a,c,i)=>a+c*GUESS_MID[i],0)/n);gs.value=avg;setGauge(avg,'var(--ink2)');glbl.textContent='Class guess ('+n+')';}
+  }
+
+  /* ---------- spectrum ---------- */
+  let si=0;
+  const dots=$('specDots');
+  function stats(arr){const n=arr.reduce((a,b)=>a+b,0);if(!n)return null;const m=arr.reduce((a,b,i)=>a+b*(i+1),0)/n;const v=arr.reduce((a,b,i)=>a+b*Math.pow(i+1-m,2),0)/n;return{n,m,sd:Math.sqrt(v)};}
+  function renderSpec(){
+    $('specN').textContent=si+1;
+    $('specT').textContent=SCEN[si];
+    dots.innerHTML='';
+    SCEN.forEach((_,i)=>{const b=document.createElement('button');b.className='d'+(i===si?' on':'')+(stats(specCounts(i))?' done':'');b.textContent=i+1;b.onclick=()=>{si=i;renderSpec();activateLive();};dots.appendChild(b);});
+    const B=$('specB');B.innerHTML='';
+    const cnt=specCounts(si),lv=liveTally('spec'+si,5);
+    LABELS.forEach((l,k)=>{
+      const d=document.createElement('div');d.className='bucket';d.style.background=COLORS[k];
+      d.innerHTML='<button class="minus">-</button><div class="bn">'+cnt[k]+'</div><div class="bl">'+(k+1)+'. '+l+'</div>';
+      d.onclick=e=>{const dec=e.target.classList.contains('minus');S.spec[si][k]=Math.max(-lv[k],S.spec[si][k]+(dec?-1:1));save();renderSpec();};
+      B.appendChild(d);
+    });
+    const st=stats(cnt),pin=$('specPin');
+    if(st){pin.style.display='block';pin.style.left=((st.m-1)/4*100)+'%';pin.querySelector('span').textContent='Class avg '+st.m.toFixed(1);}
+    else pin.style.display='none';
+    $('specCount').textContent=st?st.n+' votes':(L.on?'Waiting for phone votes...':'Tap a box to record votes');
+  }
+  $('specPrev').onclick=()=>{si=(si+7)%8;renderSpec();activateLive();};
+  $('specNext').onclick=()=>{if(si===7)show(cur+1);else{si++;renderSpec();activateLive();}};
+  renderSpec();
+
+  function mostDivided(){let best=-1,bi=-1;SCEN.forEach((_,i)=>{const s=stats(specCounts(i));if(s&&s.n>1&&s.sd>best){best=s.sd;bi=i;}});return bi;}
+  function renderSummary(){
+    const box=$('sumRows');box.innerHTML='';
+    const dv=mostDivided();let any=false;
+    SCEN.forEach((t,i)=>{
+      const s=stats(specCounts(i));const r=document.createElement('div');r.className='srow'+(i===dv?' divided':'');
+      let inner='<div class="st">'+(i+1)+'. '+SHORT[i]+'</div><div class="str">';
+      if(s){any=true;const lo=Math.max(1,s.m-s.sd),hi=Math.min(5,s.m+s.sd);
+        inner+='<div class="whisk" style="left:'+((lo-1)/4*100)+'%;width:'+((hi-lo)/4*100)+'%"></div><div class="dot" style="left:'+((s.m-1)/4*100)+'%;background:'+COLORS[Math.round(s.m)-1]+'"></div>';}
+      inner+='</div><div class="sv">'+(s?s.m.toFixed(1):'-')+'</div>';
+      r.innerHTML=inner;box.appendChild(r);
+    });
+    $('sumNote').textContent=any?(dv>=0?'Most divided: "'+SHORT[dv]+'". Ask both ends of the room to explain.':''):'No votes yet. Go back to the spectrum activity to record votes.';
+  }
+
+  /* dilemma */
+  $('advBtn').onclick=()=>{const b=$('advBox');b.style.display=b.style.display==='block'?'none':'block';};
+
+  /* timer */
+  let total=240,left=240,tick=null;
+  const clock=$('clock'),timerEl=$('timer'),tgo=$('tgo');
+  const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  function stopT(){clearInterval(tick);tick=null;tgo.textContent='Start';}
+  document.querySelectorAll('.timer [data-m]').forEach(b=>b.onclick=()=>{stopT();total=left=+b.dataset.m*60;clock.textContent=fmt(left);timerEl.classList.remove('done');});
+  tgo.onclick=()=>{if(tick){stopT();return;}if(left<=0){left=total;timerEl.classList.remove('done');}tgo.textContent='Pause';
+    tick=setInterval(()=>{left--;clock.textContent=fmt(Math.max(0,left));if(left<=0){stopT();timerEl.classList.add('done');}},1000);};
+  $('treset').onclick=()=>{stopT();left=total;clock.textContent=fmt(left);timerEl.classList.remove('done');};
+
+  /* ---------- ClassLive live mode ---------- */
+  const FIREBASE_CONFIG={
+    apiKey:"AIzaSyBQsu2DyivPHcBFpybIPZrD5DlL89yC_Ws",
+    authDomain:"claive-de74a.firebaseapp.com",
+    databaseURL:"https://claive-de74a-default-rtdb.firebaseio.com",
+    projectId:"claive-de74a",
+    storageBucket:"claive-de74a.firebasestorage.app",
+    messagingSenderId:"298164687119",
+    appId:"1:298164687119:web:01b074ab6951abdc29ee7a"
+  };
+  const CODE_CHARS="ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const rand=(n,ch)=>Array.from({length:n},()=>ch[Math.floor(Math.random()*ch.length)]).join('');
+  const goBtn=$('goLive');
+  const joinUrl=()=>S.clUrl.split(/[?#]/)[0]+'?room='+L.code;
+  const prettyUrl=()=>S.clUrl.replace(/^https?:\/\//,'').replace(/[?#].*$/,'').replace(/\/$/,'');
+  const qrSrc=(u,n)=>'https://api.qrserver.com/v1/create-qr-code/?size='+n+'x'+n+'&margin=0&data='+encodeURIComponent(u);
+
+  function renderJoin(){
+    const q=$('qrBox'),info=$('joinInfo');
+    if(!L.on){q.innerHTML='Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.';info.innerHTML='';return;}
+    q.innerHTML='<img alt="QR code" src="'+qrSrc(joinUrl(),260)+'">';
+    info.innerHTML='Or go to <b>'+prettyUrl()+'</b><br>and enter code <b style="font-size:22px;color:var(--red);letter-spacing:.06em">'+L.code+'</b><br><a href="#" id="chgUrl" style="font-size:12px;color:var(--muted)">Change ClassLive address</a><input type="text" id="urlIn" style="display:none;width:100%;margin-top:6px;padding:6px 8px;font-size:12px;border:1px solid var(--line);border-radius:6px">';
+    $('chgUrl').onclick=e=>{e.preventDefault();const i=$('urlIn');i.style.display='block';i.value=S.clUrl;i.focus();};
+    $('urlIn').onchange=e=>{const v=e.target.value.trim();if(v){S.clUrl=v;save();renderJoin();}};
+    $('qrBig').src=qrSrc(joinUrl(),340);$('qrUrl').textContent=prettyUrl();$('qrCode').textContent=L.code;
+  }
+  function toggleQR(){if(!L.on)return;const o=$('qrOverlay');o.style.display=o.style.display==='flex'?'none':'flex';}
+  $('qrOverlay').onclick=toggleQR;$('qBtn').onclick=toggleQR;
+
+  function renderCloud(){
+    const box=$('cloud'),counts={};
+    Object.values(L.words||{}).forEach(w=>{if(w&&w.t){const t=String(w.t).trim().toLowerCase();if(t)counts[t]=(counts[t]||0)+1;}});
+    const items=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,45);
+    if(!items.length){box.innerHTML='<span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">'+(L.on?'Waiting for words...':'Words will appear here as people send them.')+'</span>';return;}
+    const mx=items[0][1],pal=['var(--red)','var(--ink)','var(--teal)','#C98A1B','var(--ink2)'];
+    const shuffled=items.map((it,i)=>({it,i,r:(i*7919)%items.length})).sort((a,b)=>a.r-b.r);
+    box.innerHTML='';
+    shuffled.forEach(({it,i})=>{const s=document.createElement('span');s.textContent=it[0];s.style.fontSize=(18+Math.round((it[1]/mx)*58))+'px';s.style.color=pal[i%pal.length];s.title=it[1];box.appendChild(s);});
+  }
+
+  function refreshAll(){renderPolls();renderSpec();renderGuessLive();renderCloud();if(slides[cur].querySelector('#sumRows'))renderSummary();if(slides[cur].querySelector('#postText'))renderPost();}
+
+  async function goLive(){
+    if(L.on){toggleQR();return;}
+    if(typeof firebase==='undefined'){goBtn.textContent='No internet: live unavailable';return;}
+    goBtn.textContent='Connecting...';
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      L.db=firebase.database();
+      let code=null,hostKey=null;
+      if(S.room&&S.room.code){
+        const m=(await L.db.ref('rooms/'+S.room.code+'/meta').get()).val();
+        if(m&&m.hostKey===S.room.hostKey){code=S.room.code;hostKey=S.room.hostKey;}
+      }
+      if(!code){
+        for(let i=0;i<6;i++){code=rand(5,CODE_CHARS);if(!(await L.db.ref('rooms/'+code+'/meta').get()).val())break;}
+        hostKey=rand(16,'abcdefghijklmnopqrstuvwxyz0123456789');
+        await L.db.ref('rooms/'+code+'/meta').set({
+          activity:'words',
+          prompts:{words:'In one word, how do you feel about AI in school?',notes:'Share one idea.',poll:'Which option do you choose?',qa:'What questions do you have?',quiz:''},
+          pollOptions:['Yes','No'],locked:false,showResults:false,hostKey,created:firebase.database.ServerValue.TIMESTAMP
+        });
+        S.snaps={};
+      }
+      L.code=code;S.room={code,hostKey};save();
+      L.on=true;document.body.classList.add('live');
+      $('liveCode').textContent=code;$('liveChip').style.display='inline-flex';$('qBtn').style.display='';
+      goBtn.style.display='none';
+      L.ref('people').on('value',s=>{const n=s.val()?Object.keys(s.val()).length:0;$('livePeople').textContent='  |  '+n+' joined';});
+      L.ref('votes').on('value',s=>{if(L.key){S.snaps[L.key]=s.val()||{};save();refreshAll();}});
+      L.ref('words').on('value',s=>{L.words=s.val()||{};renderCloud();});
+      renderJoin();L.key=null;L.last=null;activateLive();
+    }catch(err){
+      console.log('[AI Now] live error',err);
+      goBtn.textContent='Could not connect. Retry';L.on=false;
+    }
+  }
+  goBtn.onclick=goLive;
+
+  function pollSpec(){
+    const d=slides[cur].dataset.live;if(!d)return null;
+    if(d==='words') return {words:true,prompt:slides[cur].dataset.prompt};
+    if(d==='spec') return {key:'spec'+si,prompt:'Scenario '+(si+1)+' of 8: '+SCEN[si]+'. Is this cheating?',opts:LABELS.map((l,k)=>(k+1)+'. '+l)};
+    const id=d.split(':')[1];
+    if(id==='guess') return {key:'guess',prompt:'Guess: what share of professors said they had caught students cheating with AI?',opts:GUESS_BINS};
+    const el=slides[cur].querySelector('[data-poll]');
+    const h2=slides[cur].querySelector('h2').cloneNode(true);h2.querySelectorAll('br').forEach(b=>b.replaceWith(' '));const h=h2.textContent.replace(/\s+/g,' ').trim();
+    return {key:id,prompt:id==='dil'?h+' What should the instructor do?':h,opts:el.dataset.opts.split('|')};
+  }
+  async function activateLive(){
+    if(!L.on)return;
+    const p=pollSpec();
+    const sig=p?(p.words?'words':p.key):'locked';
+    if(sig===L.last)return;L.last=sig;
+    try{
+      if(!p){await L.ref('meta').update({locked:true});return;}
+      if(p.words){L.key=null;await L.ref('meta').update({activity:'words','prompts/words':p.prompt,locked:false,showResults:true});return;}
+      L.key=p.key;
+      await L.ref('votes').set(S.snaps[p.key]&&Object.keys(S.snaps[p.key]).length?S.snaps[p.key]:null);
+      await L.ref('meta').update({activity:'poll','prompts/poll':p.prompt,pollOptions:p.opts,locked:false,showResults:false});
+    }catch(err){console.log('[AI Now] update error',err);}
+  }
+
+  /* ---------- social post ---------- */
+  let lang='en';
+  const SCEN_KO=["AI로 문법 교정하기","AI로 주제 브레인스토밍하기","AI에게 개념 다시 설명 듣기","AI 개요 받고 글은 직접 쓰기","AI가 쓴 문단을 살짝 바꿔 쓰기","읽지 않은 출처를 AI로 인용하기","AI 에이전트가 온라인 퀴즈 풀기","AI가 쓴 에세이 그대로 제출하기"];
+  function classLine(){
+    const dv=mostDivided();
+    if(dv<0) return null;
+    const s=stats(specCounts(dv));
+    return {en:'Our most divided item: "'+SHORT[dv]+'" (average '+s.m.toFixed(1)+' on a 1 to 5 scale).',ko:'우리 반의 의견이 가장 갈린 항목은 "'+SCEN_KO[dv]+'"였습니다 (5점 척도 평균 '+s.m.toFixed(1)+'점).'};
+  }
+  function renderPost(){
+    const cl=classLine();
+    $('cardLine').textContent=cl?('Our class split most on: '+SHORT[mostDivided()]):'Where would you draw the line?';
+    const en=[
+      'Is this cheating?',
+      '',
+      'In class today we placed 8 everyday uses of AI on a spectrum from "totally fine" to "clearly cheating." The surprise was not where people drew the line. It was how differently each of us drew it.',
+      cl?'\n'+cl.en:'',
+      '',
+      'A few facts that framed our discussion:',
+      '- About 1 in 3 students at large U.S. public universities use generative AI regularly for coursework (Cornell, 2026).',
+      '- AI agents can now complete entire online courses on a student\'s behalf.',
+      '- AI detectors still misfire, often on multilingual students, and universities from Yale to Cornell now discourage using them as primary evidence.',
+      '',
+      'My takeaway: the cheating problem is really an assessment design problem. When rules change from course to course and detectors are unreliable, clear policies and process-based assessment matter more than surveillance.',
+      '',
+      'Where would you draw the line?',
+      '',
+      '#AIinEducation #AcademicIntegrity #TeacherEducation #AILiteracy'
+    ].filter((l,i)=>!(i===3&&!l)).join('\n');
+    const ko=[
+      '이것도 치팅일까?',
+      '',
+      '오늘 수업에서 일상적인 AI 활용 8가지를 "전혀 문제없음"부터 "명백한 치팅"까지의 스펙트럼 위에 놓아 보았습니다. 놀라웠던 건 선을 어디에 긋느냐보다, 사람마다 그 선이 얼마나 다른가였습니다.',
+      cl?'\n'+cl.ko:'',
+      '',
+      '토론의 출발점이 된 사실들:',
+      '- 미국 대형 공립대 학생의 약 3분의 1이 과제에 생성형 AI를 정기적으로 사용합니다 (Cornell, 2026).',
+      '- 이제 AI 에이전트가 온라인 강좌 전체를 대신 수강할 수 있습니다.',
+      '- AI 탐지기는 여전히 오탐이 잦고 특히 비원어민 학생에게 불리하며, 예일부터 코넬까지 많은 대학이 탐지기를 주된 증거로 쓰지 말라고 권고하고 있습니다.',
+      '',
+      '제 결론: 치팅 문제는 결국 평가 설계의 문제입니다. 수업마다 규칙이 다르고 탐지기를 믿기 어려운 상황에서는 감시보다 명확한 정책과 과정 중심 평가가 더 중요합니다.',
+      '',
+      '여러분은 어디에 선을 긋겠습니까?',
+      '',
+      '#AI교육 #학업윤리 #교사교육 #AI리터러시'
+    ].filter((l,i)=>!(i===3&&!l)).join('\n');
+    $('postText').value=lang==='en'?en:ko;
+  }
+  document.querySelectorAll('.tabs [data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;document.querySelectorAll('.tabs [data-lang]').forEach(x=>x.classList.toggle('ghost',x!==b));renderPost();});
+  $('copyBtn').onclick=()=>{
+    const ta=$('postText'),btn=$('copyBtn');
+    const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy text',1500);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done();});}
+    else{ta.select();document.execCommand('copy');done();}
+  };
+
+  renderGuessLive();
+  show(0);
+})();
+</script>
+</body>
+</html>
