@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Now, Episode 2: Cognitive Surrender</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --paper:#F4F1EA; --paper2:#EAE5D9; --ink:#14213D; --ink2:#3D4A66; --muted:#7A8294;
+    --red:#E4572E; --teal:#2A9D8F; --gold:#E9B44C; --line:#D6CFBF;
+    --s1:#2A9D8F; --s2:#8CB369; --s3:#E9B44C; --s4:#F08A4B; --s5:#E4572E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0f1729;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:var(--ink)}
+  #viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  #stage{flex:none;width:1280px;height:720px;position:relative;background:var(--paper);transform-origin:center center;box-shadow:0 20px 80px rgba(0,0,0,.45);overflow:hidden}
+  .slide{position:absolute;inset:0;padding:56px 72px 70px;display:none;flex-direction:column}
+  .slide.active{display:flex;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em}
+  h1{font-size:76px;line-height:1.02;font-weight:800}
+  h2{font-size:44px;line-height:1.1;font-weight:800;margin-bottom:10px}
+  h3{font-size:22px;font-weight:600}
+  .kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+  .sub{font-size:20px;color:var(--ink2);line-height:1.45}
+  .small{font-size:13px;color:var(--muted)}
+  .row{display:flex;gap:28px}
+  .grow{flex:1}
+  button{font-family:inherit;cursor:pointer}
+  .btn{border:2px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:999px;padding:10px 20px;font-weight:700;font-size:15px;transition:transform .1s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn.red{background:var(--red);border-color:var(--red)}
+  .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--paper)}
+
+  /* chrome */
+  #bar{position:absolute;left:0;bottom:0;height:5px;background:var(--red);transition:width .3s}
+  #foot{position:absolute;left:72px;right:72px;bottom:20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);z-index:5}
+  #foot .ctrls{display:flex;gap:8px}
+  #foot button{background:transparent;border:1px solid var(--line);color:var(--ink2);border-radius:6px;padding:4px 10px;font-size:12px}
+  #notes{position:absolute;right:16px;top:16px;width:380px;max-height:300px;overflow:auto;background:var(--ink);color:#E8ECF5;padding:16px 18px;border-radius:12px;font-size:14px;line-height:1.5;display:none;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  #notes b{color:var(--gold)}
+
+  /* title */
+  .title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative}
+  .title-wrap .series{font-family:Fraunces,serif;font-size:22px;color:var(--ink2);margin-bottom:18px}
+  .title-wrap h1 span{color:var(--red)}
+  .big-q{position:absolute;right:-20px;top:40px;font-family:Fraunces,serif;font-size:420px;font-weight:800;color:var(--paper2);line-height:1;z-index:0}
+  .title-wrap > *:not(.big-q){position:relative;z-index:1}
+
+  /* poll */
+  .poll{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+  .opt{display:grid;grid-template-columns:260px 1fr 70px 76px;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 18px;cursor:pointer;user-select:none;transition:border-color .15s}
+  .opt:hover{border-color:var(--ink)}
+  .opt .lab{font-weight:600;font-size:18px}
+  .opt .track{height:22px;background:var(--paper2);border-radius:999px;overflow:hidden}
+  .opt .fill{height:100%;width:0;border-radius:999px;transition:width .35s ease}
+  .opt .num{font-family:Fraunces,serif;font-size:26px;font-weight:800;text-align:right}
+  .opt .pm{display:flex;gap:6px}
+  .opt .pm button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-weight:700;font-size:16px;color:var(--ink)}
+  .hint{font-size:13px;color:var(--muted);margin-top:10px}
+
+  /* news */
+  .news{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px}
+  .card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:20px 22px;position:relative;cursor:pointer;transition:transform .15s}
+  .card:hover{transform:translateY(-2px)}
+  .card .stat{font-family:Fraunces,serif;font-size:34px;font-weight:800;color:var(--red);line-height:1;margin:8px 0 8px}
+  .card p{font-size:15px;line-height:1.45;color:var(--ink2)}
+  .card .src{position:absolute;right:18px;top:18px;font-size:11px;color:var(--muted)}
+  .card .more{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px;color:var(--ink);line-height:1.45}
+  .card.open .more{display:block}
+
+  /* guess */
+  .guess{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .gauge{width:380px;height:380px;border-radius:50%;background:conic-gradient(var(--red) 0deg,var(--paper2) 0deg);display:flex;align-items:center;justify-content:center;transition:background .2s}
+  .gauge .inner{width:290px;height:290px;border-radius:50%;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .gauge .val{font-family:Fraunces,serif;font-size:96px;font-weight:800;line-height:1}
+  .gauge .lbl{font-size:14px;color:var(--muted);margin-top:6px;letter-spacing:.1em;text-transform:uppercase}
+  input[type=range]{width:100%;accent-color:var(--ink)}
+  .reveal-box{margin-top:18px;padding:18px 20px;border-radius:14px;background:var(--ink);color:var(--paper);display:none}
+  .reveal-box b{color:var(--gold)}
+
+  /* syllabus */
+  .syl{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+  .syl .s{background:#fff;border:2px solid var(--line);border-radius:14px;padding:18px;min-height:230px;display:flex;flex-direction:column}
+  .syl .code{font-family:Fraunces,serif;font-weight:800;font-size:22px;margin-bottom:4px}
+  .syl .pol{font-size:15px;line-height:1.45;color:var(--ink2);flex:1;margin-top:10px}
+  .syl .chip{align-self:flex-start;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+
+  /* spectrum */
+  .spec-top{display:flex;justify-content:space-between;align-items:flex-end}
+  .scen{margin-top:16px;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:24px 28px;display:flex;align-items:center;gap:24px;min-height:120px}
+  .scen .n{font-family:Fraunces,serif;font-size:64px;font-weight:800;color:var(--red);line-height:1;min-width:70px}
+  .scen .t{font-size:26px;font-weight:600;line-height:1.3;flex:1}
+  .buckets{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+  .bucket{border-radius:14px;padding:14px 10px 12px;text-align:center;color:#fff;cursor:pointer;user-select:none;position:relative;transition:transform .1s}
+  .bucket:active{transform:scale(.97)}
+  .bucket .bn{font-family:Fraunces,serif;font-size:40px;font-weight:800;line-height:1}
+  .bucket .bl{font-size:13px;font-weight:700;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+  .bucket .minus{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:6px;border:none;background:rgba(255,255,255,.3);color:#fff;font-weight:800}
+  .meter{position:relative;height:16px;border-radius:999px;margin-top:26px;background:linear-gradient(90deg,var(--s1),var(--s2),var(--s3),var(--s4),var(--s5))}
+  .meter .pin{position:absolute;top:-12px;width:4px;height:40px;background:var(--ink);border-radius:2px;transform:translateX(-2px);transition:left .4s ease;display:none}
+  .meter .pin span{position:absolute;top:-28px;left:50%;transform:translateX(-50%);white-space:nowrap;font-weight:800;font-size:14px;background:var(--ink);color:var(--paper);padding:2px 8px;border-radius:6px}
+  .navdots{display:flex;gap:8px;align-items:center}
+  .navdots .d{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:13px;color:var(--ink2)}
+  .navdots .d.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .navdots .d.done{border-color:var(--teal)}
+
+  /* summary */
+  .sum{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .srow{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;align-items:center}
+  .srow .st{font-size:14px;font-weight:600;line-height:1.25}
+  .srow .str{position:relative;height:30px;border-radius:8px;background:linear-gradient(90deg,rgba(42,157,143,.15),rgba(233,180,76,.15),rgba(228,87,46,.15))}
+  .srow .whisk{position:absolute;top:13px;height:4px;background:var(--ink2);border-radius:2px;opacity:.45}
+  .srow .dot{position:absolute;top:5px;width:20px;height:20px;border-radius:50%;background:var(--ink);transform:translateX(-10px);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .srow .sv{font-family:Fraunces,serif;font-weight:800;font-size:18px;text-align:right}
+  .srow.divided .st{color:var(--red)}
+  .srow.divided .str{outline:2px solid var(--red)}
+  .axis{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .axis div:nth-child(2){display:flex;justify-content:space-between}
+
+  /* dilemma */
+  .dilemma{display:flex;gap:30px;margin-top:16px;flex:1}
+  .flag{width:380px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column}
+  .flag .pct{font-family:Fraunces,serif;font-size:88px;font-weight:800;color:var(--red);line-height:1}
+  .flag p{font-size:16px;line-height:1.5;margin-top:10px;color:#D5DBE8}
+  .dil-opts .opt{grid-template-columns:1fr 200px 56px 76px;padding:12px 16px}
+  .dil-opts .opt .lab{font-size:16px}
+
+  /* timer */
+  .qs{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+  .q{display:flex;gap:18px;align-items:flex-start;background:#fff;border:2px solid var(--line);border-radius:16px;padding:18px 22px}
+  .q .qn{font-family:Fraunces,serif;font-weight:800;font-size:34px;color:var(--teal);line-height:1}
+  .q p{font-size:20px;line-height:1.4;font-weight:500}
+  .timer{width:300px;align-self:flex-start;margin-top:16px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .timer .clock{font-family:Fraunces,serif;font-size:80px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .timer .tb{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .timer .tb button{background:transparent;border:2px solid #56627F;color:var(--paper);border-radius:999px;padding:6px 14px;font-weight:700}
+  .timer .tb button.go{background:var(--red);border-color:var(--red)}
+  .timer.done .clock{color:var(--gold);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+
+  /* takeaways */
+  .tk{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+  .tk .t{display:flex;gap:24px;align-items:center;padding:22px 26px;border-radius:18px;background:#fff;border-left:10px solid var(--red)}
+  .tk .t:nth-child(2){border-left-color:var(--gold)}
+  .tk .t:nth-child(3){border-left-color:var(--teal)}
+  .tk .t b{font-family:Fraunces,serif;font-size:26px}
+  .tk .t p{font-size:17px;color:var(--ink2);margin-top:4px;line-height:1.45}
+
+  /* social */
+  .social{display:flex;gap:30px;margin-top:10px;flex:1;min-height:0}
+  .scard{width:430px;height:430px;flex:none;background:var(--ink);color:var(--paper);border-radius:22px;padding:34px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .scard .sq{font-family:Fraunces,serif;font-size:46px;font-weight:800;line-height:1.05}
+  .scard .sq span{color:var(--red)}
+  .scard ul{list-style:none;margin-top:22px;display:flex;flex-direction:column;gap:12px}
+  .scard li{font-size:16px;line-height:1.35;padding-left:22px;position:relative;color:#D5DBE8}
+  .scard li:before{content:"";position:absolute;left:0;top:7px;width:10px;height:10px;border-radius:2px;background:var(--gold)}
+  .scard .sf{margin-top:auto;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8F9AB3}
+  .scard .ring{position:absolute;right:-70px;top:-70px;width:200px;height:200px;border-radius:50%;border:26px solid var(--red);opacity:.9}
+  .post{flex:1;display:flex;flex-direction:column;min-width:0}
+  .post .tabs{display:flex;gap:8px;margin-bottom:10px}
+  .post textarea{flex:1;width:100%;resize:none;border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-family:Inter,sans-serif;font-size:14px;line-height:1.5;background:#fff;color:var(--ink)}
+
+  /* join */
+  .join{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .qr{width:300px;height:300px;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:14px;padding:20px}
+  .qr img{width:260px;height:260px}
+  .join input[type=text]{width:100%;font-size:16px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-family:inherit;margin-top:10px}
+
+  /* live */
+  #liveChip{display:none;align-items:center;gap:8px;background:var(--ink);color:var(--paper);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700}
+  #liveChip .dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;animation:pulse 1.6s infinite}
+  #liveChip b{color:var(--gold);letter-spacing:.08em}
+  #goLive{border-color:var(--red)!important;color:var(--red)!important;font-weight:700}
+  #qrOverlay{position:absolute;inset:0;background:rgba(20,33,61,.94);display:none;align-items:center;justify-content:center;gap:56px;z-index:30;color:var(--paper)}
+  #qrOverlay img{width:340px;height:340px;background:#fff;padding:16px;border-radius:20px}
+  #qrOverlay .code{font-family:Fraunces,serif;font-size:96px;font-weight:800;letter-spacing:.08em;color:var(--gold);line-height:1}
+  .livetag{display:none;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:#1f9d6b;padding:3px 9px;border-radius:999px;vertical-align:middle}
+  body.live .livetag{display:inline-block}
+  .cloudbox{flex:1;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:6px 18px;padding:20px;overflow:hidden;min-height:0}
+  .cloudbox span{font-family:Fraunces,serif;font-weight:800;line-height:1.1}
+  .bins{display:flex;gap:6px;margin-top:16px;align-items:flex-end;height:70px}
+  .bins div{flex:1;background:var(--ink2);border-radius:6px 6px 0 0;position:relative;min-height:2px;transition:height .3s}
+  .bins div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+  .bins div em{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:11px;font-style:normal;font-weight:700}
+
+
+  /* episode 2 components */
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+  .ccard{background:#fff;border:2px solid var(--line);border-top:10px solid var(--c);border-radius:16px;padding:20px 22px;cursor:pointer;transition:transform .15s}
+  .ccard:hover{transform:translateY(-2px)}
+  .ccard .lvl{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c);margin-bottom:6px}
+  .ccard h3{font-size:24px;font-weight:800;margin-bottom:8px}
+  .ccard p{font-size:15px;line-height:1.5;color:var(--ink2)}
+  .ccard .ex{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:14px;line-height:1.45}
+  .ccard.open .ex{display:block}
+  .buckets.b3{grid-template-columns:repeat(3,1fr)}
+  .buckets.b3 .bucket{padding:18px 10px 16px}
+  .buckets.b3 .bucket .bl{font-size:16px}
+  .stk{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--paper2)}
+  .stk.big{height:40px;margin-top:22px;border-radius:12px}
+  .stk .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;transition:width .4s ease}
+  .stk .seg.empty{width:100%;color:var(--muted);font-weight:500}
+  .srow2{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:center}
+  .srow2 .st{font-size:14px;font-weight:600}
+  .srow2.divided .st{color:var(--red)}
+  .srow2.divided .stk{outline:3px solid var(--red);outline-offset:2px}
+  .legend{display:flex;gap:22px;font-size:13px;font-weight:600;color:var(--ink2);margin:4px 0 4px}
+  .legend span{display:flex;align-items:center;gap:8px}
+  .legend span:before{content:"";width:14px;height:14px;border-radius:4px;background:var(--c)}
+  /* sources */
+  .srcs{margin-top:16px;columns:2;column-gap:40px}
+  .srcs li{break-inside:avoid;margin:0 0 14px 18px;font-size:14px;line-height:1.45;color:var(--ink2)}
+  .srcs a{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- 1 TITLE -->
+<section class="slide" data-notes="<b>Welcome back.</b> Episode 1 asked where the line is for cheating. Today asks a quieter question: even when AI use is allowed, what happens to our own thinking? Remind the room this is interactive again.">
+  <div class="title-wrap">
+    <div class="big-q" style="font-size:300px;top:90px">?!</div>
+    <div class="series">AI Now: Thinking Together About AI &nbsp;|&nbsp; Episode 2</div>
+    <h1>Cognitive<br><span>Surrender</span></h1>
+    <p class="sub" style="margin-top:22px;max-width:660px">What do we lose when AI does the thinking for us, and how do we keep what matters?</p>
+    <p class="small" style="margin-top:40px">Dr. Henry Yu &nbsp;|&nbsp; Teachers College, Ball State University</p>
+  </div>
+</section>
+
+<!-- 2 JOIN -->
+<section class="slide" data-live="words" data-prompt="When you get stuck on schoolwork, what is the first thing you do? (one word)" data-notes="<b>Join.</b> Click <b>Go live</b> in the bottom bar once. Students scan the QR and send one word. Look for words like 'ChatGPT', 'Google', 'ask', 'quit', 'think'. Comment on the mix before moving on. Press Q any time for the big QR.">
+  <div class="kicker">Join from your phone<span class="livetag">LIVE</span></div>
+  <h2>When you get stuck on schoolwork, what's the first thing you do?</h2>
+  <div class="join" style="margin-top:10px;align-items:stretch;min-height:0">
+    <div style="width:300px;display:flex;flex-direction:column;gap:12px">
+      <div class="qr" id="qrBox" style="height:300px">Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.</div>
+      <div id="joinInfo" style="font-size:14px;color:var(--ink2);line-height:1.5"></div>
+    </div>
+    <div class="cloudbox" id="cloud"><span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">Words will appear here as people send them.</span></div>
+  </div>
+</section>
+
+<!-- 3 OPENING POLL -->
+<section class="slide" data-live="poll:open" data-notes="<b>Opening poll.</b> Honest answers only; nobody sees individual votes. The MIT report describes students reaching for AI 'at the first hint of struggle'. Ask: is that a problem, or just efficient?">
+  <div class="kicker">Warm-up poll<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>You hit a hard problem. How long before you open an AI tool?</h2>
+  <div class="poll" data-poll="open" data-opts="Right away|After a few minutes|Only after really trying|I rarely use AI for this"></div>
+  <p class="hint">Tap a row to add hand votes. Phone votes are added automatically in live mode.</p>
+</section>
+
+<!-- 4 NEWS -->
+<section class="slide" data-notes="<b>3-minute news brief.</b> Click each card for more. Three cards show the cost; the fourth shows that design matters. Do not let the room leave with 'AI is bad'. The message is that passive use and designed use produce very different results.">
+  <div class="kicker">The news in 3 minutes</div>
+  <h2>What the research is showing in 2026</h2>
+  <div class="news">
+    <div class="card"><span class="src">MIT, Aug 2026</span><span class="tag">Campus</span>
+      <div class="stat">"Cognitive surrender"</div>
+      <p>An MIT committee warns that getting answers from a bot creates an "illusion of learning" for students who reach for AI at the first hint of struggle.</p>
+      <div class="more">The report also found students skipping office hours and communal study. In a spring 2026 campus survey, 46% of undergraduates and 60% of graduate students reported frequent generative AI use.</div>
+    </div>
+    <div class="card"><span class="src">UC Irvine, Jun 2026</span><span class="tag">Math</span>
+      <div class="stat">Faster, not smarter</div>
+      <p>Time spent on math word problems fell 31% for high school and 27% for college students after ChatGPT arrived, while proctored exam performance on those problems dropped.</p>
+      <div class="more">Graphing problems, which are harder to hand to AI, did not decline. That points to AI use rather than general learning loss.</div>
+    </div>
+    <div class="card"><span class="src">China, Jun 2026</span><span class="tag">Long-term</span>
+      <div class="stat">27,000 students</div>
+      <p>A 30-month study of secondary students found assigned work got better while thinking got worse.</p>
+      <div class="more">The loss stayed hidden until the moment the tool could not be used, such as an exam.</div>
+    </div>
+    <div class="card"><span class="src">2026 reporting</span><span class="tag">The other side</span>
+      <div class="stat">Design matters</div>
+      <p>Carefully designed AI tutors have improved achievement in controlled experiments by asking questions instead of giving answers.</p>
+      <div class="more">Passive use can lead to skill decay, but structured, deliberate use may actually support critical thinking and creativity.</div>
+    </div>
+  </div>
+  <p class="hint">Click a card to reveal more.</p>
+</section>
+
+<!-- 5 GUESS -->
+<section class="slide" data-live="poll:guess" data-notes="<b>Guess the number.</b> Students pick a range on their phones; the slider moves to the class average. Answer: 48% higher on practice problems with ChatGPT. Then the twist (it appears with the reveal): when access was removed, those students did 17% worse on the exam than students who never had it.">
+  <div class="kicker">Guess the number<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>High school students practiced math with ChatGPT. How much higher were their practice scores?</h2>
+  <div class="guess">
+    <div class="gauge" id="gauge"><div class="inner"><div class="val" id="gval">50%</div><div class="lbl" id="glbl">Class guess</div></div></div>
+    <div class="grow">
+      <p class="sub" style="margin-bottom:10px">Set the slider to the class's guess:</p>
+      <input type="range" id="gslider" min="0" max="100" value="50">
+      <div class="bins" id="gbins" style="display:none"></div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button class="btn red" id="greveal">Reveal answer</button>
+        <button class="btn ghost" id="greset">Reset</button>
+      </div>
+      <div class="reveal-box" id="gbox">
+        <b>48% higher</b> on practice problems. But when AI access was taken away, the same students scored <b>17% lower</b> on the exam than classmates who never had it.<br><span style="font-size:13px;opacity:.75">Source: Bastani, Sungu et al., Wharton field experiment in Turkish high schools (PNAS, 2025)</span>
+        <div id="gdiff" style="margin-top:8px;font-size:15px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 CONCEPT -->
+<section class="slide" data-notes="<b>Offloading is not new.</b> We offload to calculators, GPS, and notes all the time. Click each card to show an example. The key distinction: healthy offloading frees you to think about something harder; surrender means you stop judging at all. Point out that struggle is where learning happens, so a tool that removes all friction can remove the learning too.">
+  <div class="kicker">Big idea</div>
+  <h2>Offloading is normal. Surrender is different.</h2>
+  <p class="sub">We have always handed thinking to tools. The question is what we stop doing when we do.</p>
+  <div class="cards3">
+    <div class="ccard" style="--c:var(--teal)"><div class="lvl">Level 1</div><h3>Healthy offloading</h3><p>The tool handles something you already understand, so you can focus on harder thinking.</p><div class="ex"><b>Example:</b> using a calculator for arithmetic while you reason through a physics problem.</div></div>
+    <div class="ccard" style="--c:var(--gold)"><div class="lvl">Level 2</div><h3>Skipping the practice</h3><p>The tool does the exact work the assignment was designed to build. You finish faster but practice less.</p><div class="ex"><b>Example:</b> having AI solve the word problems in a homework set meant to build problem-solving.</div></div>
+    <div class="ccard" style="--c:var(--red)"><div class="lvl">Level 3</div><h3>Cognitive surrender</h3><p>You stop judging. The AI's answer replaces your own reasoning, even when it is wrong.</p><div class="ex"><b>Example:</b> submitting an AI answer you cannot explain, and not noticing it contains an error.</div></div>
+  </div>
+  <p class="hint">Click a card to show an example. Struggle is where learning happens; a tool that removes every bit of friction can remove the learning too.</p>
+</section>
+
+<!-- 7 ACTIVITY -->
+<section class="slide" id="itemSlide" data-live="items" data-notes="<b>Main activity: Delegate or Keep?</b> For each task, students choose on their phones: hand it to AI, do it with AI, or keep it human. Without live mode, take a show of hands and tap the boxes. Move through all 8, then see the class map. Push on the reasons: what skill is the task supposed to build?">
+  <div class="spec-top">
+    <div><div class="kicker">Activity: Delegate or Keep?<span class="livetag">LIVE ON PHONES</span></div><h2 style="margin:0">Who should do this task?</h2></div>
+    <div class="navdots" id="itemDots"></div>
+  </div>
+  <div class="scen"><div class="n" id="itemN">1</div><div class="t" id="itemT"></div></div>
+  <div class="buckets b3" id="itemB"></div>
+  <div class="stk big" id="itemStk"></div>
+  <div style="display:flex;justify-content:space-between;margin-top:14px">
+    <button class="btn ghost" id="itemPrev">Previous task</button>
+    <span class="small" id="itemCount" style="align-self:center"></span>
+    <button class="btn" id="itemNext">Next task</button>
+  </div>
+</section>
+
+<!-- 8 SUMMARY -->
+<section class="slide" data-notes="<b>Class map.</b> Tasks are sorted from most 'keep it human' to most 'hand it to AI'. The outlined task is where the class split most. Ask: what is that task supposed to teach? Does the answer change if you already have the skill?">
+  <div class="kicker">Our class map</div>
+  <h2>What we'd hand over, and what we'd keep</h2>
+  <div class="legend"><span style="--c:#5B7DB1">Hand it to AI</span><span style="--c:var(--gold)">Do it with AI</span><span style="--c:var(--teal)">Keep it human</span></div>
+  <div class="sum" id="sumRows"></div>
+  <p class="hint" id="sumNote"></p>
+</section>
+
+<!-- 9 WARNING SIGNS -->
+<section class="slide" data-live="poll:signs" data-notes="<b>Self-check.</b> Anonymous phone vote. Normalize the results: most people will recognize at least one sign. Then ask what small habit could reverse it (for example: try for 10 minutes first, explain the answer out loud, ask AI for a hint instead of the answer).">
+  <div class="kicker">Self-check<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>Which warning sign do you notice most in yourself?</h2>
+  <div class="poll" data-poll="signs" data-opts="I open AI before I've really tried|I accept answers without checking them|I can't explain work I submitted|I study alone with AI instead of with people|None of these sound like me"></div>
+  <p class="hint">Anonymous. Most of us will recognize at least one.</p>
+</section>
+
+<!-- 10 DISCUSS -->
+<section class="slide" data-notes="<b>Pair discussion.</b> Start the timer. For preservice teachers, push question 3: design one assignment where AI makes students think more, not less (for example, AI as a Socratic tutor, critiquing an AI answer, or explaining work orally).">
+  <div class="kicker">Turn and talk</div>
+  <h2>Discuss with a partner</h2>
+  <div class="row" style="flex:1;margin-top:6px">
+    <div class="qs grow">
+      <div class="q"><div class="qn">1</div><p>Which task did our class split on most? What skill was that task supposed to build?</p></div>
+      <div class="q"><div class="qn">2</div><p>Name one thing you want to stay good at, even if AI can do it for you. Why?</p></div>
+      <div class="q"><div class="qn">3</div><p>As a teacher, how would you design one assignment where AI makes students think <em>more</em>, not less?</p></div>
+    </div>
+    <div class="timer" id="timer">
+      <span class="small" style="color:#8F9AB3;letter-spacing:.12em;text-transform:uppercase">Timer</span>
+      <div class="clock" id="clock">4:00</div>
+      <div class="tb"><button data-m="2">2 min</button><button data-m="4">4 min</button><button data-m="6">6 min</button></div>
+      <div class="tb"><button class="go" id="tgo">Start</button><button id="treset">Reset</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 TAKEAWAYS -->
+<section class="slide" data-notes="<b>Takeaways.</b> Close with the practical habit: try first, then use AI to check, question, or push your thinking. Preview Episode 3: The Vanishing First Job, how AI is changing entry-level work.">
+  <div class="kicker">Takeaways</div>
+  <h2>Three things to remember</h2>
+  <div class="tk">
+    <div class="t"><div><b>Faster is not the same as learning.</b><p>The struggle AI removes is often the exact place learning happens. Better homework can hide weaker thinking.</p></div></div>
+    <div class="t"><div><b>How you use it matters more than whether.</b><p>An AI that gives answers and an AI that asks questions lead to very different outcomes.</p></div></div>
+    <div class="t"><div><b>Protect the skills you'll need without the tool.</b><p>Try first, then use AI to check, question, and push your thinking further.</p></div></div>
+  </div>
+  <p class="hint" style="margin-top:18px">Next episode: <b>The Vanishing First Job</b>: how is AI changing entry-level work?</p>
+</section>
+
+<!-- 12 SOCIAL -->
+<section class="slide" data-notes="<b>Share it.</b> Screenshot the square card for a social post. The post text updates with your class's results. Edit freely, then click Copy.">
+  <div class="kicker">Share the conversation</div>
+  <h2 style="font-size:36px">Social card + ready-to-post text</h2>
+  <div class="social">
+    <div class="scard">
+      <div class="ring"></div>
+      <div class="sq">Cognitive<br><span>surrender</span></div>
+      <ul>
+        <li>AI can raise homework scores while weakening real understanding</li>
+        <li>The loss often stays hidden until the tool is gone</li>
+        <li>AI that asks questions helps; AI that gives answers can hurt</li>
+        <li id="cardLine">What would you keep human?</li>
+      </ul>
+      <div class="sf">AI Now &nbsp;|&nbsp; Episode 2</div>
+    </div>
+    <div class="post">
+      <div class="tabs">
+        <button class="btn" data-lang="en">English</button>
+        <button class="btn ghost" data-lang="ko">한국어</button>
+        <button class="btn red" id="copyBtn" style="margin-left:auto">Copy text</button>
+      </div>
+      <textarea id="postText"></textarea>
+    </div>
+  </div>
+</section>
+
+<!-- 13 SOURCES -->
+<section class="slide" data-notes="Sources for all statistics and news items in this deck.">
+  <div class="kicker">Sources</div>
+  <h2>Read more</h2>
+  <ul class="srcs">
+    <li>Futurism (Sep 2026). <a href="https://futurism.com/future-society/mit-report-ai-cognitive-surrender-students" target="_blank">MIT report finds that AI is leading to "cognitive surrender" among students</a></li>
+    <li>Mexico Business News (2026). <a href="https://mexicobusiness.news/cloudanddata/news/students-overreliance-chatbots-lead-cognitive-surrender" target="_blank">Students' overreliance on chatbots leads to a cognitive surrender</a></li>
+    <li>The New York Times via GV Wire (Sep 2026). <a href="https://gvwire.com/2026/09/15/an-mit-report-warns-ai-is-causing-cognitive-surrender-universities-are-in-a-bind/" target="_blank">An MIT report warns AI is causing "cognitive surrender"</a></li>
+    <li>FutureEd (2026). <a href="https://www.future-ed.org/math-students-may-learn-less-using-ai/" target="_blank">Math students may learn less using AI</a> (Rismanchian et al., June 2026 preprint)</li>
+    <li>The Hechinger Report (2026). <a href="https://hechingerreport.org/proof-points-ai-eroding-math-skills/" target="_blank">Proof Points: AI eroding math skills</a></li>
+    <li>Psychology Today (Jul 2026). <a href="https://www.psychologytoday.com/us/blog/the-algorithmic-mind/202607/how-childrens-brains-pay-for-ai-twice" target="_blank">How children's brains pay for AI twice</a></li>
+    <li>Education Next (2026). <a href="https://www.educationnext.org/the-penalty-students-pay-for-using-ai/" target="_blank">The penalty students pay for using AI</a></li>
+    <li>PsyPost (Jul 2026). <a href="https://www.psypost.org/is-ai-making-us-stupid-through-cognitive-offloading-new-review-explores-the-evidence/" target="_blank">Is AI making us stupid through cognitive offloading?</a></li>
+    <li>APA Monitor on Psychology (Jul 2026). <a href="https://www.apa.org/monitor/2026/07-08/ai-job-skills-thinking" target="_blank">How AI is reshaping human skills and thinking</a></li>
+    <li>Bastani, H., Bastani, O., Sungu, A., et al. (2025). Generative AI without guardrails can harm learning. <em>PNAS</em>.</li>
+  </ul>
+</section>
+
+<div id="qrOverlay"><img id="qrBig" alt="QR code to join"><div><div style="font-size:22px;opacity:.8">Scan, or go to</div><div id="qrUrl" style="font-size:26px;font-weight:700;margin:8px 0 26px"></div><div style="font-size:22px;opacity:.8">Room code</div><div class="code" id="qrCode"></div><div style="font-size:14px;opacity:.6;margin-top:24px">Press Q or click to close</div></div></div>
+<div id="notes"></div>
+<div id="foot"><span id="count"></span><span id="liveChip"><span class="dot"></span>LIVE <b id="liveCode"></b><span id="livePeople"></span></span><div class="ctrls"><button id="goLive">Go live (ClassLive)</button><button id="qBtn" style="display:none">QR (Q)</button><button id="nBtn">Notes (N)</button><button id="fBtn">Fullscreen (F)</button><button id="rBtn">Reset votes</button></div></div>
+<div id="bar"></div>
+</div></div>
+
+<script>
+(function(){
+  /* ===== Episode config ===== */
+  const KEY='ainow-ep02';
+  const ITEMS=[
+    "Formatting your reference list in APA style",
+    "Summarizing an assigned reading you haven't read yet",
+    "Generating practice quiz questions to study for an exam",
+    "Writing the first draft of a personal reflection",
+    "Checking your math homework answers after you finish",
+    "Translating a family newsletter into Spanish",
+    "Coming up with the main argument for your paper",
+    "Giving feedback on a classmate's lesson plan"
+  ];
+  const SHORT=["APA formatting","Summarize an unread reading","Practice quiz questions","Reflection first draft","Check math answers","Translate a family newsletter","Main argument for a paper","Feedback on a lesson plan"];
+  const SHORT_KO=["APA 형식 정리","읽지 않은 자료 요약","시험 대비 연습문제 만들기","개인 성찰문 초안 쓰기","다 푼 수학 숙제 답 확인","가정통신문 스페인어 번역","페이퍼의 핵심 주장 정하기","동료의 수업 계획 피드백"];
+  const LABELS=["Hand it to AI","Do it with AI","Keep it human"];
+  const COLORS=["#5B7DB1","var(--gold)","var(--teal)"];
+  const GUESS={answer:48,bins:["0 to 20%","21 to 40%","41 to 60%","61 to 80%","81 to 100%"],mid:[10,30,50,70,90],
+    prompt:'Guess: with ChatGPT during practice, how much higher were students\' practice scores?'};
+
+  let S={polls:{},items:null,snaps:{},clUrl:'https://hyeonhoyu.github.io/ClassLive/',room:null};
+  try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+  if(!S.snaps) S.snaps={};
+  if(!S.items||S.items.length!==ITEMS.length) S.items=ITEMS.map(()=>LABELS.map(()=>0));
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+  const $=id=>document.getElementById(id);
+  const L={on:false,db:null,code:null,key:null,words:{},ref:p=>L.db.ref('rooms/'+L.code+(p?'/'+p:''))};
+
+  function liveTally(key,n){const a=Array(n).fill(0);const v=S.snaps[key];if(v&&typeof v==='object')Object.values(v).forEach(x=>{if(typeof x==='number'&&x>=0&&x<n)a[x]++;});return a;}
+  function itemCounts(i){const lv=liveTally('item'+i,LABELS.length);return S.items[i].map((m,k)=>Math.max(0,m+lv[k]));}
+
+  /* scaling */
+  const stage=$('stage');
+  function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform='scale('+s+')';}
+  addEventListener('resize',fit);fit();
+
+  /* slides */
+  const slides=[...document.querySelectorAll('.slide')];
+  let cur=0;
+  const notes=$('notes');
+  function show(i){
+    cur=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===cur));
+    $('count').textContent=(cur+1)+' / '+slides.length+'   |   Arrow keys to navigate';
+    $('bar').style.width=((cur+1)/slides.length*100)+'%';
+    notes.innerHTML=slides[cur].dataset.notes||'';
+    if(slides[cur].querySelector('#sumRows')) renderSummary();
+    if(slides[cur].querySelector('#postText')) renderPost();
+    activateLive();
+  }
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();show(cur+1);}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1);}
+    if(e.key==='n'||e.key==='N') toggleNotes();
+    if(e.key==='f'||e.key==='F') toggleFS();
+    if(e.key==='q'||e.key==='Q') toggleQR();
+    if(e.key==='Escape') $('qrOverlay').style.display='none';
+  });
+  function toggleNotes(){notes.style.display=notes.style.display==='block'?'none':'block';}
+  function toggleFS(){try{if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}catch(e){}}
+  $('nBtn').onclick=toggleNotes;$('fBtn').onclick=toggleFS;
+  const rBtn=$('rBtn');let armed=false;
+  rBtn.onclick=()=>{
+    if(!armed){armed=true;rBtn.textContent='Click again to reset';setTimeout(()=>{armed=false;rBtn.textContent='Reset votes';},2500);return;}
+    S.polls={};S.items=ITEMS.map(()=>LABELS.map(()=>0));S.snaps={};save();
+    if(L.on){L.ref('votes').remove().catch(()=>{});L.ref('words').remove().catch(()=>{});L.words={};}
+    refreshAll();armed=false;rBtn.textContent='Reset votes';
+  };
+
+  /* polls */
+  const PCOL=["var(--red)","var(--gold)","var(--teal)","var(--ink2)","#5B7DB1"];
+  function renderPoll(el){
+    const id=el.dataset.poll, opts=el.dataset.opts.split('|');
+    if(!S.polls[id]||S.polls[id].length!==opts.length) S.polls[id]=opts.map(()=>0);
+    const man=S.polls[id], lv=liveTally(id,opts.length);
+    const c=man.map((m,i)=>Math.max(0,m+lv[i]));
+    const tot=c.reduce((a,b)=>a+b,0)||1, max=Math.max(...c,1);
+    el.innerHTML='';
+    opts.forEach((o,i)=>{
+      const r=document.createElement('div');r.className='opt';
+      r.innerHTML='<div class="lab">'+o+'</div><div class="track"><div class="fill" style="background:'+PCOL[i%PCOL.length]+';width:'+(c[i]/max*100)+'%"></div></div><div class="num">'+c[i]+'</div><div class="pm"><button data-d="-1">-</button><button data-d="1">+</button></div>';
+      r.title=Math.round(c[i]/tot*100)+'%';
+      r.onclick=e=>{const d=e.target.dataset.d?+e.target.dataset.d:1;man[i]=Math.max(-lv[i],man[i]+d);save();renderPoll(el);};
+      el.appendChild(r);
+    });
+  }
+  const renderPolls=()=>document.querySelectorAll('[data-poll]').forEach(renderPoll);
+  renderPolls();
+
+  document.querySelectorAll('.card,.ccard').forEach(c=>c.onclick=()=>c.classList.toggle('open'));
+
+  /* guess */
+  const gs=$('gslider'),gauge=$('gauge'),gval=$('gval'),glbl=$('glbl'),gbox=$('gbox');
+  let revealed=false;
+  function setGauge(v,col){gauge.style.background='conic-gradient('+col+' '+(v*3.6)+'deg,var(--paper2) 0deg)';gval.textContent=Math.round(v)+'%';}
+  gs.oninput=()=>{revealed=false;setGauge(+gs.value,'var(--ink2)');glbl.textContent='Class guess';gbox.style.display='none';};
+  setGauge(50,'var(--ink2)');
+  $('greveal').onclick=()=>{
+    revealed=true;const guess=+gs.value,A=GUESS.answer;let v=0;glbl.textContent='Actual';
+    const t=setInterval(()=>{v+=1.5;if(v>=A){v=A;clearInterval(t);}setGauge(v,'var(--red)');},16);
+    const d=guess-A;
+    $('gdiff').textContent='Class guess: '+guess+'%  ('+(d===0?'exactly right!':(Math.abs(d)+' points '+(d>0?'too high':'too low')))+')';
+    gbox.style.display='block';
+  };
+  $('greset').onclick=()=>{gs.value=50;gs.oninput();};
+  function renderGuessLive(){
+    const t=liveTally('guess',5),n=t.reduce((a,b)=>a+b,0),box=$('gbins');
+    if(!n){box.style.display='none';return;}
+    box.style.display='flex';const mx=Math.max(...t);
+    box.innerHTML=t.map((c,i)=>'<div style="height:'+(c/mx*100)+'%"><em>'+c+'</em><span>'+GUESS.bins[i].replace(' to ','-')+'</span></div>').join('');
+    if(!revealed){const avg=Math.round(t.reduce((a,c,i)=>a+c*GUESS.mid[i],0)/n);gs.value=avg;setGauge(avg,'var(--ink2)');glbl.textContent='Class guess ('+n+')';}
+  }
+
+  /* items activity */
+  let ii=0;
+  const pct=c=>{const n=c.reduce((a,b)=>a+b,0);return n?c.map(x=>x/n*100):null;};
+  function stackHTML(c,showPct){const p=pct(c);if(!p)return '<div class="seg empty">No votes yet</div>';
+    return p.map((v,k)=>v>0?'<div class="seg" style="width:'+v+'%;background:'+COLORS[k]+'">'+(showPct&&v>=9?Math.round(v)+'%':'')+'</div>':'').join('');}
+  function renderItem(){
+    $('itemN').textContent=ii+1;$('itemT').textContent=ITEMS[ii];
+    const dots=$('itemDots');dots.innerHTML='';
+    ITEMS.forEach((_,i)=>{const b=document.createElement('button');b.className='d'+(i===ii?' on':'')+(itemCounts(i).some(x=>x)?' done':'');b.textContent=i+1;b.onclick=()=>{ii=i;renderItem();activateLive();};dots.appendChild(b);});
+    const B=$('itemB');B.innerHTML='';
+    const cnt=itemCounts(ii),lv=liveTally('item'+ii,LABELS.length);
+    LABELS.forEach((l,k)=>{
+      const d=document.createElement('div');d.className='bucket';d.style.background=COLORS[k];
+      d.innerHTML='<button class="minus">-</button><div class="bn">'+cnt[k]+'</div><div class="bl">'+l+'</div>';
+      d.onclick=e=>{const dec=e.target.classList.contains('minus');S.items[ii][k]=Math.max(-lv[k],S.items[ii][k]+(dec?-1:1));save();renderItem();};
+      B.appendChild(d);
+    });
+    $('itemStk').innerHTML=stackHTML(cnt,true);
+    const n=cnt.reduce((a,b)=>a+b,0);
+    $('itemCount').textContent=n?n+' votes':(L.on?'Waiting for phone votes...':'Tap a box to record votes');
+  }
+  $('itemPrev').onclick=()=>{ii=(ii+ITEMS.length-1)%ITEMS.length;renderItem();activateLive();};
+  $('itemNext').onclick=()=>{if(ii===ITEMS.length-1)show(cur+1);else{ii++;renderItem();activateLive();}};
+  renderItem();
+
+  function entropy(c){const p=pct(c);if(!p)return -1;return -p.reduce((a,v)=>v>0?a+(v/100)*Math.log(v/100):a,0);}
+  function mostSplit(){let best=-1,bi=-1;ITEMS.forEach((_,i)=>{const c=itemCounts(i);if(c.reduce((a,b)=>a+b,0)>1){const e=entropy(c);if(e>best){best=e;bi=i;}}});return bi;}
+  function keepScore(i){const p=pct(itemCounts(i));return p?p[2]-p[0]:null;}
+  function mostKept(){let best=-1e9,bi=-1;ITEMS.forEach((_,i)=>{const k=keepScore(i);if(k!==null&&k>best){best=k;bi=i;}});return bi;}
+  function mostHanded(){let best=1e9,bi=-1;ITEMS.forEach((_,i)=>{const k=keepScore(i);if(k!==null&&k<best){best=k;bi=i;}});return bi;}
+  function renderSummary(){
+    const box=$('sumRows');box.innerHTML='';const sp=mostSplit();
+    const order=ITEMS.map((_,i)=>i).sort((a,b)=>{const ka=keepScore(a),kb=keepScore(b);if(ka===null)return 1;if(kb===null)return -1;return kb-ka;});
+    let any=false;
+    order.forEach(i=>{const c=itemCounts(i);if(c.some(x=>x))any=true;
+      const r=document.createElement('div');r.className='srow2'+(i===sp?' divided':'');
+      r.innerHTML='<div class="st">'+(i+1)+'. '+SHORT[i]+'</div><div class="stk">'+stackHTML(c,true)+'</div>';
+      box.appendChild(r);});
+    $('sumNote').textContent=any?(sp>=0?'Most split: "'+SHORT[sp]+'". What is this task supposed to teach?':''):'No votes yet. Go back to the activity to record votes.';
+  }
+
+  /* timer */
+  let total=240,left=240,tick=null;
+  const clock=$('clock'),timerEl=$('timer'),tgo=$('tgo');
+  const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  function stopT(){clearInterval(tick);tick=null;tgo.textContent='Start';}
+  document.querySelectorAll('.timer [data-m]').forEach(b=>b.onclick=()=>{stopT();total=left=+b.dataset.m*60;clock.textContent=fmt(left);timerEl.classList.remove('done');});
+  tgo.onclick=()=>{if(tick){stopT();return;}if(left<=0){left=total;timerEl.classList.remove('done');}tgo.textContent='Pause';
+    tick=setInterval(()=>{left--;clock.textContent=fmt(Math.max(0,left));if(left<=0){stopT();timerEl.classList.add('done');}},1000);};
+  $('treset').onclick=()=>{stopT();left=total;clock.textContent=fmt(left);timerEl.classList.remove('done');};
+
+  /* ===== ClassLive live mode ===== */
+  const FIREBASE_CONFIG={
+    apiKey:"AIzaSyBQsu2DyivPHcBFpybIPZrD5DlL89yC_Ws",
+    authDomain:"claive-de74a.firebaseapp.com",
+    databaseURL:"https://claive-de74a-default-rtdb.firebaseio.com",
+    projectId:"claive-de74a",
+    storageBucket:"claive-de74a.firebasestorage.app",
+    messagingSenderId:"298164687119",
+    appId:"1:298164687119:web:01b074ab6951abdc29ee7a"
+  };
+  const CODE_CHARS="ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const rand=(n,ch)=>Array.from({length:n},()=>ch[Math.floor(Math.random()*ch.length)]).join('');
+  const goBtn=$('goLive');
+  const joinUrl=()=>S.clUrl.split(/[?#]/)[0]+'?room='+L.code;
+  const prettyUrl=()=>S.clUrl.replace(/^https?:\/\//,'').replace(/[?#].*$/,'').replace(/\/$/,'');
+  const qrSrc=(u,n)=>'https://api.qrserver.com/v1/create-qr-code/?size='+n+'x'+n+'&margin=0&data='+encodeURIComponent(u);
+  function renderJoin(){
+    const q=$('qrBox'),info=$('joinInfo');
+    if(!L.on){q.innerHTML='Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.';info.innerHTML='';return;}
+    q.innerHTML='<img alt="QR code" src="'+qrSrc(joinUrl(),260)+'">';
+    info.innerHTML='Or go to <b>'+prettyUrl()+'</b><br>and enter code <b style="font-size:22px;color:var(--red);letter-spacing:.06em">'+L.code+'</b><br><a href="#" id="chgUrl" style="font-size:12px;color:var(--muted)">Change ClassLive address</a><input type="text" id="urlIn" style="display:none;width:100%;margin-top:6px;padding:6px 8px;font-size:12px;border:1px solid var(--line);border-radius:6px">';
+    $('chgUrl').onclick=e=>{e.preventDefault();const i=$('urlIn');i.style.display='block';i.value=S.clUrl;i.focus();};
+    $('urlIn').onchange=e=>{const v=e.target.value.trim();if(v){S.clUrl=v;save();renderJoin();}};
+    $('qrBig').src=qrSrc(joinUrl(),340);$('qrUrl').textContent=prettyUrl();$('qrCode').textContent=L.code;
+  }
+  function toggleQR(){if(!L.on)return;const o=$('qrOverlay');o.style.display=o.style.display==='flex'?'none':'flex';}
+  $('qrOverlay').onclick=toggleQR;$('qBtn').onclick=toggleQR;
+  function renderCloud(){
+    const box=$('cloud'),counts={};
+    Object.values(L.words||{}).forEach(w=>{if(w&&w.t){const t=String(w.t).trim().toLowerCase();if(t)counts[t]=(counts[t]||0)+1;}});
+    const items=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,45);
+    if(!items.length){box.innerHTML='<span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">'+(L.on?'Waiting for words...':'Words will appear here as people send them.')+'</span>';return;}
+    const mx=items[0][1],pal=['var(--red)','var(--ink)','var(--teal)','#C98A1B','var(--ink2)'];
+    const sh=items.map((it,i)=>({it,i,r:(i*7919)%items.length})).sort((a,b)=>a.r-b.r);
+    box.innerHTML='';
+    sh.forEach(({it,i})=>{const s=document.createElement('span');s.textContent=it[0];s.style.fontSize=(18+Math.round((it[1]/mx)*58))+'px';s.style.color=pal[i%pal.length];s.title=it[1];box.appendChild(s);});
+  }
+  function refreshAll(){renderPolls();renderItem();renderGuessLive();renderCloud();if(slides[cur].querySelector('#sumRows'))renderSummary();if(slides[cur].querySelector('#postText'))renderPost();}
+  async function goLive(){
+    if(L.on){toggleQR();return;}
+    if(typeof firebase==='undefined'){goBtn.textContent='No internet: live unavailable';return;}
+    goBtn.textContent='Connecting...';
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      L.db=firebase.database();
+      let code=null,hostKey=null;
+      if(S.room&&S.room.code){
+        const m=(await L.db.ref('rooms/'+S.room.code+'/meta').get()).val();
+        if(m&&m.hostKey===S.room.hostKey){code=S.room.code;hostKey=S.room.hostKey;}
+      }
+      if(!code){
+        for(let i=0;i<6;i++){code=rand(5,CODE_CHARS);if(!(await L.db.ref('rooms/'+code+'/meta').get()).val())break;}
+        hostKey=rand(16,'abcdefghijklmnopqrstuvwxyz0123456789');
+        const first=slides[1].dataset.prompt||'Share one word.';
+        await L.db.ref('rooms/'+code+'/meta').set({
+          activity:'words',
+          prompts:{words:first,notes:'Share one idea.',poll:'Which option do you choose?',qa:'What questions do you have?',quiz:''},
+          pollOptions:['Yes','No'],locked:false,showResults:false,hostKey,created:firebase.database.ServerValue.TIMESTAMP
+        });
+        S.snaps={};
+      }
+      L.code=code;S.room={code,hostKey};save();
+      L.on=true;document.body.classList.add('live');
+      $('liveCode').textContent=code;$('liveChip').style.display='inline-flex';$('qBtn').style.display='';goBtn.style.display='none';
+      L.ref('people').on('value',s=>{const n=s.val()?Object.keys(s.val()).length:0;$('livePeople').textContent='  |  '+n+' joined';});
+      L.ref('votes').on('value',s=>{if(L.key){S.snaps[L.key]=s.val()||{};save();refreshAll();}});
+      L.ref('words').on('value',s=>{L.words=s.val()||{};renderCloud();});
+      renderJoin();L.key=null;L.last=null;activateLive();
+    }catch(err){console.log('[AI Now] live error',err);goBtn.textContent='Could not connect. Retry';L.on=false;}
+  }
+  goBtn.onclick=goLive;
+  function pollSpec(){
+    const d=slides[cur].dataset.live;if(!d)return null;
+    if(d==='words') return {words:true,prompt:slides[cur].dataset.prompt};
+    if(d==='items') return {key:'item'+ii,prompt:'Task '+(ii+1)+' of '+ITEMS.length+': '+ITEMS[ii]+'. Who should do it?',opts:LABELS};
+    const id=d.split(':')[1];
+    if(id==='guess') return {key:'guess',prompt:GUESS.prompt,opts:GUESS.bins};
+    const el=slides[cur].querySelector('[data-poll]');
+    const h2=slides[cur].querySelector('h2').cloneNode(true);h2.querySelectorAll('br').forEach(b=>b.replaceWith(' '));
+    return {key:id,prompt:h2.textContent.replace(/\s+/g,' ').trim(),opts:el.dataset.opts.split('|')};
+  }
+  async function activateLive(){
+    if(!L.on)return;
+    const p=pollSpec();const sig=p?(p.words?'words':p.key):'locked';
+    if(sig===L.last)return;L.last=sig;
+    try{
+      if(!p){await L.ref('meta').update({locked:true});return;}
+      if(p.words){L.key=null;await L.ref('meta').update({activity:'words','prompts/words':p.prompt,locked:false,showResults:true});return;}
+      L.key=p.key;
+      await L.ref('votes').set(S.snaps[p.key]&&Object.keys(S.snaps[p.key]).length?S.snaps[p.key]:null);
+      await L.ref('meta').update({activity:'poll','prompts/poll':p.prompt,pollOptions:p.opts,locked:false,showResults:false});
+    }catch(err){console.log('[AI Now] update error',err);}
+  }
+
+  /* social post */
+  let lang='en';
+  function classLines(){
+    const sp=mostSplit(),kp=mostKept(),hd=mostHanded();
+    if(kp<0) return null;
+    const p=i=>pct(itemCounts(i));
+    return {
+      en:'What our class would keep human most: "'+SHORT[kp]+'" ('+Math.round(p(kp)[2])+'%). Most willing to hand to AI: "'+SHORT[hd]+'". '+(sp>=0?'We split most on "'+SHORT[sp]+'".':''),
+      ko:'우리 반이 가장 "사람이 직접" 해야 한다고 본 일은 "'+SHORT_KO[kp]+'"('+Math.round(p(kp)[2])+'%), AI에게 가장 맡기고 싶어 한 일은 "'+SHORT_KO[hd]+'"였습니다. '+(sp>=0?'의견이 가장 갈린 항목은 "'+SHORT_KO[sp]+'"였습니다.':'')
+    };
+  }
+  function renderPost(){
+    const cl=classLines();
+    $('cardLine').textContent=cl?('Our class would keep human: '+SHORT[mostKept()]):'What would you keep human?';
+    const en=[
+      'Is AI making us think less?',
+      '',
+      'An MIT committee recently warned about "cognitive surrender": students reaching for AI at the first hint of struggle, which creates an illusion of learning.',
+      '',
+      'The research we discussed in class today:',
+      '- With ChatGPT during practice, high school students scored 48% higher on practice problems, then 17% lower on the exam once access was removed (Wharton, PNAS 2025).',
+      '- After ChatGPT arrived, students spent about 30% less time on math word problems, and their proctored exam performance on those problems fell (UC Irvine, 2026).',
+      '- But carefully designed AI tutors that ask questions instead of giving answers have improved learning.',
+      '',
+      'Then we sorted 8 everyday tasks: hand it to AI, do it with AI, or keep it human.',
+      cl?cl.en:'',
+      '',
+      'My takeaway: faster is not the same as learning. The question is not whether to use AI, but what we stop doing when we use it.',
+      '',
+      'What is one skill you want to keep, even if AI can do it for you?',
+      '',
+      '#AIinEducation #CriticalThinking #TeacherEducation #AILiteracy'
+    ].filter((l,i)=>!(i===10&&!l)).join('\n');
+    const ko=[
+      'AI가 우리를 덜 생각하게 만들고 있을까?',
+      '',
+      '최근 MIT 위원회는 "인지적 항복(cognitive surrender)"을 경고했습니다. 조금만 막혀도 바로 AI를 찾게 되고, 그 결과 배웠다는 착각만 남는다는 것입니다.',
+      '',
+      '오늘 수업에서 함께 본 연구들:',
+      '- 연습 때 ChatGPT를 쓴 고등학생들은 연습문제 점수가 48% 높았지만, AI 없이 본 시험에서는 한 번도 쓰지 않은 학생들보다 17% 낮았습니다 (Wharton, PNAS 2025).',
+      '- ChatGPT 등장 이후 학생들이 수학 문장제에 쓰는 시간은 약 30% 줄었고, 감독 시험에서 해당 문제 성적은 떨어졌습니다 (UC Irvine, 2026).',
+      '- 반면 답 대신 질문을 던지도록 설계된 AI 튜터는 학습 성과를 높였습니다.',
+      '',
+      '이어서 일상적인 과제 8가지를 "AI에게 맡긴다 / AI와 함께 한다 / 내가 직접 한다"로 나눠 보았습니다.',
+      cl?cl.ko:'',
+      '',
+      '제 결론: 빨라지는 것과 배우는 것은 다릅니다. AI를 쓸지 말지보다, AI를 쓰면서 우리가 무엇을 하지 않게 되는지가 더 중요한 질문입니다.',
+      '',
+      'AI가 대신해 줄 수 있어도 계속 잘하고 싶은 능력 하나는 무엇인가요?',
+      '',
+      '#AI교육 #비판적사고 #교사교육 #AI리터러시'
+    ].filter((l,i)=>!(i===10&&!l)).join('\n');
+    $('postText').value=lang==='en'?en:ko;
+  }
+  document.querySelectorAll('.tabs [data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;document.querySelectorAll('.tabs [data-lang]').forEach(x=>x.classList.toggle('ghost',x!==b));renderPost();});
+  $('copyBtn').onclick=()=>{
+    const ta=$('postText'),btn=$('copyBtn');
+    const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy text',1500);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done();});}
+    else{ta.select();document.execCommand('copy');done();}
+  };
+
+  renderGuessLive();
+  show(0);
+})();
+</script>
+</body>
+</html>
