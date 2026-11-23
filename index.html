@@ -167,6 +167,12 @@ body{margin:0; height:100%; overflow:hidden; background:var(--sea); color:var(--
 .pdframe{background:#f4efe6}
 .pdlede{margin:.1rem 0 .6rem; font-family:var(--serif); line-height:1.5}
 .pdcard.soon{opacity:.7}
+.pdtabs{display:flex; gap:8px; flex-wrap:wrap; margin:.2rem 0 .5rem}
+.pdtab{font:inherit; font-family:var(--display); font-weight:700; font-size:.95rem; padding:8px 14px; border-radius:999px; border:2px solid var(--c); background:transparent; color:var(--ink); cursor:pointer}
+.pdtab span{font-weight:400; font-size:.8rem; color:var(--muted); margin-left:4px}
+.pdtab[aria-selected="true"]{background:var(--c); color:#fff}
+.pdtab[aria-selected="true"] span{color:rgba(255,255,255,.85)}
+.pdtab:focus-visible{outline:3px solid var(--ink); outline-offset:2px}
 .pdframe.tool{aspect-ratio:auto; height:min(640px,72vh); padding:0}
 .pdlist{display:grid; gap:14px; margin-top:6px}
 .pdcard{padding:14px 16px; border-radius:14px; background:rgba(0,0,0,.035); border-left:5px solid transparent}
@@ -319,19 +325,51 @@ const PD_WORKSHOPS = [
     blurb:"A six-part series led as an Artificial Intelligence Faculty Associate.",
     parts:["Getting Started with AI in the Classroom","AI for Lesson Design and Media Creation","Responsible and Equitable Use of AI","Building Assignments and Policies for AI-Empowered Learning","Understanding Students' Perspective in the AI Era","AI-Assisted Assessment and Feedback"] },
 ];
-// Interactive lecture series shown at the top of the PD Lab. Add each new episode to the end of episodes.
-// Put the episode's HTML file in the pd folder. Episodes without a file show as "Coming soon".
+// Interactive lecture series shown at the top of the PD Lab, organized by season.
+// Put each episode's HTML file in the pd folder and add it to that season's episodes.
+// An episode without file shows as Coming soon. To start a new season, copy a season block and change its name.
 const PD_SERIES = [
   { title:"AI Now: Thinking Together About AI",
-    text:"An interactive lecture series on AI issues in the news. Each episode mixes a short news brief with live polls, guessing games, and discussion. Students can join from their phones through ClassLive.",
-    episodes:[
-      { n:1, title:"Is This Cheating?", when:"November 2026",
-        blurb:"AI, academic integrity, and why drawing the line has become so hard. Includes a Cheating Spectrum activity with eight everyday AI uses, a detector dilemma, and a shareable social card built from the class results.",
-        file:"pd/ainow-ep01-is-this-cheating.html" },
-      { n:2, title:"Cognitive Surrender", when:"November 2026",
-        blurb:"What do we lose when we hand our thinking to AI? Covers the difference between healthy offloading and surrender, a Delegate or Keep? activity with eight tasks, an anonymous self-check, and how to design assignments where AI makes students think more, not less.",
-        file:"pd/ainow-ep02-cognitive-surrender.html" },
-      { n:3, title:"The Vanishing First Job", blurb:"How is AI changing entry-level work?" },
+    text:"An interactive lecture series on AI issues in the news, made for future teachers. Each episode pairs a short news brief with live polls, a guessing game, a class activity, and a partner discussion. Students join from their phones through ClassLive.",
+    seasons:[
+    { name:"Season 1", text:"AI in the headlines: cheating, thinking, jobs, companions, rules, agents, deepfakes, and how learning itself should change.",
+      episodes:[
+      { n:1, title:"Is This Cheating?", file:"pd/ainow-ep01-is-this-cheating.html",
+        blurb:"AI, academic integrity, and why drawing the line has become so hard. Students place eight everyday AI uses on a Cheating Spectrum and weigh what to do when a detector flags a student who says they wrote the essay." },
+      { n:2, title:"Cognitive Surrender", file:"pd/ainow-ep02-cognitive-surrender.html",
+        blurb:"What do we lose when AI does the thinking for us? Covers healthy offloading versus surrender, a Delegate or Keep? activity with eight tasks, and an anonymous self-check on warning signs." },
+      { n:3, title:"The Vanishing First Job", file:"pd/ainow-ep03-vanishing-first-job.html",
+        blurb:"How AI is reshaping entry-level work. Students predict what happens to eight first jobs over the next five years, then zoom in on which parts of teaching they would hand to AI." },
+      { n:4, title:"AI as a Friend?", file:"pd/ainow-ep04-ai-as-a-friend.html",
+        blurb:"Teens, AI companions, and mental health. Students look at why companions feel so good and where it gets risky, design the safeguards a safer companion would need, and plan how to respond when a student shares an AI chat." },
+      { n:5, title:"Who Makes the Rules?", file:"pd/ainow-ep05-who-makes-the-rules.html",
+        blurb:"Europe, Washington, and the states are writing AI rules very differently. Students compare three models for governing AI and vote as lawmakers on real kinds of proposals." },
+      { n:6, title:"When AI Acts on Its Own", file:"pd/ainow-ep06-when-ai-acts-on-its-own.html",
+        blurb:"AI agents click, buy, send, and submit. Students build a delegation ladder for how much they would let an agent do and decide who is responsible when an agent makes a costly mistake." },
+      { n:7, title:"Real or Fake?", file:"pd/ainow-ep07-real-or-fake.html",
+        blurb:"Deepfakes, AI-generated media, and what to trust when your eyes are not enough. Students decide what they would do with eight posts and plan a first step when a deepfake targets a classmate." },
+      { n:8, title:"Redesigning Learning", file:"pd/ainow-ep08-redesigning-learning.html",
+        blurb:"The Season 1 finale: assessment, AI literacy, and policy. The class drafts its own AI policy statement by statement and looks back on which issue matters most for future teachers." },
+      ] },
+    { name:"Season 2", text:"AI and fairness in schools: access, student data, bias, copyright, energy, tutoring, special education, and growing up with AI.",
+      episodes:[
+      { n:1, title:"The New AI Divide", file:"pd/ainow-s2e01-the-new-ai-divide.html",
+        blurb:"Who gets to learn with AI, who gets left behind, and what teachers can do about it. Students rank priorities for closing the gap and plan a first step for a school with no AI policy and few devices." },
+      { n:2, title:"Who Owns Student Data?", file:"pd/ainow-s2e02-who-owns-student-data.html",
+        blurb:"AI tools learn from everything students type, say, and do. Students learn three questions to ask any AI tool, decide which apps they would use with students, and weigh who should check privacy practices." },
+      { n:3, title:"Is AI Fair?", file:"pd/ainow-s2e03-is-ai-fair.html",
+        blurb:"Bias in AI feedback, grading, hiring, and detection. Students look at where AI bias comes from, judge eight cases as fair or not, and choose safeguards for using AI to draft feedback." },
+      { n:4, title:"Whose Work Is It?", file:"pd/ainow-s2e04-whose-work-is-it.html",
+        blurb:"AI, copyright, and creativity. Students explore the questions courts are asking, decide which uses of AI-made and AI-trained work are OK, and debate who should own an AI-assisted student project." },
+      { n:5, title:"The Hidden Cost of AI", file:"pd/ainow-s2e05-the-hidden-cost-of-ai.html",
+        blurb:"Energy, water, and the communities where AI actually lives. Students see why a small cost per use adds up, judge which AI uses are worth the energy, and decide what they would ask before a data center comes to town." },
+      { n:6, title:"The Promise of AI Tutors", file:"pd/ainow-s2e06-the-promise-of-ai-tutors.html",
+        blurb:"A personal tutor for every student? Students look at what the newest experiments show, compare three kinds of AI tutor, and write the class rules a good tutor should follow." },
+      { n:7, title:"AI and Special Education", file:"pd/ainow-s2e07-ai-and-special-education.html",
+        blurb:"Access tools, paperwork, and the decisions that must stay human. Students sort where AI should and should not help in special education and share what worries them most." },
+      { n:8, title:"Growing Up with AI", file:"pd/ainow-s2e08-growing-up-with-ai.html",
+        blurb:"The Season 2 finale: young children, AI toys, and the ethics teachers model. The class writes a teacher AI code using three tests for a teacher's own AI use and looks back on the season." },
+      ] },
     ] },
 ];
 // Classroom tools Henry built, shown in the PD Lab. file opens the tool right in the panel.
@@ -611,7 +649,7 @@ const PLACES = {
     name:"PD Lab", title:"AI Professional Development", color:"#c56d8f",
     lede:"AI workshops and lecture series Henry has led for faculty, teachers, and future teachers, newest first. Sessions with slides open right here.",
     html:()=>{
-      const decks=PD_WORKSHOPS.filter(x=>x.file).length+PD_TOOLS.filter(x=>x.file).length+PD_SERIES.reduce((a,z)=>a+z.episodes.filter(e=>e.file).length,0);
+      const decks=PD_WORKSHOPS.filter(x=>x.file).length+PD_TOOLS.filter(x=>x.file).length+PD_SERIES.reduce((a,z)=>a+z.seasons.reduce((c,ss)=>c+ss.episodes.filter(e=>e.file).length,0),0);
       const years=[...new Set(PD_WORKSHOPS.map(x=>x.year))];
       const card=(x,i)=>`
         <article class="pdcard" id="pdcard-w${i}">
@@ -631,13 +669,17 @@ const PLACES = {
       ${PD_SERIES.map((z,si)=>`<section class="pdyear pdseries" aria-label="${z.title}">
         <h3>${z.title}</h3>
         <p class="pdlede">${z.text}</p>
-        <div class="pdlist">${z.episodes.map((e,ei)=>`<article class="pdcard${e.file?'':' soon'}" id="pdcard-s${si}_${ei}">
-          <p class="pdmeta">Episode ${e.n}${e.when?` <span>${e.when}</span>`:''}</p>
-          <h4>${e.title}</h4>
-          ${e.blurb?`<p>${e.blurb}</p>`:''}
-          ${e.file?`<div class="pdbtns"><button class="btn pdshow" data-k="s${si}_${ei}">View the slides here</button>
-            <a class="btn alt" href="${e.file}" target="_blank" rel="noopener">Open full screen</a></div>`:'<p class="pdaud">Coming soon</p>'}
-        </article>`).join('')}</div>
+        <div class="pdtabs" role="tablist" aria-label="${z.title} seasons">${z.seasons.map((ss,ni)=>`<button class="pdtab" role="tab" id="pdtab-${si}_${ni}" aria-controls="pdseason-${si}_${ni}" aria-selected="${ni===0}" data-s="${si}" data-n="${ni}">${ss.name} <span>${ss.episodes.length} episodes</span></button>`).join('')}</div>
+        ${z.seasons.map((ss,ni)=>`<div class="pdseason" role="tabpanel" id="pdseason-${si}_${ni}" aria-labelledby="pdtab-${si}_${ni}"${ni===0?'':' hidden'}>
+          <p class="pdlede">${ss.text}</p>
+          <div class="pdlist">${ss.episodes.map((e,ei)=>`<article class="pdcard${e.file?'':' soon'}" id="pdcard-s${si}_${ni}_${ei}">
+            <p class="pdmeta">${ss.name}, Episode ${e.n}${e.when?` <span>${e.when}</span>`:''}</p>
+            <h4>${e.title}</h4>
+            ${e.blurb?`<p>${e.blurb}</p>`:''}
+            ${e.file?`<div class="pdbtns"><button class="btn pdshow" data-k="s${si}_${ni}_${ei}">View the slides here</button>
+              <a class="btn alt" href="${e.file}" target="_blank" rel="noopener">Open full screen</a></div>`:'<p class="pdaud">Coming soon</p>'}
+          </article>`).join('')}</div>
+        </div>`).join('')}
       </section>`).join('')}
       ${years.map(y=>`<section class="pdyear" aria-label="${y}">
         <h3>${y}</h3>
@@ -714,7 +756,7 @@ function renderPanel(k){
 }
 /* ---------- PD Lab: slide deck viewer ---------- */
 function showPD(k, scroll){
-  let x; if(k[0]==='s'){ const [a,b]=k.slice(1).split('_').map(Number); x=PD_SERIES[a]&&PD_SERIES[a].episodes[b]; } else x=(k[0]==='t'?PD_TOOLS:PD_WORKSHOPS)[+k.slice(1)];
+  let x; if(k[0]==='s'){ const [a,n,b]=k.slice(1).split('_').map(Number); x=PD_SERIES[a]&&PD_SERIES[a].seasons[n]&&PD_SERIES[a].seasons[n].episodes[b]; showSeason(a,n); } else x=(k[0]==='t'?PD_TOOLS:PD_WORKSHOPS)[+k.slice(1)];
   const fr=document.getElementById('pdframe'); if(!x||!x.file||!fr) return;
   const tool=k[0]==='t';
   fr.classList.toggle('tool',tool);
@@ -724,10 +766,15 @@ function showPD(k, scroll){
   document.querySelectorAll('.pdcard').forEach(c=>c.classList.toggle('on',c.id==='pdcard-'+k));
   if(scroll) fr.scrollIntoView({block:'start', behavior: REDUCE?'auto':'smooth'});
 }
+function showSeason(a,n){
+  document.querySelectorAll('.pdtab[data-s="'+a+'"]').forEach(b=>b.setAttribute('aria-selected', String(+b.dataset.n===n)));
+  document.querySelectorAll('[id^="pdseason-'+a+'_"]').forEach(p=>{ p.hidden = p.id!=='pdseason-'+a+'_'+n; });
+}
 function setupPD(){
   document.querySelectorAll('.pdshow').forEach(b=>b.addEventListener('click',()=>showPD(b.dataset.k,true)));
   const w=PD_WORKSHOPS.findIndex(x=>x.file), t=PD_TOOLS.findIndex(x=>x.file);
-  let sk=null; PD_SERIES.forEach((z,a)=>z.episodes.forEach((e,b)=>{ if(e.file) sk='s'+a+'_'+b; }));
+  document.querySelectorAll('.pdtab').forEach(b=>b.addEventListener('click',()=>showSeason(+b.dataset.s,+b.dataset.n)));
+  let sk=null; PD_SERIES.some((z,a)=>z.seasons.some((ss,n)=>ss.episodes.some((e,b)=>{ if(e.file){ sk='s'+a+'_'+n+'_'+b; return true; } })));
   if(sk) showPD(sk,false); else if(w>=0) showPD('w'+w,false); else if(t>=0) showPD('t'+t,false);
 }
 /* ---------- Cinema: playlist player with a video list ---------- */

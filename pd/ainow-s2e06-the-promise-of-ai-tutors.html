@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Now, Season 2 Episode 6: The Promise of AI Tutors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --paper:#F4F1EA; --paper2:#EAE5D9; --ink:#14213D; --ink2:#3D4A66; --muted:#7A8294;
+    --red:#E4572E; --teal:#2A9D8F; --gold:#E9B44C; --line:#D6CFBF;
+    --s1:#2A9D8F; --s2:#8CB369; --s3:#E9B44C; --s4:#F08A4B; --s5:#E4572E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0f1729;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:var(--ink)}
+  #viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  #stage{flex:none;width:1280px;height:720px;position:relative;background:var(--paper);transform-origin:center center;box-shadow:0 20px 80px rgba(0,0,0,.45);overflow:hidden}
+  .slide{position:absolute;inset:0;padding:56px 72px 70px;display:none;flex-direction:column}
+  .slide.active{display:flex;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em}
+  h1{font-size:76px;line-height:1.02;font-weight:800}
+  h2{font-size:44px;line-height:1.1;font-weight:800;margin-bottom:10px}
+  h3{font-size:22px;font-weight:600}
+  .kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+  .sub{font-size:20px;color:var(--ink2);line-height:1.45}
+  .small{font-size:13px;color:var(--muted)}
+  .row{display:flex;gap:28px}
+  .grow{flex:1}
+  button{font-family:inherit;cursor:pointer}
+  .btn{border:2px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:999px;padding:10px 20px;font-weight:700;font-size:15px;transition:transform .1s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn.red{background:var(--red);border-color:var(--red)}
+  .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--paper)}
+
+  /* chrome */
+  #bar{position:absolute;left:0;bottom:0;height:5px;background:var(--red);transition:width .3s}
+  #foot{position:absolute;left:72px;right:72px;bottom:20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);z-index:5}
+  #foot .ctrls{display:flex;gap:8px}
+  #foot button{background:transparent;border:1px solid var(--line);color:var(--ink2);border-radius:6px;padding:4px 10px;font-size:12px}
+  #notes{position:absolute;right:16px;top:16px;width:380px;max-height:300px;overflow:auto;background:var(--ink);color:#E8ECF5;padding:16px 18px;border-radius:12px;font-size:14px;line-height:1.5;display:none;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  #notes b{color:var(--gold)}
+
+  /* title */
+  .title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative}
+  .title-wrap .series{font-family:Fraunces,serif;font-size:22px;color:var(--ink2);margin-bottom:18px}
+  .title-wrap h1 span{color:var(--red)}
+  .big-q{position:absolute;right:-20px;top:40px;font-family:Fraunces,serif;font-size:420px;font-weight:800;color:var(--paper2);line-height:1;z-index:0}
+  .title-wrap > *:not(.big-q){position:relative;z-index:1}
+
+  /* poll */
+  .poll{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+  .opt{display:grid;grid-template-columns:260px 1fr 70px 76px;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 18px;cursor:pointer;user-select:none;transition:border-color .15s}
+  .opt:hover{border-color:var(--ink)}
+  .opt .lab{font-weight:600;font-size:18px}
+  .opt .track{height:22px;background:var(--paper2);border-radius:999px;overflow:hidden}
+  .opt .fill{height:100%;width:0;border-radius:999px;transition:width .35s ease}
+  .opt .num{font-family:Fraunces,serif;font-size:26px;font-weight:800;text-align:right}
+  .opt .pm{display:flex;gap:6px}
+  .opt .pm button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-weight:700;font-size:16px;color:var(--ink)}
+  .hint{font-size:13px;color:var(--muted);margin-top:10px}
+
+  /* news */
+  .news{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px}
+  .card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:20px 22px;position:relative;cursor:pointer;transition:transform .15s}
+  .card:hover{transform:translateY(-2px)}
+  .card .stat{font-family:Fraunces,serif;font-size:34px;font-weight:800;color:var(--red);line-height:1;margin:8px 0 8px}
+  .card p{font-size:15px;line-height:1.45;color:var(--ink2)}
+  .card .src{position:absolute;right:18px;top:18px;font-size:11px;color:var(--muted)}
+  .card .more{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px;color:var(--ink);line-height:1.45}
+  .card.open .more{display:block}
+
+  /* guess */
+  .guess{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .gauge{width:380px;height:380px;border-radius:50%;background:conic-gradient(var(--red) 0deg,var(--paper2) 0deg);display:flex;align-items:center;justify-content:center;transition:background .2s}
+  .gauge .inner{width:290px;height:290px;border-radius:50%;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .gauge .val{font-family:Fraunces,serif;font-size:96px;font-weight:800;line-height:1}
+  .gauge .lbl{font-size:14px;color:var(--muted);margin-top:6px;letter-spacing:.1em;text-transform:uppercase}
+  input[type=range]{width:100%;accent-color:var(--ink)}
+  .reveal-box{margin-top:18px;padding:18px 20px;border-radius:14px;background:var(--ink);color:var(--paper);display:none}
+  .reveal-box b{color:var(--gold)}
+
+  /* syllabus */
+  .syl{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+  .syl .s{background:#fff;border:2px solid var(--line);border-radius:14px;padding:18px;min-height:230px;display:flex;flex-direction:column}
+  .syl .code{font-family:Fraunces,serif;font-weight:800;font-size:22px;margin-bottom:4px}
+  .syl .pol{font-size:15px;line-height:1.45;color:var(--ink2);flex:1;margin-top:10px}
+  .syl .chip{align-self:flex-start;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+
+  /* spectrum */
+  .spec-top{display:flex;justify-content:space-between;align-items:flex-end}
+  .scen{margin-top:16px;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:24px 28px;display:flex;align-items:center;gap:24px;min-height:120px}
+  .scen .n{font-family:Fraunces,serif;font-size:64px;font-weight:800;color:var(--red);line-height:1;min-width:70px}
+  .scen .t{font-size:26px;font-weight:600;line-height:1.3;flex:1}
+  .buckets{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+  .bucket{border-radius:14px;padding:14px 10px 12px;text-align:center;color:#fff;cursor:pointer;user-select:none;position:relative;transition:transform .1s}
+  .bucket:active{transform:scale(.97)}
+  .bucket .bn{font-family:Fraunces,serif;font-size:40px;font-weight:800;line-height:1}
+  .bucket .bl{font-size:13px;font-weight:700;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+  .bucket .minus{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:6px;border:none;background:rgba(255,255,255,.3);color:#fff;font-weight:800}
+  .meter{position:relative;height:16px;border-radius:999px;margin-top:26px;background:linear-gradient(90deg,var(--s1),var(--s2),var(--s3),var(--s4),var(--s5))}
+  .meter .pin{position:absolute;top:-12px;width:4px;height:40px;background:var(--ink);border-radius:2px;transform:translateX(-2px);transition:left .4s ease;display:none}
+  .meter .pin span{position:absolute;top:-28px;left:50%;transform:translateX(-50%);white-space:nowrap;font-weight:800;font-size:14px;background:var(--ink);color:var(--paper);padding:2px 8px;border-radius:6px}
+  .navdots{display:flex;gap:8px;align-items:center}
+  .navdots .d{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:13px;color:var(--ink2)}
+  .navdots .d.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .navdots .d.done{border-color:var(--teal)}
+
+  /* summary */
+  .sum{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .srow{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;align-items:center}
+  .srow .st{font-size:14px;font-weight:600;line-height:1.25}
+  .srow .str{position:relative;height:30px;border-radius:8px;background:linear-gradient(90deg,rgba(42,157,143,.15),rgba(233,180,76,.15),rgba(228,87,46,.15))}
+  .srow .whisk{position:absolute;top:13px;height:4px;background:var(--ink2);border-radius:2px;opacity:.45}
+  .srow .dot{position:absolute;top:5px;width:20px;height:20px;border-radius:50%;background:var(--ink);transform:translateX(-10px);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .srow .sv{font-family:Fraunces,serif;font-weight:800;font-size:18px;text-align:right}
+  .srow.divided .st{color:var(--red)}
+  .srow.divided .str{outline:2px solid var(--red)}
+  .axis{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .axis div:nth-child(2){display:flex;justify-content:space-between}
+
+  /* dilemma */
+  .dilemma{display:flex;gap:30px;margin-top:16px;flex:1}
+  .flag{width:380px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column}
+  .flag .pct{font-family:Fraunces,serif;font-size:88px;font-weight:800;color:var(--red);line-height:1}
+  .flag p{font-size:16px;line-height:1.5;margin-top:10px;color:#D5DBE8}
+  .dil-opts .opt{grid-template-columns:1fr 200px 56px 76px;padding:12px 16px}
+  .dil-opts .opt .lab{font-size:16px}
+
+  /* timer */
+  .qs{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+  .q{display:flex;gap:18px;align-items:flex-start;background:#fff;border:2px solid var(--line);border-radius:16px;padding:18px 22px}
+  .q .qn{font-family:Fraunces,serif;font-weight:800;font-size:34px;color:var(--teal);line-height:1}
+  .q p{font-size:20px;line-height:1.4;font-weight:500}
+  .timer{width:300px;align-self:flex-start;margin-top:16px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .timer .clock{font-family:Fraunces,serif;font-size:80px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .timer .tb{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .timer .tb button{background:transparent;border:2px solid #56627F;color:var(--paper);border-radius:999px;padding:6px 14px;font-weight:700}
+  .timer .tb button.go{background:var(--red);border-color:var(--red)}
+  .timer.done .clock{color:var(--gold);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+
+  /* takeaways */
+  .tk{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+  .tk .t{display:flex;gap:24px;align-items:center;padding:22px 26px;border-radius:18px;background:#fff;border-left:10px solid var(--red)}
+  .tk .t:nth-child(2){border-left-color:var(--gold)}
+  .tk .t:nth-child(3){border-left-color:var(--teal)}
+  .tk .t b{font-family:Fraunces,serif;font-size:26px}
+  .tk .t p{font-size:17px;color:var(--ink2);margin-top:4px;line-height:1.45}
+
+  /* social */
+  .social{display:flex;gap:30px;margin-top:10px;flex:1;min-height:0}
+  .scard{width:430px;height:430px;flex:none;background:var(--ink);color:var(--paper);border-radius:22px;padding:34px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .scard .sq{font-family:Fraunces,serif;font-size:46px;font-weight:800;line-height:1.05}
+  .scard .sq span{color:var(--red)}
+  .scard ul{list-style:none;margin-top:22px;display:flex;flex-direction:column;gap:12px}
+  .scard li{font-size:16px;line-height:1.35;padding-left:22px;position:relative;color:#D5DBE8}
+  .scard li:before{content:"";position:absolute;left:0;top:7px;width:10px;height:10px;border-radius:2px;background:var(--gold)}
+  .scard .sf{margin-top:auto;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8F9AB3}
+  .scard .ring{position:absolute;right:-70px;top:-70px;width:200px;height:200px;border-radius:50%;border:26px solid var(--red);opacity:.9}
+  .post{flex:1;display:flex;flex-direction:column;min-width:0}
+  .post .tabs{display:flex;gap:8px;margin-bottom:10px}
+  .post textarea{flex:1;width:100%;resize:none;border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-family:Inter,sans-serif;font-size:14px;line-height:1.5;background:#fff;color:var(--ink)}
+
+  /* join */
+  .join{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .qr{width:300px;height:300px;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:14px;padding:20px}
+  .qr img{width:260px;height:260px}
+  .join input[type=text]{width:100%;font-size:16px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-family:inherit;margin-top:10px}
+
+  /* live */
+  #liveChip{display:none;align-items:center;gap:8px;background:var(--ink);color:var(--paper);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700}
+  #liveChip .dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;animation:pulse 1.6s infinite}
+  #liveChip b{color:var(--gold);letter-spacing:.08em}
+  #goLive{border-color:var(--red)!important;color:var(--red)!important;font-weight:700}
+  #qrOverlay{position:absolute;inset:0;background:rgba(20,33,61,.94);display:none;align-items:center;justify-content:center;gap:56px;z-index:30;color:var(--paper)}
+  #qrOverlay img{width:340px;height:340px;background:#fff;padding:16px;border-radius:20px}
+  #qrOverlay .code{font-family:Fraunces,serif;font-size:96px;font-weight:800;letter-spacing:.08em;color:var(--gold);line-height:1}
+  .livetag{display:none;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:#1f9d6b;padding:3px 9px;border-radius:999px;vertical-align:middle}
+  body.live .livetag{display:inline-block}
+  .cloudbox{flex:1;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:6px 18px;padding:20px;overflow:hidden;min-height:0}
+  .cloudbox span{font-family:Fraunces,serif;font-weight:800;line-height:1.1}
+  .bins{display:flex;gap:6px;margin-top:16px;align-items:flex-end;height:70px}
+  .bins div{flex:1;background:var(--ink2);border-radius:6px 6px 0 0;position:relative;min-height:2px;transition:height .3s}
+  .bins div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+  .bins div em{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:11px;font-style:normal;font-weight:700}
+
+
+  /* episode 2 components */
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+  .ccard{background:#fff;border:2px solid var(--line);border-top:10px solid var(--c);border-radius:16px;padding:20px 22px;cursor:pointer;transition:transform .15s}
+  .ccard:hover{transform:translateY(-2px)}
+  .ccard .lvl{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c);margin-bottom:6px}
+  .ccard h3{font-size:24px;font-weight:800;margin-bottom:8px}
+  .ccard p{font-size:15px;line-height:1.5;color:var(--ink2)}
+  .ccard .ex{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:14px;line-height:1.45}
+  .ccard.open .ex{display:block}
+  .buckets.b3{grid-template-columns:repeat(3,1fr)}
+  .buckets.b3 .bucket{padding:18px 10px 16px}
+  .buckets.b3 .bucket .bl{font-size:16px}
+  .stk{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--paper2)}
+  .stk.big{height:40px;margin-top:22px;border-radius:12px}
+  .stk .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;transition:width .4s ease}
+  .stk .seg.empty{width:100%;color:var(--muted);font-weight:500}
+  .srow2{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:center}
+  .srow2 .st{font-size:14px;font-weight:600}
+  .srow2.divided .st{color:var(--red)}
+  .srow2.divided .stk{outline:3px solid var(--red);outline-offset:2px}
+  .legend{display:flex;gap:22px;font-size:13px;font-weight:600;color:var(--ink2);margin:4px 0 4px}
+  .legend span{display:flex;align-items:center;gap:8px}
+  .legend span:before{content:"";width:14px;height:14px;border-radius:4px;background:var(--c)}
+  .tsplit{display:grid;grid-template-columns:360px 1fr;gap:28px;margin-top:18px}
+  .tstats{display:flex;flex-direction:column;gap:12px}
+  .tstat{background:var(--ink);color:var(--paper);border-radius:14px;padding:14px 18px;display:flex;gap:14px;align-items:center}
+  .tstat b{font-family:Fraunces,serif;font-size:32px;font-weight:800;color:var(--gold);min-width:96px;line-height:1}
+  .tstat span{font-size:14px;line-height:1.4;color:#D5DBE8}
+  .tsplit .opt{grid-template-columns:230px 1fr 50px 76px;padding:11px 16px}
+  .tsplit .opt .lab{font-size:16px}
+  .care{flex:1;display:flex;gap:36px;align-items:center}
+  .care .box{flex:1;background:#fff;border:2px solid var(--line);border-left:10px solid var(--teal);border-radius:18px;padding:26px 30px}
+  .care .box p{font-size:19px;line-height:1.55;color:var(--ink2);margin-bottom:12px}
+  .care .help{width:400px;background:var(--ink);color:var(--paper);border-radius:18px;padding:26px 28px}
+  .care .help .n{font-family:Fraunces,serif;font-size:80px;font-weight:800;color:var(--gold);line-height:1}
+  .care .help p{font-size:16px;line-height:1.5;color:#D5DBE8;margin-top:10px}
+  .closing{font-family:Fraunces,serif;font-size:30px;font-weight:600;color:var(--ink);margin-top:18px}
+  /* sources */
+  .srcs{margin-top:16px;columns:2;column-gap:40px}
+  .srcs li{break-inside:avoid;margin:0 0 14px 18px;font-size:14px;line-height:1.45;color:var(--ink2)}
+  .srcs a{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+<section class="slide" data-notes="&lt;b&gt;Welcome.&lt;/b&gt; Connect to Season 1 Episode 2 (cognitive surrender): answer machines can hurt learning. Today asks whether well-designed tutors can help.">
+  <div class="title-wrap">
+    <div class="big-q" style="font-size:300px;top:90px">1:1</div>
+    <div class="series">AI Now: Thinking Together About AI &nbsp;|&nbsp; Season 2, Episode 6</div>
+    <h1>The Promise of<br><span>AI Tutors</span></h1>
+    <p class="sub" style="margin-top:22px;max-width:680px">A personal tutor for every student? What the newest experiments actually show.</p>
+    <p class="small" style="margin-top:40px">Dr. Henry Yu &nbsp;|&nbsp; Teachers College, Ball State University</p>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Join.&lt;/b&gt; Click &lt;b&gt;Go live&lt;/b&gt; once. Keep the cloud: we will compare it with what AI tutors can do." data-live="words" data-prompt="In one word, what makes a great tutor?">
+  <div class="kicker">Join from your phone<span class="livetag">LIVE</span></div>
+  <h2>In one word: what makes a great tutor?</h2>
+  <div class="join" style="margin-top:10px;align-items:stretch;min-height:0">
+    <div style="width:300px;display:flex;flex-direction:column;gap:12px">
+      <div class="qr" id="qrBox" style="height:300px">Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.</div>
+      <div id="joinInfo" style="font-size:14px;color:var(--ink2);line-height:1.5"></div>
+    </div>
+    <div class="cloudbox" id="cloud"><span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">Words will appear here as people send them.</span></div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Opening poll.&lt;/b&gt; Ask a frequent user what made it helpful or not." data-live="poll:open">
+  <div class="kicker">Warm-up poll<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>Have you ever used AI as a tutor to learn something new?</h2>
+  <div class="poll" data-poll="open" data-opts="Often|Sometimes|Once or twice|Never"></div>
+  <p class="hint">Tap a row to add hand votes. Phone votes are added automatically in live mode.</p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;News brief.&lt;/b&gt; Click each card. The big lesson: the same label &quot;AI tutor&quot; covers very different designs.">
+  <div class="kicker">The news in 3 minutes</div>
+  <h2>What the AI tutor research shows</h2>
+  <div class="news">
+    <div class="card"><span class="src">Harvard, 2025</span><span class="tag">A bright spot</span>
+      <div class="stat">More than 2x</div>
+      <p>Students learned more than twice as much in less time with a custom AI physics tutor than in an active-learning class.</p>
+      <div class="more">The tutor was built to encourage students to try first before revealing answers. The study involved 194 students at one university.</div>
+    </div>
+    <div class="card"><span class="src">NBER, 2026</span><span class="tag">A reality check</span>
+      <div class="stat">No extra gain</div>
+      <p>In a two-year trial in 18 Tennessee middle schools, Khanmigo set to coach rather than answer produced gains similar to Khan Academy practice without AI.</p>
+      <div class="more">Another NBER trial with 6,000+ middle schoolers found AI tutoring added value only with structure that turned mistakes into learning moments.</div>
+    </div>
+    <div class="card"><span class="src">Stanford, 2026</span><span class="tag">People matter</span>
+      <div class="stat">Access is not enough</div>
+      <p>In two trials, elementary students working with an in-person tutor used an AI literacy platform more and engaged more deeply.</p>
+      <div class="more">Human support increased, rather than replaced, student use of the AI tool.</div>
+    </div>
+    <div class="card"><span class="src">World Bank, 2026</span><span class="tag">Global</span>
+      <div class="stat">Mixed results</div>
+      <p>Trials in Ghana, Nigeria, and Sierra Leone found AI-supported programs raised learning, while a large trial in rural China found no gain from AI personalization.</p>
+      <div class="more">Researchers say lasting, equitable gains remain uncertain and depend on how programs are designed and run.</div>
+    </div>
+  </div>
+  <p class="hint">Click a card to reveal more.</p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Guess the number.&lt;/b&gt; Answer: about 2x. Immediately add the caveats and contrast with the Khanmigo trial." data-live="poll:guess">
+  <div class="kicker">Guess the number<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>In a Harvard physics study, how much did students learn with a carefully designed AI tutor compared with an active-learning class?</h2>
+  <div class="guess">
+    <div class="gauge" id="gauge"><div class="inner"><div class="val" id="gval">1.0x</div><div class="lbl" id="glbl">Class guess</div></div></div>
+    <div class="grow">
+      <p class="sub" style="margin-bottom:10px">Set the slider to the class's guess (times as much):</p>
+      <input type="range" id="gslider" min="0" max="4" step="0.5" value="1">
+      <div class="bins" id="gbins" style="display:none"></div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button class="btn red" id="greveal">Reveal answer</button>
+        <button class="btn ghost" id="greset">Reset</button>
+      </div>
+      <div class="reveal-box" id="gbox">
+        <b>More than 2 times</b> as much, in less time (about 49 minutes versus 60). But it was one course, two topics, and a tutor carefully built to make students think first.<br><span style="font-size:13px;opacity:.75">Source: Kestin, Miller et al., Scientific Reports (2025); Harvard Gazette</span>
+        <div id="gdiff" style="margin-top:8px;font-size:15px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Big idea.&lt;/b&gt; Click each card.">
+  <div class="kicker">Big idea</div>
+  <h2>Three kinds of AI tutor</h2>
+  <p class="sub">The design, not the label, decides whether students learn.</p>
+  <div class="cards3">
+    <div class="ccard" style="--c:var(--red)"><div class="lvl">Answer machine</div><h3>Gives answers</h3><p>Fast and convenient, but students can skip the thinking.</p><div class="ex"><b>Example:</b> Season 1: students scored higher in practice, then lower on the exam once AI was removed.</div></div>
+    <div class="ccard" style="--c:var(--gold)"><div class="lvl">Coach</div><h3>Asks questions</h3><p>Hints, guiding questions, and "try first" prompts.</p><div class="ex"><b>Example:</b> The Harvard tutor was told to encourage students to attempt problems before revealing answers.</div></div>
+    <div class="ccard" style="--c:var(--teal)"><div class="lvl">Coach plus human</div><h3>Teamwork</h3><p>An AI coach paired with a teacher or tutor who keeps students engaged.</p><div class="ex"><b>Example:</b> Stanford trials found human tutors increased students' engagement with an AI platform.</div></div>
+  </div>
+  <p class="hint">Click a card for an example. Which kind would you want in your classroom?</p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Main activity.&lt;/b&gt; 8 behaviors. Several have trade-offs: remembering everything helps personalization but raises privacy issues (Episode 2)." data-live="items" id="itemSlide">
+  <div class="spec-top">
+    <div><div class="kicker">Activity: Design the tutor<span class="livetag">LIVE ON PHONES</span></div><h2 style="margin:0">How often should an AI tutor do this?</h2></div>
+    <div class="navdots" id="itemDots"></div>
+  </div>
+  <div class="scen"><div class="n" id="itemN">1</div><div class="t" id="itemT"></div></div>
+  <div class="buckets b3" id="itemB"></div>
+  <div class="stk big" id="itemStk"></div>
+  <div style="display:flex;justify-content:space-between;margin-top:14px">
+    <button class="btn ghost" id="itemPrev">Previous</button>
+    <span class="small" id="itemCount" style="align-self:center"></span>
+    <button class="btn" id="itemNext">Next</button>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Class map.&lt;/b&gt; Sorted from most &quot;always&quot; to most &quot;never&quot;.">
+  <div class="kicker">Our class map</div>
+  <h2>Our class's rules for an AI tutor</h2>
+  <div class="legend"><span style="--c:var(--red)">Never</span><span style="--c:var(--gold)">Sometimes</span><span style="--c:var(--teal)">Always</span></div>
+  <div class="sum" id="sumRows"></div>
+  <p class="hint" id="sumNote"></p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Teacher poll.&lt;/b&gt; Frame AI tutors as changing teachers&#x27; time, not replacing teachers." data-live="poll:time">
+  <div class="kicker">Zoom in: your classroom<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>If every student had a good AI tutor, what would you spend more time on?</h2>
+  <div class="tsplit">
+    <div class="tstats">
+      <div class="tstat"><b>2x</b><span>learning gains in the Harvard physics study</span></div><div class="tstat"><b>18</b><span>Tennessee schools in a two-year Khanmigo trial</span></div><div class="tstat"><b>6,000+</b><span>middle schoolers in an NBER AI tutoring experiment</span></div>
+      <p class="small">Scientific Reports (2025); NBER (2026)</p>
+    </div>
+    <div class="poll" data-poll="time" data-opts="Small-group instruction|Relationships and wellbeing|Projects and discussion|Feedback on student thinking" style="margin-top:0"></div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Pair discussion.&lt;/b&gt; Start the timer.">
+  <div class="kicker">Turn and talk</div>
+  <h2>Discuss with a partner</h2>
+  <div class="row" style="flex:1;margin-top:6px">
+    <div class="qs grow"><div class="q"><div class="qn">1</div><p>What can a human tutor do that an AI tutor cannot, at least not yet?</p></div><div class="q"><div class="qn">2</div><p>Why might an AI tutor work in one study and not in another?</p></div><div class="q"><div class="qn">3</div><p>How would you combine an AI tutor with your own teaching?</p></div></div>
+    <div class="timer" id="timer">
+      <span class="small" style="color:#8F9AB3;letter-spacing:.12em;text-transform:uppercase">Timer</span>
+      <div class="clock" id="clock">4:00</div>
+      <div class="tb"><button data-m="2">2 min</button><button data-m="4">4 min</button><button data-m="6">6 min</button></div>
+      <div class="tb"><button class="go" id="tgo">Start</button><button id="treset">Reset</button></div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Takeaways.&lt;/b&gt; Preview the special education episode.">
+  <div class="kicker">Takeaways</div>
+  <h2>Three things to remember</h2>
+  <div class="tk"><div class="t"><div><b>Design matters more than the brand.</b><p>Tutors that ask questions outperform tutors that hand out answers.</p></div></div><div class="t"><div><b>The evidence is mixed.</b><p>Gains depend on structure, setting, and how students use the tool.</p></div></div><div class="t"><div><b>People keep learning going.</b><p>Human support increases engagement with AI tutors.</p></div></div></div>
+  <p class="hint" style="margin-top:18px">Next episode: <b>AI and Special Education</b>.</p>
+</section>
+<section class="slide" data-notes="Share it. Screenshot the square card for a social post. The post text updates with your class results. Edit freely, then click Copy.">
+  <div class="kicker">Share the conversation</div>
+  <h2 style="font-size:36px">Social card + ready-to-post text</h2>
+  <div class="social">
+    <div class="scard">
+      <div class="ring"></div>
+      <div class="sq" style="font-size:40px;position:relative;z-index:1;max-width:310px">The promise of<br><span>AI tutors</span></div>
+      <ul><li>A well-designed tutor: 2x learning at Harvard</li><li>A large school trial: no extra gain</li><li>Coach, do not answer; keep humans in</li><li id="cardLine">What should an AI tutor do?</li></ul>
+      <div class="sf">AI Now &nbsp;|&nbsp; Season 2, Episode 6</div>
+    </div>
+    <div class="post">
+      <div class="tabs">
+        <button class="btn" data-lang="en">English</button>
+        <button class="btn ghost" data-lang="ko">한국어</button>
+        <button class="btn red" id="copyBtn" style="margin-left:auto">Copy text</button>
+      </div>
+      <textarea id="postText"></textarea>
+    </div>
+  </div>
+</section>
+<section class="slide" data-notes="Sources for all statistics and news items in this deck.">
+  <div class="kicker">Sources</div>
+  <h2>Read more</h2>
+  <ul class="srcs"><li>Kestin, Miller et al. (2025). <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12179260/" target="_blank">AI tutoring outperforms in-class active learning. Scientific Reports.</a></li><li>Harvard Gazette (2024). <a href="https://news.harvard.edu/gazette/story/2024/09/professor-tailored-ai-tutor-to-physics-course-engagement-doubled/" target="_blank">Professor tailored AI tutor to physics course. Engagement doubled.</a></li><li>Oreopoulos and Low (2026). <a href="https://www.nber.org/papers/w35620" target="_blank">One click away: AI tutoring with Khanmigo in a two-year school experiment (NBER)</a></li><li>Oreopoulos et al. (2026). <a href="https://www.nber.org/papers/w35621" target="_blank">Making AI tutoring productive (NBER)</a></li><li>Robinson, Loeb et al. (2026). <a href="https://edworkingpapers.com/sites/default/files/ai26-1451.pdf" target="_blank">Access is not enough: Human support improves engagement with AI tutoring</a></li><li>IZA (Oct 2026). <a href="https://docs.iza.org/dp19025.pdf" target="_blank">Making AI tutoring work for poorer schools</a></li><li>Brookings (Jan 2026). <a href="https://brookings.edu/articles/what-the-research-shows-about-generative-ai-in-tutoring" target="_blank">What the research shows about generative AI in tutoring</a></li></ul>
+</section>
+<div id="qrOverlay"><img id="qrBig" alt="QR code to join"><div><div style="font-size:22px;opacity:.8">Scan, or go to</div><div id="qrUrl" style="font-size:26px;font-weight:700;margin:8px 0 26px"></div><div style="font-size:22px;opacity:.8">Room code</div><div class="code" id="qrCode"></div><div style="font-size:14px;opacity:.6;margin-top:24px">Press Q or click to close</div></div></div>
+<div id="notes"></div>
+<div id="foot"><span id="count"></span><span id="liveChip"><span class="dot"></span>LIVE <b id="liveCode"></b><span id="livePeople"></span></span><div class="ctrls"><button id="goLive">Go live (ClassLive)</button><button id="qBtn" style="display:none">QR (Q)</button><button id="nBtn">Notes (N)</button><button id="fBtn">Fullscreen (F)</button><button id="rBtn">Reset votes</button></div></div>
+<div id="bar"></div>
+</div></div>
+<script>
+(function(){
+  const C={"key": "ainow-s2e06", "items": ["Give the final answer when a student asks for it", "Ask a guiding question before giving any hint", "Alert the teacher when a student has been stuck for a long time", "Praise effort, even when the answer is wrong", "Adjust the difficulty automatically", "Remember everything a student has said all year", "Explain things in the student's home language", "Chat about non-school topics to build rapport"], "short": ["Give final answers on request", "Guiding question before hints", "Alert teacher when stuck", "Praise effort when wrong", "Auto-adjust difficulty", "Remember everything all year", "Explain in home language", "Non-school chat for rapport"], "shortKo": ["요청하면 정답 제공", "힌트 전에 질문 먼저", "오래 막히면 교사에게 알림", "틀려도 노력 칭찬", "난이도 자동 조절", "1년 내내 모든 대화 기억", "모국어로 설명", "친밀감 위한 잡담"], "labels": ["Never", "Sometimes", "Always"], "colors": ["var(--red)", "var(--gold)", "var(--teal)"], "guess": {"answer": 2, "bins": ["Less than the class", "About the same", "About 1.5 times", "About 2 times", "3 times or more"], "binsShort": ["<1x", "1x", "1.5x", "2x", "3x+"], "mid": [0.5, 1, 1.5, 2, 3], "start": 1, "min": 0, "max": 4, "step": 0.5, "dec": 1, "unit": "x", "gaugeMax": 4, "prompt": "Guess: in a Harvard physics study, how much did students learn with a carefully designed AI tutor compared with an active-learning class?"}, "itemPrompt": "Tutor behavior {n} of {total}: {item}. How often should an AI tutor do this?", "sumNote": "Most split: \"{split}\". When would this help learning, and when would it hurt?", "classLine": {"en": "Our class most wants an AI tutor to always do this: \"{top}\" ({topPct}%). Most often never: \"{bottom}\" ({bottomPct}%).", "ko": "우리 반이 AI 튜터가 항상 해야 한다고 가장 많이 꼽은 행동은 \"{top}\"({topPct}%), 절대 하면 안 된다고 가장 많이 꼽은 행동은 \"{bottom}\"({bottomPct}%)였습니다."}, "classSplit": {"en": "We split most on \"{split}\".", "ko": "의견이 가장 갈린 항목은 \"{split}\"였습니다."}, "cardLine": "Our AI tutor should always: {top}", "cardDefault": "What should an AI tutor do?", "post": {"en": ["Can an AI tutor really help students learn?", "", "Today in class:", "- In a Harvard physics study, students learned more than twice as much in less time with a carefully designed AI tutor than in an active-learning class.", "- But a two-year trial in 18 Tennessee middle schools found Khanmigo's gains resembled regular Khan Academy practice without AI (NBER, 2026).", "- Other trials show human support keeps students engaged with AI tutors, and results vary widely by setting.", "", "Then we designed the rules for a good AI tutor.", "{CLASS}", "", "My takeaway: design matters more than the brand. A tutor that asks questions beats one that hands out answers, and humans still keep students engaged.", "", "What should a good AI tutor never do?", "", "#AItutors #EdResearch #TeacherEducation #AILiteracy"], "ko": ["AI 튜터는 정말 학생의 배움을 도울 수 있을까?", "", "오늘 수업에서 함께 본 내용:", "- Harvard 물리학 연구에서 잘 설계된 AI 튜터로 공부한 학생들은 능동 학습 수업보다 더 짧은 시간에 두 배 이상 배웠습니다.", "- 하지만 테네시주 중학교 18곳에서 2년간 진행된 실험에서 Khanmigo의 효과는 AI 없는 일반 Khan Academy 연습과 비슷했습니다 (NBER, 2026).", "- 다른 실험들은 사람의 지원이 학생들의 AI 튜터 참여를 유지한다는 것을 보여 주며, 결과는 환경에 따라 크게 다릅니다.", "", "이어서 좋은 AI 튜터의 규칙을 함께 정해 보았습니다.", "{CLASS}", "", "제 결론: 브랜드보다 설계가 중요합니다. 답을 주는 튜터보다 질문하는 튜터가 낫고, 학생의 참여를 이끄는 것은 여전히 사람입니다.", "", "좋은 AI 튜터가 절대 하지 말아야 할 일은 무엇일까요?", "", "#AI튜터 #교육연구 #교사교육 #AI리터러시"]}};
+  const KEY=C.key, ITEMS=C.items, SHORT=C.short, SHORT_KO=C.shortKo, LABELS=C.labels, COLORS=C.colors, G=C.guess;
+  const NL=LABELS.length;
+
+  let S={polls:{},items:null,snaps:{},clUrl:'https://hyeonhoyu.github.io/ClassLive/',room:null};
+  try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+  if(!S.snaps) S.snaps={};
+  if(!S.items||S.items.length!==ITEMS.length) S.items=ITEMS.map(()=>LABELS.map(()=>0));
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+  const $=id=>document.getElementById(id);
+  const L={on:false,db:null,code:null,key:null,words:{},ref:p=>L.db.ref('rooms/'+L.code+(p?'/'+p:''))};
+  const fill=(t,o)=>t.replace(/\{(\w+)\}/g,(m,k)=>o[k]!==undefined?o[k]:m);
+
+  function liveTally(key,n){const a=Array(n).fill(0);const v=S.snaps[key];if(v&&typeof v==='object')Object.values(v).forEach(x=>{if(typeof x==='number'&&x>=0&&x<n)a[x]++;});return a;}
+  function itemCounts(i){const lv=liveTally('item'+i,NL);return S.items[i].map((m,k)=>Math.max(0,m+lv[k]));}
+
+  /* scaling */
+  const stage=$('stage');
+  function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform='scale('+s+')';}
+  addEventListener('resize',fit);fit();
+
+  /* slides */
+  const slides=[...document.querySelectorAll('.slide')];
+  let cur=0;
+  const notes=$('notes');
+  function show(i){
+    cur=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===cur));
+    $('count').textContent=(cur+1)+' / '+slides.length+'   |   Arrow keys to navigate';
+    $('bar').style.width=((cur+1)/slides.length*100)+'%';
+    notes.innerHTML=slides[cur].dataset.notes||'';
+    if(slides[cur].querySelector('#sumRows')) renderSummary();
+    if(slides[cur].querySelector('#postText')) renderPost();
+    activateLive();
+  }
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();show(cur+1);}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1);}
+    if(e.key==='n'||e.key==='N') toggleNotes();
+    if(e.key==='f'||e.key==='F') toggleFS();
+    if(e.key==='q'||e.key==='Q') toggleQR();
+    if(e.key==='Escape') $('qrOverlay').style.display='none';
+  });
+  function toggleNotes(){notes.style.display=notes.style.display==='block'?'none':'block';}
+  function toggleFS(){try{if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}catch(e){}}
+  $('nBtn').onclick=toggleNotes;$('fBtn').onclick=toggleFS;
+  const rBtn=$('rBtn');let armed=false;
+  rBtn.onclick=()=>{
+    if(!armed){armed=true;rBtn.textContent='Click again to reset';setTimeout(()=>{armed=false;rBtn.textContent='Reset votes';},2500);return;}
+    S.polls={};S.items=ITEMS.map(()=>LABELS.map(()=>0));S.snaps={};save();
+    if(L.on){L.ref('votes').remove().catch(()=>{});L.ref('words').remove().catch(()=>{});L.words={};}
+    refreshAll();armed=false;rBtn.textContent='Reset votes';
+  };
+
+  /* polls */
+  const PCOL=["var(--red)","var(--gold)","var(--teal)","var(--ink2)","#5B7DB1","#8CB369"];
+  function renderPoll(el){
+    const id=el.dataset.poll, opts=el.dataset.opts.split('|');
+    if(!S.polls[id]||S.polls[id].length!==opts.length) S.polls[id]=opts.map(()=>0);
+    const man=S.polls[id], lv=liveTally(id,opts.length);
+    const c=man.map((m,i)=>Math.max(0,m+lv[i]));
+    const tot=c.reduce((a,b)=>a+b,0)||1, max=Math.max(...c,1);
+    el.innerHTML='';
+    opts.forEach((o,i)=>{
+      const r=document.createElement('div');r.className='opt';
+      r.innerHTML='<div class="lab">'+o+'</div><div class="track"><div class="fill" style="background:'+PCOL[i%PCOL.length]+';width:'+(c[i]/max*100)+'%"></div></div><div class="num">'+c[i]+'</div><div class="pm"><button data-d="-1">-</button><button data-d="1">+</button></div>';
+      r.title=Math.round(c[i]/tot*100)+'%';
+      r.onclick=e=>{const d=e.target.dataset.d?+e.target.dataset.d:1;man[i]=Math.max(-lv[i],man[i]+d);save();renderPoll(el);};
+      el.appendChild(r);
+    });
+  }
+  const renderPolls=()=>document.querySelectorAll('[data-poll]').forEach(renderPoll);
+  renderPolls();
+  document.querySelectorAll('.card,.ccard').forEach(c=>c.onclick=()=>c.classList.toggle('open'));
+
+  /* guess */
+  const gs=$('gslider'),gauge=$('gauge'),gval=$('gval'),glbl=$('glbl'),gbox=$('gbox');
+  let revealed=false;
+  const fmtG=v=>(G.dec?(+v).toFixed(G.dec):Math.round(v))+G.unit;
+  function setGauge(v,col){gauge.style.background='conic-gradient('+col+' '+(Math.min(1,v/G.gaugeMax)*360)+'deg,var(--paper2) 0deg)';gval.textContent=fmtG(v);}
+  gs.oninput=()=>{revealed=false;setGauge(+gs.value,'var(--ink2)');glbl.textContent='Class guess';gbox.style.display='none';};
+  setGauge(G.start,'var(--ink2)');
+  $('greveal').onclick=()=>{
+    revealed=true;const guess=+gs.value,A=G.answer;let v=0;glbl.textContent='Actual';
+    const step=Math.max(A/45,G.dec?0.02:0.5);
+    const t=setInterval(()=>{v+=step;if(v>=A){v=A;clearInterval(t);}setGauge(v,'var(--red)');},16);
+    const d=guess-A;
+    $('gdiff').textContent='Class guess: '+fmtG(guess)+'  ('+(Math.abs(d)<1e-9?'exactly right!':((G.dec?Math.abs(d).toFixed(G.dec):Math.abs(d))+(G.unit==='%'?' points ':' ')+(d>0?'too high':'too low')))+')';
+    gbox.style.display='block';
+  };
+  $('greset').onclick=()=>{gs.value=G.start;gs.oninput();};
+  function renderGuessLive(){
+    const t=liveTally('guess',G.bins.length),n=t.reduce((a,b)=>a+b,0),box=$('gbins');
+    if(!n){box.style.display='none';return;}
+    box.style.display='flex';const mx=Math.max(...t);
+    box.innerHTML=t.map((c,i)=>'<div style="height:'+(c/mx*100)+'%"><em>'+c+'</em><span>'+G.binsShort[i]+'</span></div>').join('');
+    if(!revealed){const raw=t.reduce((a,c,i)=>a+c*G.mid[i],0)/n,st=G.step||1,avg=Math.round(raw/st)*st;gs.value=avg;setGauge(avg,'var(--ink2)');glbl.textContent='Class guess ('+n+')';}
+  }
+
+  /* items activity */
+  let ii=0;
+  const pct=c=>{const n=c.reduce((a,b)=>a+b,0);return n?c.map(x=>x/n*100):null;};
+  function stackHTML(c){const p=pct(c);if(!p)return '<div class="seg empty">No votes yet</div>';
+    return p.map((v,k)=>v>0?'<div class="seg" style="width:'+v+'%;background:'+COLORS[k]+'">'+(v>=9?Math.round(v)+'%':'')+'</div>':'').join('');}
+  function renderItem(){
+    $('itemN').textContent=ii+1;$('itemT').textContent=ITEMS[ii];
+    const dots=$('itemDots');dots.innerHTML='';
+    ITEMS.forEach((_,i)=>{const b=document.createElement('button');b.className='d'+(i===ii?' on':'')+(itemCounts(i).some(x=>x)?' done':'');b.textContent=i+1;b.onclick=()=>{ii=i;renderItem();activateLive();};dots.appendChild(b);});
+    const B=$('itemB');B.innerHTML='';
+    const cnt=itemCounts(ii),lv=liveTally('item'+ii,NL);
+    LABELS.forEach((l,k)=>{
+      const d=document.createElement('div');d.className='bucket';d.style.background=COLORS[k];
+      d.innerHTML='<button class="minus">-</button><div class="bn">'+cnt[k]+'</div><div class="bl">'+l+'</div>';
+      d.onclick=e=>{const dec=e.target.classList.contains('minus');S.items[ii][k]=Math.max(-lv[k],S.items[ii][k]+(dec?-1:1));save();renderItem();};
+      B.appendChild(d);
+    });
+    $('itemStk').innerHTML=stackHTML(cnt);
+    const n=cnt.reduce((a,b)=>a+b,0);
+    $('itemCount').textContent=n?n+' votes':(L.on?'Waiting for phone votes...':'Tap a box to record votes');
+  }
+  $('itemPrev').onclick=()=>{ii=(ii+ITEMS.length-1)%ITEMS.length;renderItem();activateLive();};
+  $('itemNext').onclick=()=>{if(ii===ITEMS.length-1)show(cur+1);else{ii++;renderItem();activateLive();}};
+  renderItem();
+
+  function entropy(c){const p=pct(c);if(!p)return -1;return -p.reduce((a,v)=>v>0?a+(v/100)*Math.log(v/100):a,0);}
+  function mostSplit(){let best=-1,bi=-1;ITEMS.forEach((_,i)=>{const c=itemCounts(i);if(c.reduce((a,b)=>a+b,0)>1){const e=entropy(c);if(e>best){best=e;bi=i;}}});return bi;}
+  function score(i){const p=pct(itemCounts(i));return p?p[NL-1]-p[0]:null;}
+  function topItem(){let best=-1e9,bi=-1;ITEMS.forEach((_,i)=>{const k=score(i);if(k!==null&&k>best){best=k;bi=i;}});return bi;}
+  function bottomItem(){let best=1e9,bi=-1;ITEMS.forEach((_,i)=>{const k=score(i);if(k!==null&&k<best){best=k;bi=i;}});return bi;}
+  function renderSummary(){
+    const box=$('sumRows');box.innerHTML='';const sp=mostSplit();
+    const order=ITEMS.map((_,i)=>i).sort((a,b)=>{const ka=score(a),kb=score(b);if(ka===null)return 1;if(kb===null)return -1;return kb-ka;});
+    let any=false;
+    order.forEach(i=>{const c=itemCounts(i);if(c.some(x=>x))any=true;
+      const r=document.createElement('div');r.className='srow2'+(i===sp?' divided':'');
+      r.innerHTML='<div class="st">'+(i+1)+'. '+SHORT[i]+'</div><div class="stk">'+stackHTML(c)+'</div>';
+      box.appendChild(r);});
+    $('sumNote').textContent=any?(sp>=0?fill(C.sumNote,{split:SHORT[sp]}):''):'No votes yet. Go back to the activity to record votes.';
+  }
+
+  /* timer */
+  let total=240,left=240,tick=null;
+  const clock=$('clock'),timerEl=$('timer'),tgo=$('tgo');
+  const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  function stopT(){clearInterval(tick);tick=null;tgo.textContent='Start';}
+  document.querySelectorAll('.timer [data-m]').forEach(b=>b.onclick=()=>{stopT();total=left=+b.dataset.m*60;clock.textContent=fmt(left);timerEl.classList.remove('done');});
+  tgo.onclick=()=>{if(tick){stopT();return;}if(left<=0){left=total;timerEl.classList.remove('done');}tgo.textContent='Pause';
+    tick=setInterval(()=>{left--;clock.textContent=fmt(Math.max(0,left));if(left<=0){stopT();timerEl.classList.add('done');}},1000);};
+  $('treset').onclick=()=>{stopT();left=total;clock.textContent=fmt(left);timerEl.classList.remove('done');};
+
+  /* ===== ClassLive live mode ===== */
+  const FIREBASE_CONFIG={
+    apiKey:"AIzaSyBQsu2DyivPHcBFpybIPZrD5DlL89yC_Ws",
+    authDomain:"claive-de74a.firebaseapp.com",
+    databaseURL:"https://claive-de74a-default-rtdb.firebaseio.com",
+    projectId:"claive-de74a",
+    storageBucket:"claive-de74a.firebasestorage.app",
+    messagingSenderId:"298164687119",
+    appId:"1:298164687119:web:01b074ab6951abdc29ee7a"
+  };
+  const CODE_CHARS="ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const rand=(n,ch)=>Array.from({length:n},()=>ch[Math.floor(Math.random()*ch.length)]).join('');
+  const goBtn=$('goLive');
+  const joinUrl=()=>S.clUrl.split(/[?#]/)[0]+'?room='+L.code;
+  const prettyUrl=()=>S.clUrl.replace(/^https?:\/\//,'').replace(/[?#].*$/,'').replace(/\/$/,'');
+  const qrSrc=(u,n)=>'https://api.qrserver.com/v1/create-qr-code/?size='+n+'x'+n+'&margin=0&data='+encodeURIComponent(u);
+  function renderJoin(){
+    const q=$('qrBox'),info=$('joinInfo');
+    if(!L.on){q.innerHTML='Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.';info.innerHTML='';return;}
+    q.innerHTML='<img alt="QR code" src="'+qrSrc(joinUrl(),260)+'">';
+    info.innerHTML='Or go to <b>'+prettyUrl()+'</b><br>and enter code <b style="font-size:22px;color:var(--red);letter-spacing:.06em">'+L.code+'</b><br><a href="#" id="chgUrl" style="font-size:12px;color:var(--muted)">Change ClassLive address</a><input type="text" id="urlIn" style="display:none;width:100%;margin-top:6px;padding:6px 8px;font-size:12px;border:1px solid var(--line);border-radius:6px">';
+    $('chgUrl').onclick=e=>{e.preventDefault();const i=$('urlIn');i.style.display='block';i.value=S.clUrl;i.focus();};
+    $('urlIn').onchange=e=>{const v=e.target.value.trim();if(v){S.clUrl=v;save();renderJoin();}};
+    $('qrBig').src=qrSrc(joinUrl(),340);$('qrUrl').textContent=prettyUrl();$('qrCode').textContent=L.code;
+  }
+  function toggleQR(){if(!L.on)return;const o=$('qrOverlay');o.style.display=o.style.display==='flex'?'none':'flex';}
+  $('qrOverlay').onclick=toggleQR;$('qBtn').onclick=toggleQR;
+  function renderCloud(){
+    const box=$('cloud'),counts={};
+    Object.values(L.words||{}).forEach(w=>{if(w&&w.t){const t=String(w.t).trim().toLowerCase();if(t)counts[t]=(counts[t]||0)+1;}});
+    const items=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,45);
+    if(!items.length){box.innerHTML='<span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">'+(L.on?'Waiting for words...':'Words will appear here as people send them.')+'</span>';return;}
+    const mx=items[0][1],pal=['var(--red)','var(--ink)','var(--teal)','#C98A1B','var(--ink2)'];
+    const sh=items.map((it,i)=>({it,i,r:(i*7919)%items.length})).sort((a,b)=>a.r-b.r);
+    box.innerHTML='';
+    sh.forEach(({it,i})=>{const s=document.createElement('span');s.textContent=it[0];s.style.fontSize=(18+Math.round((it[1]/mx)*58))+'px';s.style.color=pal[i%pal.length];s.title=it[1];box.appendChild(s);});
+  }
+  function refreshAll(){renderPolls();renderItem();renderGuessLive();renderCloud();if(slides[cur].querySelector('#sumRows'))renderSummary();if(slides[cur].querySelector('#postText'))renderPost();}
+  async function goLive(){
+    if(L.on){toggleQR();return;}
+    if(typeof firebase==='undefined'){goBtn.textContent='No internet: live unavailable';return;}
+    goBtn.textContent='Connecting...';
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      L.db=firebase.database();
+      let code=null,hostKey=null;
+      if(S.room&&S.room.code){
+        const m=(await L.db.ref('rooms/'+S.room.code+'/meta').get()).val();
+        if(m&&m.hostKey===S.room.hostKey){code=S.room.code;hostKey=S.room.hostKey;}
+      }
+      if(!code){
+        for(let i=0;i<6;i++){code=rand(5,CODE_CHARS);if(!(await L.db.ref('rooms/'+code+'/meta').get()).val())break;}
+        hostKey=rand(16,'abcdefghijklmnopqrstuvwxyz0123456789');
+        const first=(document.querySelector('[data-live="words"]')||{dataset:{}}).dataset.prompt||'Share one word.';
+        await L.db.ref('rooms/'+code+'/meta').set({
+          activity:'words',
+          prompts:{words:first,notes:'Share one idea.',poll:'Which option do you choose?',qa:'What questions do you have?',quiz:''},
+          pollOptions:['Yes','No'],locked:false,showResults:false,hostKey,created:firebase.database.ServerValue.TIMESTAMP
+        });
+        S.snaps={};
+      }
+      L.code=code;S.room={code,hostKey};save();
+      L.on=true;document.body.classList.add('live');
+      $('liveCode').textContent=code;$('liveChip').style.display='inline-flex';$('qBtn').style.display='';goBtn.style.display='none';
+      L.ref('people').on('value',s=>{const n=s.val()?Object.keys(s.val()).length:0;$('livePeople').textContent='  |  '+n+' joined';});
+      L.ref('votes').on('value',s=>{if(L.key){S.snaps[L.key]=s.val()||{};save();refreshAll();}});
+      L.ref('words').on('value',s=>{L.words=s.val()||{};renderCloud();});
+      renderJoin();L.key=null;L.last=null;activateLive();
+    }catch(err){console.log('[AI Now] live error',err);goBtn.textContent='Could not connect. Retry';L.on=false;}
+  }
+  goBtn.onclick=goLive;
+  function pollSpec(){
+    const d=slides[cur].dataset.live;if(!d)return null;
+    if(d==='words') return {words:true,prompt:slides[cur].dataset.prompt};
+    if(d==='items') return {key:'item'+ii,prompt:fill(C.itemPrompt,{n:ii+1,total:ITEMS.length,item:ITEMS[ii]}),opts:LABELS};
+    const id=d.split(':')[1];
+    if(id==='guess') return {key:'guess',prompt:G.prompt,opts:G.bins};
+    const el=slides[cur].querySelector('[data-poll]');
+    const h2=slides[cur].querySelector('h2').cloneNode(true);h2.querySelectorAll('br').forEach(b=>b.replaceWith(' '));
+    return {key:id,prompt:h2.textContent.replace(/\s+/g,' ').trim(),opts:el.dataset.opts.split('|')};
+  }
+  async function activateLive(){
+    if(!L.on)return;
+    const p=pollSpec();const sig=p?(p.words?'words':p.key):'locked';
+    if(sig===L.last)return;L.last=sig;
+    try{
+      if(!p){await L.ref('meta').update({locked:true});return;}
+      if(p.words){L.key=null;await L.ref('meta').update({activity:'words','prompts/words':p.prompt,locked:false,showResults:true});return;}
+      L.key=p.key;
+      await L.ref('votes').set(S.snaps[p.key]&&Object.keys(S.snaps[p.key]).length?S.snaps[p.key]:null);
+      await L.ref('meta').update({activity:'poll','prompts/poll':p.prompt,pollOptions:p.opts,locked:false,showResults:false});
+    }catch(err){console.log('[AI Now] update error',err);}
+  }
+
+  /* social post */
+  let lang='en';
+  function classLine(l){
+    const t=topItem(),b=bottomItem(),sp=mostSplit();
+    if(t<0) return '';
+    const names=l==='en'?SHORT:SHORT_KO, p=i=>pct(itemCounts(i));
+    let s=fill(C.classLine[l],{top:names[t],topPct:Math.round(p(t)[NL-1]),bottom:names[b],bottomPct:Math.round(p(b)[0])});
+    if(sp>=0) s+=' '+fill(C.classSplit[l],{split:names[sp]});
+    return s;
+  }
+  function renderPost(){
+    const t=topItem();
+    $('cardLine').textContent=t>=0?fill(C.cardLine,{top:SHORT[t]}):C.cardDefault;
+    const lines=C.post[lang].map(x=>x==='{CLASS}'?classLine(lang):x).filter((x,i,a)=>!(x===''&&C.post[lang][i]==='{CLASS}'));
+    $('postText').value=lines.join('\n');
+  }
+  document.querySelectorAll('.tabs [data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;document.querySelectorAll('.tabs [data-lang]').forEach(x=>x.classList.toggle('ghost',x!==b));renderPost();});
+  $('copyBtn').onclick=()=>{
+    const ta=$('postText'),btn=$('copyBtn');
+    const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy text',1500);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done();});}
+    else{ta.select();document.execCommand('copy');done();}
+  };
+
+  renderGuessLive();
+  show(0);
+})();
+</script>
+</body>
+</html>

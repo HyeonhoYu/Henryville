@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Now, Season 2 Episode 1: The New AI Divide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --paper:#F4F1EA; --paper2:#EAE5D9; --ink:#14213D; --ink2:#3D4A66; --muted:#7A8294;
+    --red:#E4572E; --teal:#2A9D8F; --gold:#E9B44C; --line:#D6CFBF;
+    --s1:#2A9D8F; --s2:#8CB369; --s3:#E9B44C; --s4:#F08A4B; --s5:#E4572E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#0f1729;overflow:hidden;font-family:Inter,system-ui,sans-serif;color:var(--ink)}
+  #viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  #stage{flex:none;width:1280px;height:720px;position:relative;background:var(--paper);transform-origin:center center;box-shadow:0 20px 80px rgba(0,0,0,.45);overflow:hidden}
+  .slide{position:absolute;inset:0;padding:56px 72px 70px;display:none;flex-direction:column}
+  .slide.active{display:flex;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em}
+  h1{font-size:76px;line-height:1.02;font-weight:800}
+  h2{font-size:44px;line-height:1.1;font-weight:800;margin-bottom:10px}
+  h3{font-size:22px;font-weight:600}
+  .kicker{font-size:14px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:14px}
+  .sub{font-size:20px;color:var(--ink2);line-height:1.45}
+  .small{font-size:13px;color:var(--muted)}
+  .row{display:flex;gap:28px}
+  .grow{flex:1}
+  button{font-family:inherit;cursor:pointer}
+  .btn{border:2px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:999px;padding:10px 20px;font-weight:700;font-size:15px;transition:transform .1s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn.red{background:var(--red);border-color:var(--red)}
+  .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--ink);color:var(--paper)}
+
+  /* chrome */
+  #bar{position:absolute;left:0;bottom:0;height:5px;background:var(--red);transition:width .3s}
+  #foot{position:absolute;left:72px;right:72px;bottom:20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);z-index:5}
+  #foot .ctrls{display:flex;gap:8px}
+  #foot button{background:transparent;border:1px solid var(--line);color:var(--ink2);border-radius:6px;padding:4px 10px;font-size:12px}
+  #notes{position:absolute;right:16px;top:16px;width:380px;max-height:300px;overflow:auto;background:var(--ink);color:#E8ECF5;padding:16px 18px;border-radius:12px;font-size:14px;line-height:1.5;display:none;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  #notes b{color:var(--gold)}
+
+  /* title */
+  .title-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative}
+  .title-wrap .series{font-family:Fraunces,serif;font-size:22px;color:var(--ink2);margin-bottom:18px}
+  .title-wrap h1 span{color:var(--red)}
+  .big-q{position:absolute;right:-20px;top:40px;font-family:Fraunces,serif;font-size:420px;font-weight:800;color:var(--paper2);line-height:1;z-index:0}
+  .title-wrap > *:not(.big-q){position:relative;z-index:1}
+
+  /* poll */
+  .poll{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+  .opt{display:grid;grid-template-columns:260px 1fr 70px 76px;align-items:center;gap:16px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 18px;cursor:pointer;user-select:none;transition:border-color .15s}
+  .opt:hover{border-color:var(--ink)}
+  .opt .lab{font-weight:600;font-size:18px}
+  .opt .track{height:22px;background:var(--paper2);border-radius:999px;overflow:hidden}
+  .opt .fill{height:100%;width:0;border-radius:999px;transition:width .35s ease}
+  .opt .num{font-family:Fraunces,serif;font-size:26px;font-weight:800;text-align:right}
+  .opt .pm{display:flex;gap:6px}
+  .opt .pm button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-weight:700;font-size:16px;color:var(--ink)}
+  .hint{font-size:13px;color:var(--muted);margin-top:10px}
+
+  /* news */
+  .news{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:18px}
+  .card{background:#fff;border:2px solid var(--line);border-radius:16px;padding:20px 22px;position:relative;cursor:pointer;transition:transform .15s}
+  .card:hover{transform:translateY(-2px)}
+  .card .stat{font-family:Fraunces,serif;font-size:34px;font-weight:800;color:var(--red);line-height:1;margin:8px 0 8px}
+  .card p{font-size:15px;line-height:1.45;color:var(--ink2)}
+  .card .src{position:absolute;right:18px;top:18px;font-size:11px;color:var(--muted)}
+  .card .more{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px;color:var(--ink);line-height:1.45}
+  .card.open .more{display:block}
+
+  /* guess */
+  .guess{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .gauge{width:380px;height:380px;border-radius:50%;background:conic-gradient(var(--red) 0deg,var(--paper2) 0deg);display:flex;align-items:center;justify-content:center;transition:background .2s}
+  .gauge .inner{width:290px;height:290px;border-radius:50%;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .gauge .val{font-family:Fraunces,serif;font-size:96px;font-weight:800;line-height:1}
+  .gauge .lbl{font-size:14px;color:var(--muted);margin-top:6px;letter-spacing:.1em;text-transform:uppercase}
+  input[type=range]{width:100%;accent-color:var(--ink)}
+  .reveal-box{margin-top:18px;padding:18px 20px;border-radius:14px;background:var(--ink);color:var(--paper);display:none}
+  .reveal-box b{color:var(--gold)}
+
+  /* syllabus */
+  .syl{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+  .syl .s{background:#fff;border:2px solid var(--line);border-radius:14px;padding:18px;min-height:230px;display:flex;flex-direction:column}
+  .syl .code{font-family:Fraunces,serif;font-weight:800;font-size:22px;margin-bottom:4px}
+  .syl .pol{font-size:15px;line-height:1.45;color:var(--ink2);flex:1;margin-top:10px}
+  .syl .chip{align-self:flex-start;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+
+  /* spectrum */
+  .spec-top{display:flex;justify-content:space-between;align-items:flex-end}
+  .scen{margin-top:16px;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:24px 28px;display:flex;align-items:center;gap:24px;min-height:120px}
+  .scen .n{font-family:Fraunces,serif;font-size:64px;font-weight:800;color:var(--red);line-height:1;min-width:70px}
+  .scen .t{font-size:26px;font-weight:600;line-height:1.3;flex:1}
+  .buckets{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+  .bucket{border-radius:14px;padding:14px 10px 12px;text-align:center;color:#fff;cursor:pointer;user-select:none;position:relative;transition:transform .1s}
+  .bucket:active{transform:scale(.97)}
+  .bucket .bn{font-family:Fraunces,serif;font-size:40px;font-weight:800;line-height:1}
+  .bucket .bl{font-size:13px;font-weight:700;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+  .bucket .minus{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:6px;border:none;background:rgba(255,255,255,.3);color:#fff;font-weight:800}
+  .meter{position:relative;height:16px;border-radius:999px;margin-top:26px;background:linear-gradient(90deg,var(--s1),var(--s2),var(--s3),var(--s4),var(--s5))}
+  .meter .pin{position:absolute;top:-12px;width:4px;height:40px;background:var(--ink);border-radius:2px;transform:translateX(-2px);transition:left .4s ease;display:none}
+  .meter .pin span{position:absolute;top:-28px;left:50%;transform:translateX(-50%);white-space:nowrap;font-weight:800;font-size:14px;background:var(--ink);color:var(--paper);padding:2px 8px;border-radius:6px}
+  .navdots{display:flex;gap:8px;align-items:center}
+  .navdots .d{width:30px;height:30px;border-radius:8px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:13px;color:var(--ink2)}
+  .navdots .d.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .navdots .d.done{border-color:var(--teal)}
+
+  /* summary */
+  .sum{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .srow{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;align-items:center}
+  .srow .st{font-size:14px;font-weight:600;line-height:1.25}
+  .srow .str{position:relative;height:30px;border-radius:8px;background:linear-gradient(90deg,rgba(42,157,143,.15),rgba(233,180,76,.15),rgba(228,87,46,.15))}
+  .srow .whisk{position:absolute;top:13px;height:4px;background:var(--ink2);border-radius:2px;opacity:.45}
+  .srow .dot{position:absolute;top:5px;width:20px;height:20px;border-radius:50%;background:var(--ink);transform:translateX(-10px);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+  .srow .sv{font-family:Fraunces,serif;font-weight:800;font-size:18px;text-align:right}
+  .srow.divided .st{color:var(--red)}
+  .srow.divided .str{outline:2px solid var(--red)}
+  .axis{display:grid;grid-template-columns:330px 1fr 90px;gap:16px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .axis div:nth-child(2){display:flex;justify-content:space-between}
+
+  /* dilemma */
+  .dilemma{display:flex;gap:30px;margin-top:16px;flex:1}
+  .flag{width:380px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column}
+  .flag .pct{font-family:Fraunces,serif;font-size:88px;font-weight:800;color:var(--red);line-height:1}
+  .flag p{font-size:16px;line-height:1.5;margin-top:10px;color:#D5DBE8}
+  .dil-opts .opt{grid-template-columns:1fr 200px 56px 76px;padding:12px 16px}
+  .dil-opts .opt .lab{font-size:16px}
+
+  /* timer */
+  .qs{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+  .q{display:flex;gap:18px;align-items:flex-start;background:#fff;border:2px solid var(--line);border-radius:16px;padding:18px 22px}
+  .q .qn{font-family:Fraunces,serif;font-weight:800;font-size:34px;color:var(--teal);line-height:1}
+  .q p{font-size:20px;line-height:1.4;font-weight:500}
+  .timer{width:300px;align-self:flex-start;margin-top:16px;background:var(--ink);color:var(--paper);border-radius:18px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .timer .clock{font-family:Fraunces,serif;font-size:80px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .timer .tb{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .timer .tb button{background:transparent;border:2px solid #56627F;color:var(--paper);border-radius:999px;padding:6px 14px;font-weight:700}
+  .timer .tb button.go{background:var(--red);border-color:var(--red)}
+  .timer.done .clock{color:var(--gold);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+
+  /* takeaways */
+  .tk{display:flex;flex-direction:column;gap:18px;margin-top:22px}
+  .tk .t{display:flex;gap:24px;align-items:center;padding:22px 26px;border-radius:18px;background:#fff;border-left:10px solid var(--red)}
+  .tk .t:nth-child(2){border-left-color:var(--gold)}
+  .tk .t:nth-child(3){border-left-color:var(--teal)}
+  .tk .t b{font-family:Fraunces,serif;font-size:26px}
+  .tk .t p{font-size:17px;color:var(--ink2);margin-top:4px;line-height:1.45}
+
+  /* social */
+  .social{display:flex;gap:30px;margin-top:10px;flex:1;min-height:0}
+  .scard{width:430px;height:430px;flex:none;background:var(--ink);color:var(--paper);border-radius:22px;padding:34px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  .scard .sq{font-family:Fraunces,serif;font-size:46px;font-weight:800;line-height:1.05}
+  .scard .sq span{color:var(--red)}
+  .scard ul{list-style:none;margin-top:22px;display:flex;flex-direction:column;gap:12px}
+  .scard li{font-size:16px;line-height:1.35;padding-left:22px;position:relative;color:#D5DBE8}
+  .scard li:before{content:"";position:absolute;left:0;top:7px;width:10px;height:10px;border-radius:2px;background:var(--gold)}
+  .scard .sf{margin-top:auto;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8F9AB3}
+  .scard .ring{position:absolute;right:-70px;top:-70px;width:200px;height:200px;border-radius:50%;border:26px solid var(--red);opacity:.9}
+  .post{flex:1;display:flex;flex-direction:column;min-width:0}
+  .post .tabs{display:flex;gap:8px;margin-bottom:10px}
+  .post textarea{flex:1;width:100%;resize:none;border:2px solid var(--line);border-radius:14px;padding:14px 16px;font-family:Inter,sans-serif;font-size:14px;line-height:1.5;background:#fff;color:var(--ink)}
+
+  /* join */
+  .join{display:flex;gap:40px;align-items:center;margin-top:20px;flex:1}
+  .qr{width:300px;height:300px;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:14px;padding:20px}
+  .qr img{width:260px;height:260px}
+  .join input[type=text]{width:100%;font-size:16px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font-family:inherit;margin-top:10px}
+
+  /* live */
+  #liveChip{display:none;align-items:center;gap:8px;background:var(--ink);color:var(--paper);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700}
+  #liveChip .dot{width:8px;height:8px;border-radius:50%;background:#3ddc84;animation:pulse 1.6s infinite}
+  #liveChip b{color:var(--gold);letter-spacing:.08em}
+  #goLive{border-color:var(--red)!important;color:var(--red)!important;font-weight:700}
+  #qrOverlay{position:absolute;inset:0;background:rgba(20,33,61,.94);display:none;align-items:center;justify-content:center;gap:56px;z-index:30;color:var(--paper)}
+  #qrOverlay img{width:340px;height:340px;background:#fff;padding:16px;border-radius:20px}
+  #qrOverlay .code{font-family:Fraunces,serif;font-size:96px;font-weight:800;letter-spacing:.08em;color:var(--gold);line-height:1}
+  .livetag{display:none;margin-left:10px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:#1f9d6b;padding:3px 9px;border-radius:999px;vertical-align:middle}
+  body.live .livetag{display:inline-block}
+  .cloudbox{flex:1;background:#fff;border:2px solid var(--line);border-radius:18px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:6px 18px;padding:20px;overflow:hidden;min-height:0}
+  .cloudbox span{font-family:Fraunces,serif;font-weight:800;line-height:1.1}
+  .bins{display:flex;gap:6px;margin-top:16px;align-items:flex-end;height:70px}
+  .bins div{flex:1;background:var(--ink2);border-radius:6px 6px 0 0;position:relative;min-height:2px;transition:height .3s}
+  .bins div span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}
+  .bins div em{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:11px;font-style:normal;font-weight:700}
+
+
+  /* episode 2 components */
+  .cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+  .ccard{background:#fff;border:2px solid var(--line);border-top:10px solid var(--c);border-radius:16px;padding:20px 22px;cursor:pointer;transition:transform .15s}
+  .ccard:hover{transform:translateY(-2px)}
+  .ccard .lvl{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c);margin-bottom:6px}
+  .ccard h3{font-size:24px;font-weight:800;margin-bottom:8px}
+  .ccard p{font-size:15px;line-height:1.5;color:var(--ink2)}
+  .ccard .ex{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:14px;line-height:1.45}
+  .ccard.open .ex{display:block}
+  .buckets.b3{grid-template-columns:repeat(3,1fr)}
+  .buckets.b3 .bucket{padding:18px 10px 16px}
+  .buckets.b3 .bucket .bl{font-size:16px}
+  .stk{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--paper2)}
+  .stk.big{height:40px;margin-top:22px;border-radius:12px}
+  .stk .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;transition:width .4s ease}
+  .stk .seg.empty{width:100%;color:var(--muted);font-weight:500}
+  .srow2{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:center}
+  .srow2 .st{font-size:14px;font-weight:600}
+  .srow2.divided .st{color:var(--red)}
+  .srow2.divided .stk{outline:3px solid var(--red);outline-offset:2px}
+  .legend{display:flex;gap:22px;font-size:13px;font-weight:600;color:var(--ink2);margin:4px 0 4px}
+  .legend span{display:flex;align-items:center;gap:8px}
+  .legend span:before{content:"";width:14px;height:14px;border-radius:4px;background:var(--c)}
+  .tsplit{display:grid;grid-template-columns:360px 1fr;gap:28px;margin-top:18px}
+  .tstats{display:flex;flex-direction:column;gap:12px}
+  .tstat{background:var(--ink);color:var(--paper);border-radius:14px;padding:14px 18px;display:flex;gap:14px;align-items:center}
+  .tstat b{font-family:Fraunces,serif;font-size:32px;font-weight:800;color:var(--gold);min-width:96px;line-height:1}
+  .tstat span{font-size:14px;line-height:1.4;color:#D5DBE8}
+  .tsplit .opt{grid-template-columns:230px 1fr 50px 76px;padding:11px 16px}
+  .tsplit .opt .lab{font-size:16px}
+  .care{flex:1;display:flex;gap:36px;align-items:center}
+  .care .box{flex:1;background:#fff;border:2px solid var(--line);border-left:10px solid var(--teal);border-radius:18px;padding:26px 30px}
+  .care .box p{font-size:19px;line-height:1.55;color:var(--ink2);margin-bottom:12px}
+  .care .help{width:400px;background:var(--ink);color:var(--paper);border-radius:18px;padding:26px 28px}
+  .care .help .n{font-family:Fraunces,serif;font-size:80px;font-weight:800;color:var(--gold);line-height:1}
+  .care .help p{font-size:16px;line-height:1.5;color:#D5DBE8;margin-top:10px}
+  .closing{font-family:Fraunces,serif;font-size:30px;font-weight:600;color:var(--ink);margin-top:18px}
+  /* sources */
+  .srcs{margin-top:16px;columns:2;column-gap:40px}
+  .srcs li{break-inside:avoid;margin:0 0 14px 18px;font-size:14px;line-height:1.45;color:var(--ink2)}
+  .srcs a{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+<section class="slide" data-notes="&lt;b&gt;Welcome to Season 2.&lt;/b&gt; Season 1 asked what AI is doing to learning and work. Season 2 asks who benefits, who pays, and what it means for the classrooms you will lead. Start with fairness of access.">
+  <div class="title-wrap">
+    <div class="big-q" style="font-size:360px;top:40px">≠</div>
+    <div class="series">AI Now: Thinking Together About AI &nbsp;|&nbsp; Season 2, Episode 1</div>
+    <h1>The New<br><span>AI Divide</span></h1>
+    <p class="sub" style="margin-top:22px;max-width:680px">Who gets to learn with AI, who gets left behind, and what teachers can do about it.</p>
+    <p class="small" style="margin-top:40px">Dr. Henry Yu &nbsp;|&nbsp; Teachers College, Ball State University</p>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Join.&lt;/b&gt; Click &lt;b&gt;Go live&lt;/b&gt; once. Note whether words focus on devices, money, teaching, or language." data-live="words" data-prompt="In one word, what does fair access to AI mean to you?">
+  <div class="kicker">Join from your phone<span class="livetag">LIVE</span></div>
+  <h2>In one word: what does "fair access to AI" mean to you?</h2>
+  <div class="join" style="margin-top:10px;align-items:stretch;min-height:0">
+    <div style="width:300px;display:flex;flex-direction:column;gap:12px">
+      <div class="qr" id="qrBox" style="height:300px">Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.</div>
+      <div id="joinInfo" style="font-size:14px;color:var(--ink2);line-height:1.5"></div>
+    </div>
+    <div class="cloudbox" id="cloud"><span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">Words will appear here as people send them.</span></div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Opening poll.&lt;/b&gt; Most preservice teachers had little formal AI instruction. Ask where people learned what they know." data-live="poll:open">
+  <div class="kicker">Warm-up poll<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>Did your K-12 school ever teach you how to use AI well?</h2>
+  <div class="poll" data-poll="open" data-opts="Yes, in depth|A little|No|I finished school before AI was common"></div>
+  <p class="hint">Tap a row to add hand votes. Phone votes are added automatically in live mode.</p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;News brief.&lt;/b&gt; Click each card. Key idea: the divide has moved from devices to guidance and skills.">
+  <div class="kicker">The news in 3 minutes</div>
+  <h2>The AI divide in 2026</h2>
+  <div class="news">
+    <div class="card"><span class="src">U. of Chicago, 2026</span><span class="tag">A new divide</span>
+      <div class="stat">Guidance gap</div>
+      <p>A survey of about 1,200 principals found unequal development of AI policies, training, and guidance across schools, not just unequal access to tools.</p>
+      <div class="more">Schools serving more economically disadvantaged students showed systematically lower levels of AI integration.</div>
+    </div>
+    <div class="card"><span class="src">College Board, Dec 2025</span><span class="tag">School type</span>
+      <div class="stat">2x</div>
+      <p>Private schools are more than twice as likely as public schools to both permit AI use and have policies governing it.</p>
+      <div class="more">Among public schools, those serving more students eligible for free or reduced-price lunch were least likely to have such policies.</div>
+    </div>
+    <div class="card"><span class="src">USC CARE, 2025</span><span class="tag">Family income</span>
+      <div class="stat">Unequal use</div>
+      <p>Wealthier teens have more exposure to AI and use it more often.</p>
+      <div class="more">Over 40% of the highest-income parents said their teens had used AI for school, compared with far fewer of the lowest-income families.</div>
+    </div>
+    <div class="card"><span class="src">2026</span><span class="tag">The other side</span>
+      <div class="stat">Capacity matters</div>
+      <p>Researchers argue that whether AI narrows or widens gaps may depend less on access than on which schools build the capacity to guide its use.</p>
+      <div class="more">That means teacher training and clear guidance can matter as much as buying tools.</div>
+    </div>
+  </div>
+  <p class="hint">Click a card to reveal more.</p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Guess the number.&lt;/b&gt; Answer: about 19%. Ask: what explains the gap? Cost, devices, school guidance, parent knowledge?" data-live="poll:guess">
+  <div class="kicker">Guess the number<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>Over 40% of the highest-income families said their teens used AI for school. What share of the lowest-income families said so?</h2>
+  <div class="guess">
+    <div class="gauge" id="gauge"><div class="inner"><div class="val" id="gval">50%</div><div class="lbl" id="glbl">Class guess</div></div></div>
+    <div class="grow">
+      <p class="sub" style="margin-bottom:10px">Set the slider to the class's guess:</p>
+      <input type="range" id="gslider" min="0" max="100" step="1" value="50">
+      <div class="bins" id="gbins" style="display:none"></div>
+      <div style="display:flex;gap:10px;margin-top:28px">
+        <button class="btn red" id="greveal">Reveal answer</button>
+        <button class="btn ghost" id="greset">Reset</button>
+      </div>
+      <div class="reveal-box" id="gbox">
+        About <b>19%</b> of the lowest-income families, compared with <b>over 40%</b> of the highest-income families.<br><span style="font-size:13px;opacity:.75">Source: USC Center for Applied Research in Education survey, reported by CRPE (2025)</span>
+        <div id="gdiff" style="margin-top:8px;font-size:15px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Big idea.&lt;/b&gt; Click each card. Emphasize that Layer 3 is where teachers have the most direct power.">
+  <div class="kicker">Big idea</div>
+  <h2>Three layers of the AI divide</h2>
+  <p class="sub">Closing the gap takes more than handing out accounts.</p>
+  <div class="cards3">
+    <div class="ccard" style="--c:#5B7DB1"><div class="lvl">Layer 1</div><h3>Access</h3><p>Devices, internet, and paid AI tools that free versions cannot match.</p><div class="ex"><b>Example:</b> A student with only a shared family phone and a free plan versus a student with a laptop and a paid AI subscription.</div></div>
+    <div class="ccard" style="--c:var(--gold)"><div class="lvl">Layer 2</div><h3>Guidance</h3><p>School policies, teacher training, and clear expectations.</p><div class="ex"><b>Example:</b> Two schools both allow AI, but only one trains teachers and explains the rules to families.</div></div>
+    <div class="ccard" style="--c:var(--teal)"><div class="lvl">Layer 3</div><h3>Skills</h3><p>Knowing how to use AI well, check its work, and decide when not to use it.</p><div class="ex"><b>Example:</b> AI literacy lessons can be taught "unplugged," with no devices at all.</div></div>
+  </div>
+  <p class="hint">Click a card for an example. Which layer can a single teacher influence most?</p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Main activity.&lt;/b&gt; Students rank 8 equity ideas. Point out trade-offs: cost, privacy, and whether restricting AI protects students or widens the gap." data-live="items" id="itemSlide">
+  <div class="spec-top">
+    <div><div class="kicker">Activity: Closing the gap<span class="livetag">LIVE ON PHONES</span></div><h2 style="margin:0">How high a priority should this be?</h2></div>
+    <div class="navdots" id="itemDots"></div>
+  </div>
+  <div class="scen"><div class="n" id="itemN">1</div><div class="t" id="itemT"></div></div>
+  <div class="buckets b3" id="itemB"></div>
+  <div class="stk big" id="itemStk"></div>
+  <div style="display:flex;justify-content:space-between;margin-top:14px">
+    <button class="btn ghost" id="itemPrev">Previous</button>
+    <span class="small" id="itemCount" style="align-self:center"></span>
+    <button class="btn" id="itemNext">Next</button>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Class map.&lt;/b&gt; Sorted from highest to lowest priority. Discuss the most split item.">
+  <div class="kicker">Our class map</div>
+  <h2>Our class's priorities for closing the AI divide</h2>
+  <div class="legend"><span style="--c:var(--ink2)">Low priority</span><span style="--c:var(--gold)">Medium</span><span style="--c:var(--teal)">High priority</span></div>
+  <div class="sum" id="sumRows"></div>
+  <p class="hint" id="sumNote"></p>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Teacher scenario.&lt;/b&gt; All are reasonable; discuss which has the fastest impact on students." data-live="poll:teach">
+  <div class="kicker">Zoom in: your classroom<span class="livetag">LIVE ON PHONES</span></div>
+  <h2>Your school has no AI policy and few devices. What do you do first?</h2>
+  <div class="tsplit">
+    <div class="tstats">
+      <div class="tstat"><b>1,200</b><span>principals surveyed on AI integration (2026)</span></div><div class="tstat"><b>2x</b><span>private schools more likely to permit and govern AI</span></div><div class="tstat"><b>19%</b><span>of lowest-income families report teen AI use for school</span></div>
+      <p class="small">Campos and Singleton (2026); College Board (2025); USC CARE (2025)</p>
+    </div>
+    <div class="poll" data-poll="teach" data-opts="Learn AI tools well myself first|Teach AI literacy without devices|Push for a school AI policy|Wait for the school to provide guidance" style="margin-top:0"></div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Pair discussion.&lt;/b&gt; Start the timer.">
+  <div class="kicker">Turn and talk</div>
+  <h2>Discuss with a partner</h2>
+  <div class="row" style="flex:1;margin-top:6px">
+    <div class="qs grow"><div class="q"><div class="qn">1</div><p>Is the AI divide mainly about tools, or about guidance? What did you see in your own schooling?</p></div><div class="q"><div class="qn">2</div><p>Could AI narrow learning gaps, or will it widen them? What decides which way it goes?</p></div><div class="q"><div class="qn">3</div><p>How could a teacher in an under-resourced school build real AI literacy?</p></div></div>
+    <div class="timer" id="timer">
+      <span class="small" style="color:#8F9AB3;letter-spacing:.12em;text-transform:uppercase">Timer</span>
+      <div class="clock" id="clock">4:00</div>
+      <div class="tb"><button data-m="2">2 min</button><button data-m="4">4 min</button><button data-m="6">6 min</button></div>
+      <div class="tb"><button class="go" id="tgo">Start</button><button id="treset">Reset</button></div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-notes="&lt;b&gt;Takeaways.&lt;/b&gt; Preview the next episode on student data privacy.">
+  <div class="kicker">Takeaways</div>
+  <h2>Three things to remember</h2>
+  <div class="tk"><div class="t"><div><b>The divide has moved.</b><p>It is less about devices and more about policies, training, and guidance.</p></div></div><div class="t"><div><b>Gaps follow income and school type.</b><p>Students in high-poverty schools are least likely to get clear AI guidance.</p></div></div><div class="t"><div><b>Teachers can close part of the gap.</b><p>AI literacy does not require expensive tools, and it starts with you.</p></div></div></div>
+  <p class="hint" style="margin-top:18px">Next episode: <b>Who Owns Student Data?</b></p>
+</section>
+<section class="slide" data-notes="Share it. Screenshot the square card for a social post. The post text updates with your class results. Edit freely, then click Copy.">
+  <div class="kicker">Share the conversation</div>
+  <h2 style="font-size:36px">Social card + ready-to-post text</h2>
+  <div class="social">
+    <div class="scard">
+      <div class="ring"></div>
+      <div class="sq" style="font-size:44px;position:relative;z-index:1;max-width:310px">The new<br><span>AI divide</span></div>
+      <ul><li>The gap is now guidance, not just devices</li><li>Private schools are 2x as likely to have AI policies</li><li>19% vs 40%+: AI use for school by family income</li><li id="cardLine">How do we close the AI divide?</li></ul>
+      <div class="sf">AI Now &nbsp;|&nbsp; Season 2, Episode 1</div>
+    </div>
+    <div class="post">
+      <div class="tabs">
+        <button class="btn" data-lang="en">English</button>
+        <button class="btn ghost" data-lang="ko">한국어</button>
+        <button class="btn red" id="copyBtn" style="margin-left:auto">Copy text</button>
+      </div>
+      <textarea id="postText"></textarea>
+    </div>
+  </div>
+</section>
+<section class="slide" data-notes="Sources for all statistics and news items in this deck.">
+  <div class="kicker">Sources</div>
+  <h2>Read more</h2>
+  <ul class="srcs"><li>Chicago Booth Review (Sep 2026). <a href="https://www.chicagobooth.edu/review/ai-inequity-is-developing-schools" target="_blank">AI inequity is developing in schools</a></li><li>Campos and Singleton (2026). <a href="https://www.nber.org/papers/w35347" target="_blank">AI diffusion gaps: Unequal integration of AI across K-12 schools (NBER)</a></li><li>BFI research brief (Jul 2026). <a href="https://bfi.uchicago.edu/wp-content/uploads/2026/07/AI-Diffusion-Gaps-1.pdf" target="_blank">AI diffusion gaps</a></li><li>College Board (Dec 2025). <a href="https://newsroom.collegeboard.org/follow-report-ai-high-schools-genai-use-and-policy-varies-academic-achievement-attainment-grade-and" target="_blank">Follow-up report on AI in high schools</a></li><li>CRPE (2025). <a href="https://crpe.org/ai-is-moving-fast-but-school-responses-and-parent-opinions-are-not/" target="_blank">AI is moving fast, but school responses and parent opinions are not</a></li><li>NPR (Aug 2025). <a href="https://www.npr.org/2025/08/19/nx-s1-5503984/ai-summer-camp-schools-education" target="_blank">An AI divide is growing in schools</a></li></ul>
+</section>
+<div id="qrOverlay"><img id="qrBig" alt="QR code to join"><div><div style="font-size:22px;opacity:.8">Scan, or go to</div><div id="qrUrl" style="font-size:26px;font-weight:700;margin:8px 0 26px"></div><div style="font-size:22px;opacity:.8">Room code</div><div class="code" id="qrCode"></div><div style="font-size:14px;opacity:.6;margin-top:24px">Press Q or click to close</div></div></div>
+<div id="notes"></div>
+<div id="foot"><span id="count"></span><span id="liveChip"><span class="dot"></span>LIVE <b id="liveCode"></b><span id="livePeople"></span></span><div class="ctrls"><button id="goLive">Go live (ClassLive)</button><button id="qBtn" style="display:none">QR (Q)</button><button id="nBtn">Notes (N)</button><button id="fBtn">Fullscreen (F)</button><button id="rBtn">Reset votes</button></div></div>
+<div id="bar"></div>
+</div></div>
+<script>
+(function(){
+  const C={"key": "ainow-s2e01", "items": ["Free school-provided AI accounts for every student", "AI training for every teacher, in every school", "AI literacy lessons in every grade", "Devices and home internet for every student", "AI tools that work well in languages other than English", "Clear AI policies shared with every family", "Restricting AI in schools until access gaps close", "Extra AI funding for high-poverty schools"], "short": ["Free AI accounts", "Teacher AI training", "AI literacy in every grade", "Devices and home internet", "Multilingual AI tools", "Policies shared with families", "Restrict AI until gaps close", "Extra funding for high-poverty schools"], "shortKo": ["학생 전원 무료 AI 계정", "모든 교사 AI 연수", "전 학년 AI 리터러시 수업", "기기와 가정 인터넷 지원", "다국어 AI 도구", "가정에 AI 정책 안내", "격차 해소 전까지 AI 제한", "고빈곤 학교 추가 예산"], "labels": ["Low priority", "Medium", "High priority"], "colors": ["var(--ink2)", "var(--gold)", "var(--teal)"], "guess": {"answer": 19, "bins": ["0 to 20%", "21 to 40%", "41 to 60%", "61 to 80%", "81 to 100%"], "binsShort": ["0-20%", "21-40%", "41-60%", "61-80%", "81-100%"], "mid": [10, 30, 50, 70, 90], "start": 50, "min": 0, "max": 100, "unit": "%", "gaugeMax": 100, "prompt": "Guess: over 40% of the highest-income families said their teens used AI for school. What share of the lowest-income families said so?"}, "itemPrompt": "Idea {n} of {total}: {item}. How high a priority should it be?", "sumNote": "Most split: \"{split}\". Who would benefit, and who would pay?", "classLine": {"en": "Our top priority: \"{top}\" ({topPct}% said high). Lowest priority: \"{bottom}\".", "ko": "우리 반의 최우선 과제는 \"{top}\"(높은 우선순위 {topPct}%), 가장 낮은 우선순위는 \"{bottom}\"였습니다."}, "classSplit": {"en": "We split most on \"{split}\".", "ko": "의견이 가장 갈린 항목은 \"{split}\"였습니다."}, "cardLine": "Our top priority: {top}", "cardDefault": "How do we close the AI divide?", "post": {"en": ["Is AI widening the gap between schools?", "", "Today in class:", "- A national survey of about 1,200 principals found a new kind of digital inequality: not unequal access to AI tools, but unequal policies, training, and guidance (U. of Chicago, 2026).", "- Private schools are more than twice as likely as public schools to both permit AI and have policies for it (College Board).", "- About 19% of the lowest-income families said their teens used AI for school, compared with over 40% of the highest-income families (USC CARE).", "", "Then we ranked 8 ideas for closing the AI divide.", "{CLASS}", "", "My takeaway: the new divide is less about devices and more about guidance. Teachers can close part of it with AI literacy, even without expensive tools.", "", "What would you do first to close the AI divide?", "", "#AIinEducation #EdEquity #TeacherEducation #AILiteracy"], "ko": ["AI가 학교 간 격차를 넓히고 있을까?", "", "오늘 수업에서 함께 본 내용:", "- 약 1,200명의 교장을 대상으로 한 전국 조사는 새로운 디지털 불평등을 발견했습니다. AI 도구 접근의 차이가 아니라 정책, 연수, 지도의 차이입니다 (시카고대, 2026).", "- 사립학교는 공립학교보다 AI 사용을 허용하면서 관련 정책까지 갖출 가능성이 두 배 이상 높습니다 (College Board).", "- 최저소득 가정의 약 19%만 자녀가 학교 공부에 AI를 썼다고 답했고, 최고소득 가정은 40% 이상이었습니다 (USC CARE).", "", "이어서 AI 격차를 줄이는 아이디어 8가지의 우선순위를 정해 보았습니다.", "{CLASS}", "", "제 결론: 새로운 격차는 기기보다 지도의 문제입니다. 교사는 비싼 도구 없이도 AI 리터러시로 그 격차의 일부를 줄일 수 있습니다.", "", "AI 격차를 줄이기 위해 가장 먼저 무엇을 하시겠어요?", "", "#AI교육 #교육형평성 #교사교육 #AI리터러시"]}};
+  const KEY=C.key, ITEMS=C.items, SHORT=C.short, SHORT_KO=C.shortKo, LABELS=C.labels, COLORS=C.colors, G=C.guess;
+  const NL=LABELS.length;
+
+  let S={polls:{},items:null,snaps:{},clUrl:'https://hyeonhoyu.github.io/ClassLive/',room:null};
+  try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw));}catch(e){}
+  if(!S.snaps) S.snaps={};
+  if(!S.items||S.items.length!==ITEMS.length) S.items=ITEMS.map(()=>LABELS.map(()=>0));
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+  const $=id=>document.getElementById(id);
+  const L={on:false,db:null,code:null,key:null,words:{},ref:p=>L.db.ref('rooms/'+L.code+(p?'/'+p:''))};
+  const fill=(t,o)=>t.replace(/\{(\w+)\}/g,(m,k)=>o[k]!==undefined?o[k]:m);
+
+  function liveTally(key,n){const a=Array(n).fill(0);const v=S.snaps[key];if(v&&typeof v==='object')Object.values(v).forEach(x=>{if(typeof x==='number'&&x>=0&&x<n)a[x]++;});return a;}
+  function itemCounts(i){const lv=liveTally('item'+i,NL);return S.items[i].map((m,k)=>Math.max(0,m+lv[k]));}
+
+  /* scaling */
+  const stage=$('stage');
+  function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform='scale('+s+')';}
+  addEventListener('resize',fit);fit();
+
+  /* slides */
+  const slides=[...document.querySelectorAll('.slide')];
+  let cur=0;
+  const notes=$('notes');
+  function show(i){
+    cur=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===cur));
+    $('count').textContent=(cur+1)+' / '+slides.length+'   |   Arrow keys to navigate';
+    $('bar').style.width=((cur+1)/slides.length*100)+'%';
+    notes.innerHTML=slides[cur].dataset.notes||'';
+    if(slides[cur].querySelector('#sumRows')) renderSummary();
+    if(slides[cur].querySelector('#postText')) renderPost();
+    activateLive();
+  }
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();show(cur+1);}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(cur-1);}
+    if(e.key==='n'||e.key==='N') toggleNotes();
+    if(e.key==='f'||e.key==='F') toggleFS();
+    if(e.key==='q'||e.key==='Q') toggleQR();
+    if(e.key==='Escape') $('qrOverlay').style.display='none';
+  });
+  function toggleNotes(){notes.style.display=notes.style.display==='block'?'none':'block';}
+  function toggleFS(){try{if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}catch(e){}}
+  $('nBtn').onclick=toggleNotes;$('fBtn').onclick=toggleFS;
+  const rBtn=$('rBtn');let armed=false;
+  rBtn.onclick=()=>{
+    if(!armed){armed=true;rBtn.textContent='Click again to reset';setTimeout(()=>{armed=false;rBtn.textContent='Reset votes';},2500);return;}
+    S.polls={};S.items=ITEMS.map(()=>LABELS.map(()=>0));S.snaps={};save();
+    if(L.on){L.ref('votes').remove().catch(()=>{});L.ref('words').remove().catch(()=>{});L.words={};}
+    refreshAll();armed=false;rBtn.textContent='Reset votes';
+  };
+
+  /* polls */
+  const PCOL=["var(--red)","var(--gold)","var(--teal)","var(--ink2)","#5B7DB1","#8CB369"];
+  function renderPoll(el){
+    const id=el.dataset.poll, opts=el.dataset.opts.split('|');
+    if(!S.polls[id]||S.polls[id].length!==opts.length) S.polls[id]=opts.map(()=>0);
+    const man=S.polls[id], lv=liveTally(id,opts.length);
+    const c=man.map((m,i)=>Math.max(0,m+lv[i]));
+    const tot=c.reduce((a,b)=>a+b,0)||1, max=Math.max(...c,1);
+    el.innerHTML='';
+    opts.forEach((o,i)=>{
+      const r=document.createElement('div');r.className='opt';
+      r.innerHTML='<div class="lab">'+o+'</div><div class="track"><div class="fill" style="background:'+PCOL[i%PCOL.length]+';width:'+(c[i]/max*100)+'%"></div></div><div class="num">'+c[i]+'</div><div class="pm"><button data-d="-1">-</button><button data-d="1">+</button></div>';
+      r.title=Math.round(c[i]/tot*100)+'%';
+      r.onclick=e=>{const d=e.target.dataset.d?+e.target.dataset.d:1;man[i]=Math.max(-lv[i],man[i]+d);save();renderPoll(el);};
+      el.appendChild(r);
+    });
+  }
+  const renderPolls=()=>document.querySelectorAll('[data-poll]').forEach(renderPoll);
+  renderPolls();
+  document.querySelectorAll('.card,.ccard').forEach(c=>c.onclick=()=>c.classList.toggle('open'));
+
+  /* guess */
+  const gs=$('gslider'),gauge=$('gauge'),gval=$('gval'),glbl=$('glbl'),gbox=$('gbox');
+  let revealed=false;
+  const fmtG=v=>(G.dec?(+v).toFixed(G.dec):Math.round(v))+G.unit;
+  function setGauge(v,col){gauge.style.background='conic-gradient('+col+' '+(Math.min(1,v/G.gaugeMax)*360)+'deg,var(--paper2) 0deg)';gval.textContent=fmtG(v);}
+  gs.oninput=()=>{revealed=false;setGauge(+gs.value,'var(--ink2)');glbl.textContent='Class guess';gbox.style.display='none';};
+  setGauge(G.start,'var(--ink2)');
+  $('greveal').onclick=()=>{
+    revealed=true;const guess=+gs.value,A=G.answer;let v=0;glbl.textContent='Actual';
+    const step=Math.max(A/45,G.dec?0.02:0.5);
+    const t=setInterval(()=>{v+=step;if(v>=A){v=A;clearInterval(t);}setGauge(v,'var(--red)');},16);
+    const d=guess-A;
+    $('gdiff').textContent='Class guess: '+fmtG(guess)+'  ('+(Math.abs(d)<1e-9?'exactly right!':((G.dec?Math.abs(d).toFixed(G.dec):Math.abs(d))+(G.unit==='%'?' points ':' ')+(d>0?'too high':'too low')))+')';
+    gbox.style.display='block';
+  };
+  $('greset').onclick=()=>{gs.value=G.start;gs.oninput();};
+  function renderGuessLive(){
+    const t=liveTally('guess',G.bins.length),n=t.reduce((a,b)=>a+b,0),box=$('gbins');
+    if(!n){box.style.display='none';return;}
+    box.style.display='flex';const mx=Math.max(...t);
+    box.innerHTML=t.map((c,i)=>'<div style="height:'+(c/mx*100)+'%"><em>'+c+'</em><span>'+G.binsShort[i]+'</span></div>').join('');
+    if(!revealed){const raw=t.reduce((a,c,i)=>a+c*G.mid[i],0)/n,st=G.step||1,avg=Math.round(raw/st)*st;gs.value=avg;setGauge(avg,'var(--ink2)');glbl.textContent='Class guess ('+n+')';}
+  }
+
+  /* items activity */
+  let ii=0;
+  const pct=c=>{const n=c.reduce((a,b)=>a+b,0);return n?c.map(x=>x/n*100):null;};
+  function stackHTML(c){const p=pct(c);if(!p)return '<div class="seg empty">No votes yet</div>';
+    return p.map((v,k)=>v>0?'<div class="seg" style="width:'+v+'%;background:'+COLORS[k]+'">'+(v>=9?Math.round(v)+'%':'')+'</div>':'').join('');}
+  function renderItem(){
+    $('itemN').textContent=ii+1;$('itemT').textContent=ITEMS[ii];
+    const dots=$('itemDots');dots.innerHTML='';
+    ITEMS.forEach((_,i)=>{const b=document.createElement('button');b.className='d'+(i===ii?' on':'')+(itemCounts(i).some(x=>x)?' done':'');b.textContent=i+1;b.onclick=()=>{ii=i;renderItem();activateLive();};dots.appendChild(b);});
+    const B=$('itemB');B.innerHTML='';
+    const cnt=itemCounts(ii),lv=liveTally('item'+ii,NL);
+    LABELS.forEach((l,k)=>{
+      const d=document.createElement('div');d.className='bucket';d.style.background=COLORS[k];
+      d.innerHTML='<button class="minus">-</button><div class="bn">'+cnt[k]+'</div><div class="bl">'+l+'</div>';
+      d.onclick=e=>{const dec=e.target.classList.contains('minus');S.items[ii][k]=Math.max(-lv[k],S.items[ii][k]+(dec?-1:1));save();renderItem();};
+      B.appendChild(d);
+    });
+    $('itemStk').innerHTML=stackHTML(cnt);
+    const n=cnt.reduce((a,b)=>a+b,0);
+    $('itemCount').textContent=n?n+' votes':(L.on?'Waiting for phone votes...':'Tap a box to record votes');
+  }
+  $('itemPrev').onclick=()=>{ii=(ii+ITEMS.length-1)%ITEMS.length;renderItem();activateLive();};
+  $('itemNext').onclick=()=>{if(ii===ITEMS.length-1)show(cur+1);else{ii++;renderItem();activateLive();}};
+  renderItem();
+
+  function entropy(c){const p=pct(c);if(!p)return -1;return -p.reduce((a,v)=>v>0?a+(v/100)*Math.log(v/100):a,0);}
+  function mostSplit(){let best=-1,bi=-1;ITEMS.forEach((_,i)=>{const c=itemCounts(i);if(c.reduce((a,b)=>a+b,0)>1){const e=entropy(c);if(e>best){best=e;bi=i;}}});return bi;}
+  function score(i){const p=pct(itemCounts(i));return p?p[NL-1]-p[0]:null;}
+  function topItem(){let best=-1e9,bi=-1;ITEMS.forEach((_,i)=>{const k=score(i);if(k!==null&&k>best){best=k;bi=i;}});return bi;}
+  function bottomItem(){let best=1e9,bi=-1;ITEMS.forEach((_,i)=>{const k=score(i);if(k!==null&&k<best){best=k;bi=i;}});return bi;}
+  function renderSummary(){
+    const box=$('sumRows');box.innerHTML='';const sp=mostSplit();
+    const order=ITEMS.map((_,i)=>i).sort((a,b)=>{const ka=score(a),kb=score(b);if(ka===null)return 1;if(kb===null)return -1;return kb-ka;});
+    let any=false;
+    order.forEach(i=>{const c=itemCounts(i);if(c.some(x=>x))any=true;
+      const r=document.createElement('div');r.className='srow2'+(i===sp?' divided':'');
+      r.innerHTML='<div class="st">'+(i+1)+'. '+SHORT[i]+'</div><div class="stk">'+stackHTML(c)+'</div>';
+      box.appendChild(r);});
+    $('sumNote').textContent=any?(sp>=0?fill(C.sumNote,{split:SHORT[sp]}):''):'No votes yet. Go back to the activity to record votes.';
+  }
+
+  /* timer */
+  let total=240,left=240,tick=null;
+  const clock=$('clock'),timerEl=$('timer'),tgo=$('tgo');
+  const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  function stopT(){clearInterval(tick);tick=null;tgo.textContent='Start';}
+  document.querySelectorAll('.timer [data-m]').forEach(b=>b.onclick=()=>{stopT();total=left=+b.dataset.m*60;clock.textContent=fmt(left);timerEl.classList.remove('done');});
+  tgo.onclick=()=>{if(tick){stopT();return;}if(left<=0){left=total;timerEl.classList.remove('done');}tgo.textContent='Pause';
+    tick=setInterval(()=>{left--;clock.textContent=fmt(Math.max(0,left));if(left<=0){stopT();timerEl.classList.add('done');}},1000);};
+  $('treset').onclick=()=>{stopT();left=total;clock.textContent=fmt(left);timerEl.classList.remove('done');};
+
+  /* ===== ClassLive live mode ===== */
+  const FIREBASE_CONFIG={
+    apiKey:"AIzaSyBQsu2DyivPHcBFpybIPZrD5DlL89yC_Ws",
+    authDomain:"claive-de74a.firebaseapp.com",
+    databaseURL:"https://claive-de74a-default-rtdb.firebaseio.com",
+    projectId:"claive-de74a",
+    storageBucket:"claive-de74a.firebasestorage.app",
+    messagingSenderId:"298164687119",
+    appId:"1:298164687119:web:01b074ab6951abdc29ee7a"
+  };
+  const CODE_CHARS="ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const rand=(n,ch)=>Array.from({length:n},()=>ch[Math.floor(Math.random()*ch.length)]).join('');
+  const goBtn=$('goLive');
+  const joinUrl=()=>S.clUrl.split(/[?#]/)[0]+'?room='+L.code;
+  const prettyUrl=()=>S.clUrl.replace(/^https?:\/\//,'').replace(/[?#].*$/,'').replace(/\/$/,'');
+  const qrSrc=(u,n)=>'https://api.qrserver.com/v1/create-qr-code/?size='+n+'x'+n+'&margin=0&data='+encodeURIComponent(u);
+  function renderJoin(){
+    const q=$('qrBox'),info=$('joinInfo');
+    if(!L.on){q.innerHTML='Click <b>&nbsp;Go live&nbsp;</b> in the bottom bar to open a ClassLive room.';info.innerHTML='';return;}
+    q.innerHTML='<img alt="QR code" src="'+qrSrc(joinUrl(),260)+'">';
+    info.innerHTML='Or go to <b>'+prettyUrl()+'</b><br>and enter code <b style="font-size:22px;color:var(--red);letter-spacing:.06em">'+L.code+'</b><br><a href="#" id="chgUrl" style="font-size:12px;color:var(--muted)">Change ClassLive address</a><input type="text" id="urlIn" style="display:none;width:100%;margin-top:6px;padding:6px 8px;font-size:12px;border:1px solid var(--line);border-radius:6px">';
+    $('chgUrl').onclick=e=>{e.preventDefault();const i=$('urlIn');i.style.display='block';i.value=S.clUrl;i.focus();};
+    $('urlIn').onchange=e=>{const v=e.target.value.trim();if(v){S.clUrl=v;save();renderJoin();}};
+    $('qrBig').src=qrSrc(joinUrl(),340);$('qrUrl').textContent=prettyUrl();$('qrCode').textContent=L.code;
+  }
+  function toggleQR(){if(!L.on)return;const o=$('qrOverlay');o.style.display=o.style.display==='flex'?'none':'flex';}
+  $('qrOverlay').onclick=toggleQR;$('qBtn').onclick=toggleQR;
+  function renderCloud(){
+    const box=$('cloud'),counts={};
+    Object.values(L.words||{}).forEach(w=>{if(w&&w.t){const t=String(w.t).trim().toLowerCase();if(t)counts[t]=(counts[t]||0)+1;}});
+    const items=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,45);
+    if(!items.length){box.innerHTML='<span style="font-family:Inter;font-weight:500;font-size:16px;color:var(--muted)">'+(L.on?'Waiting for words...':'Words will appear here as people send them.')+'</span>';return;}
+    const mx=items[0][1],pal=['var(--red)','var(--ink)','var(--teal)','#C98A1B','var(--ink2)'];
+    const sh=items.map((it,i)=>({it,i,r:(i*7919)%items.length})).sort((a,b)=>a.r-b.r);
+    box.innerHTML='';
+    sh.forEach(({it,i})=>{const s=document.createElement('span');s.textContent=it[0];s.style.fontSize=(18+Math.round((it[1]/mx)*58))+'px';s.style.color=pal[i%pal.length];s.title=it[1];box.appendChild(s);});
+  }
+  function refreshAll(){renderPolls();renderItem();renderGuessLive();renderCloud();if(slides[cur].querySelector('#sumRows'))renderSummary();if(slides[cur].querySelector('#postText'))renderPost();}
+  async function goLive(){
+    if(L.on){toggleQR();return;}
+    if(typeof firebase==='undefined'){goBtn.textContent='No internet: live unavailable';return;}
+    goBtn.textContent='Connecting...';
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      L.db=firebase.database();
+      let code=null,hostKey=null;
+      if(S.room&&S.room.code){
+        const m=(await L.db.ref('rooms/'+S.room.code+'/meta').get()).val();
+        if(m&&m.hostKey===S.room.hostKey){code=S.room.code;hostKey=S.room.hostKey;}
+      }
+      if(!code){
+        for(let i=0;i<6;i++){code=rand(5,CODE_CHARS);if(!(await L.db.ref('rooms/'+code+'/meta').get()).val())break;}
+        hostKey=rand(16,'abcdefghijklmnopqrstuvwxyz0123456789');
+        const first=(document.querySelector('[data-live="words"]')||{dataset:{}}).dataset.prompt||'Share one word.';
+        await L.db.ref('rooms/'+code+'/meta').set({
+          activity:'words',
+          prompts:{words:first,notes:'Share one idea.',poll:'Which option do you choose?',qa:'What questions do you have?',quiz:''},
+          pollOptions:['Yes','No'],locked:false,showResults:false,hostKey,created:firebase.database.ServerValue.TIMESTAMP
+        });
+        S.snaps={};
+      }
+      L.code=code;S.room={code,hostKey};save();
+      L.on=true;document.body.classList.add('live');
+      $('liveCode').textContent=code;$('liveChip').style.display='inline-flex';$('qBtn').style.display='';goBtn.style.display='none';
+      L.ref('people').on('value',s=>{const n=s.val()?Object.keys(s.val()).length:0;$('livePeople').textContent='  |  '+n+' joined';});
+      L.ref('votes').on('value',s=>{if(L.key){S.snaps[L.key]=s.val()||{};save();refreshAll();}});
+      L.ref('words').on('value',s=>{L.words=s.val()||{};renderCloud();});
+      renderJoin();L.key=null;L.last=null;activateLive();
+    }catch(err){console.log('[AI Now] live error',err);goBtn.textContent='Could not connect. Retry';L.on=false;}
+  }
+  goBtn.onclick=goLive;
+  function pollSpec(){
+    const d=slides[cur].dataset.live;if(!d)return null;
+    if(d==='words') return {words:true,prompt:slides[cur].dataset.prompt};
+    if(d==='items') return {key:'item'+ii,prompt:fill(C.itemPrompt,{n:ii+1,total:ITEMS.length,item:ITEMS[ii]}),opts:LABELS};
+    const id=d.split(':')[1];
+    if(id==='guess') return {key:'guess',prompt:G.prompt,opts:G.bins};
+    const el=slides[cur].querySelector('[data-poll]');
+    const h2=slides[cur].querySelector('h2').cloneNode(true);h2.querySelectorAll('br').forEach(b=>b.replaceWith(' '));
+    return {key:id,prompt:h2.textContent.replace(/\s+/g,' ').trim(),opts:el.dataset.opts.split('|')};
+  }
+  async function activateLive(){
+    if(!L.on)return;
+    const p=pollSpec();const sig=p?(p.words?'words':p.key):'locked';
+    if(sig===L.last)return;L.last=sig;
+    try{
+      if(!p){await L.ref('meta').update({locked:true});return;}
+      if(p.words){L.key=null;await L.ref('meta').update({activity:'words','prompts/words':p.prompt,locked:false,showResults:true});return;}
+      L.key=p.key;
+      await L.ref('votes').set(S.snaps[p.key]&&Object.keys(S.snaps[p.key]).length?S.snaps[p.key]:null);
+      await L.ref('meta').update({activity:'poll','prompts/poll':p.prompt,pollOptions:p.opts,locked:false,showResults:false});
+    }catch(err){console.log('[AI Now] update error',err);}
+  }
+
+  /* social post */
+  let lang='en';
+  function classLine(l){
+    const t=topItem(),b=bottomItem(),sp=mostSplit();
+    if(t<0) return '';
+    const names=l==='en'?SHORT:SHORT_KO, p=i=>pct(itemCounts(i));
+    let s=fill(C.classLine[l],{top:names[t],topPct:Math.round(p(t)[NL-1]),bottom:names[b],bottomPct:Math.round(p(b)[0])});
+    if(sp>=0) s+=' '+fill(C.classSplit[l],{split:names[sp]});
+    return s;
+  }
+  function renderPost(){
+    const t=topItem();
+    $('cardLine').textContent=t>=0?fill(C.cardLine,{top:SHORT[t]}):C.cardDefault;
+    const lines=C.post[lang].map(x=>x==='{CLASS}'?classLine(lang):x).filter((x,i,a)=>!(x===''&&C.post[lang][i]==='{CLASS}'));
+    $('postText').value=lines.join('\n');
+  }
+  document.querySelectorAll('.tabs [data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;document.querySelectorAll('.tabs [data-lang]').forEach(x=>x.classList.toggle('ghost',x!==b));renderPost();});
+  $('copyBtn').onclick=()=>{
+    const ta=$('postText'),btn=$('copyBtn');
+    const done=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy text',1500);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done,()=>{ta.select();document.execCommand('copy');done();});}
+    else{ta.select();document.execCommand('copy');done();}
+  };
+
+  renderGuessLive();
+  show(0);
+})();
+</script>
+</body>
+</html>
